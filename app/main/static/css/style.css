@@ -1,0 +1,65 @@
+/* static/styles.css */
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+    font-family: "Poppins", sans-serif;
+    border: none;
+    outline: none;
+    letter-spacing: .4px;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+:root {
+    --primary-color: #0056b3;   /* Dark Blue */
+    --secondary-color: #4caf50; /* Green */
+    --background-color: #f4f4f4; /* Light Gray */
+    --text-color: #333;
+
+    --color-black: #000000;  
+    --color-white: #ffffff;
+    --color-dark: #2c2c2c;      /* Dark Gray */
+    --color-dark-variant: #444; /* Slightly Darker Gray */
+}
+
+
+body {
+    background-color: var(--background-color);
+}
+
+/* Example style for the home page content */
+h1,h2,h3,h4,h5 {
+    line-height: 120%;
+}
+
+h1 {
+    font-size: 48px;
+    color: var(--color-black);
+}
+
+h2 {
+    font-size: 28px;
+    color: var(--color-dark-variant);
+}
+
+h3 {
+    font-size: 26px;
+    color: var(--color-black);
+}
+
+h4 {
+    font-size: 19px;
+    color: var(--color-black);
+}
+
+h4 {
+    font-size: 18px;
+    font-weight: 400;
+}
