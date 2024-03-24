@@ -32,12 +32,12 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(Config.BASE_DIR, 'app.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(Config.BASE_DIR, 'mindcanvas.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 class ProductionConfig(Config):
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = Config.DATABASE_URI or 'sqlite:///' + os.path.join(Config.BASE_DIR, 'app.db')
+    SQLALCHEMY_DATABASE_URI = Config.DATABASE_URI or 'sqlite:///' + os.path.join(Config.BASE_DIR, 'mindcanvas.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 def get_config():

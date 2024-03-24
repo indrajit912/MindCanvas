@@ -5,13 +5,63 @@
 
 from flask import current_app
 from flask.cli import FlaskGroup
-from app.extensions import db
-from app.models.models import User
 import getpass
 import logging
 
-cli = FlaskGroup(current_app)
+from app.extensions import db
+from app import create_app
+from app.models.models import User, JournalEntry, Tag
+
+cli = FlaskGroup(create_app=create_app)
 logger = logging.getLogger(__name__)
+
+def create_demo_user():
+    """
+    Helper function to create a demo user.
+    """
+    try:
+        demo_user = User(
+            username='demo',
+            fullname="Demo User",
+            email="demouser@demo.com"
+        )
+        demo_user.set_hashed_password("password")
+
+        db.session.add(demo_user)
+        db.session.commit()
+        print("Demo user created successfully!")
+        logger.info("Demo user created successfully!")
+    except Exception as e:
+        print("Couldn't create demo user.")
+        logger.error(f"Couldn't create demo user.\nERROR: {e}")
+        print(f"\nERROR: {e}")
+
+
+@cli.command("setup_db")
+def setup_database():
+    """
+    Command-line utility to set up the database.
+
+    This command creates all necessary tables in the database based on defined models.
+
+    Usage:
+        flask setup_database
+
+    Returns:
+        None
+    """
+    with current_app.app_context():
+        db.create_all()
+        print("Database tables created successfully!")
+
+        # Check if the demo user exists
+        demo_user = User.query.filter_by(username='demo').first()
+
+        if demo_user:
+            print("Demo user already exists.")
+        else:
+            create_demo_user()
+
 
 @cli.command("all_users")
 def all_users():

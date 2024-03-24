@@ -15,12 +15,19 @@ Usage:
     >>> /env/bin/gunicorn --bind 0.0.0.0:5000 run:app
 
 Database initialization:
-    1. flask shell
+    1. To setup the database for the first time use the following command
+on the terminal:
+
+    $ env/bin/python manage.py setup_db
+
+    OR, you can do it manually by the following set of commands on Flask Shell
+    $ flask shell
         >>> from app import db
         >>> from app.models.models import *
         >>> db.create_all()
 
-    2. python run.py
+    2. Use the following to run the app locally:
+    $ python run.py
 
 Note: Flask Migration
     1. flask db init
