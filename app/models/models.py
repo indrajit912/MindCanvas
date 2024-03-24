@@ -10,6 +10,7 @@ from flask import current_app
 from flask_login import UserMixin
 from datetime import datetime, timezone
 import secrets
+import uuid
 
 from scripts.utils import sha256_hash
 
@@ -89,6 +90,7 @@ class User(db.Model, UserMixin):
 
 class JournalEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String(36), unique=True, nullable=False, default=str(uuid.uuid4()))
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     locked = db.Column(db.Boolean, default=False)
@@ -106,6 +108,7 @@ class JournalEntry(db.Model):
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String(36), unique=True, nullable=False, default=str(uuid.uuid4()))
     name = db.Column(db.String(50), nullable=False)
     color_red = db.Column(db.Integer, nullable=False)
     color_green = db.Column(db.Integer, nullable=False)

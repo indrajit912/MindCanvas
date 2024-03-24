@@ -30,19 +30,21 @@ Created On: Mar 24, 2024
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">View Entries</a>
-              </li>
-              <!-- TODO: add logic to current_user -->
+              {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                      <a class="nav-link active" aria-current="page" href="#">View Entries</a>
+                    </li>
                     <li class="nav-item">
                       <a class="nav-link active" href="#">Add Entry</a>
                     </li>
+              {% else %}
                     <li class="nav-item">
                       <a class="nav-link active" href="#">Register</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="#">Login</a>
+                        <a class="nav-link active" href="{{ url_for('auth.login') }}">Login</a>
                     </li>
+              {% endif %}
 
           </div>
         </div>

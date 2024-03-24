@@ -6,7 +6,7 @@
 from flask import Flask
 import logging
 from config import get_config, LOG_FILE
-from .extensions import db, migrate
+from .extensions import db, migrate, login_manager
 
 def configure_logging(app:Flask):
     logging.basicConfig(
@@ -39,10 +39,21 @@ def create_app(config_class=get_config()):
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
 
     from app.main import main_bp
     app.register_blueprint(main_bp)
 
+    from app.auth import auth_bp
+    app.register_blueprint(auth_bp)
+
+    # Define the user loader function
+    @login_manager.user_loader
+    def load_user(user_id):
+        # Replace this with the actual code to load a user from the database
+        from app.models.models import User  # Import your User model
+        return User.query.get(int(user_id))
 
     @app.route('/test/')
     def test():
