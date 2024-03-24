@@ -34,8 +34,11 @@ def all_users():
     """
     with current_app.app_context():
         users = User.query.all()
-        for user in users:
-            print(user.username, user.email, user.is_admin)
+        if users:
+            for user in users:
+                print(user.username, user.email, user.is_admin)
+        else:
+            print("No users found!")
 
 
 @cli.command("create_admin")

@@ -1,12 +1,12 @@
 # app/__init__.py
-# Webapp {self._proj_name}
+# Webapp MindCanvas
 # Author: Indrajit Ghosh
 # Created On: Mar 24, 2024
 
 from flask import Flask
 import logging
 from config import get_config, LOG_FILE
-from .extensions import db
+from .extensions import db, migrate
 
 def configure_logging(app:Flask):
     logging.basicConfig(
@@ -36,7 +36,9 @@ def create_app(config_class=get_config()):
     app.register_error_handler(404, page_not_found)
     app.register_error_handler(500, internal_server_error)
 
+    # Initialize extensions
     db.init_app(app)
+    migrate.init_app(app, db)
 
     from app.main import main_bp
     app.register_blueprint(main_bp)

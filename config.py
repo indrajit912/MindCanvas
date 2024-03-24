@@ -18,6 +18,7 @@ class Config:
     UPLOAD_DIR = BASE_DIR / 'uploads'
     LOG_FILE = BASE_DIR / 'app.log'
     PORT = os.environ.get("PORT") or 8080
+    DATABASE_URI = os.environ.get("DATABASE_URI")
 
     FLASK_ENV = os.environ.get("FLASK_ENV") or 'production'
     if FLASK_ENV in ['dev', 'developement']:
@@ -36,7 +37,7 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(Config.BASE_DIR, 'app.db')
+    SQLALCHEMY_DATABASE_URI = Config.DATABASE_URI or 'sqlite:///' + os.path.join(Config.BASE_DIR, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 def get_config():

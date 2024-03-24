@@ -17,6 +17,7 @@ Usage:
 Database initialization:
     1. flask shell
         >>> from app import db
+        >>> from app.models.models import *
         >>> db.create_all()
 
     2. python run.py
