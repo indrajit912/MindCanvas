@@ -12,10 +12,6 @@ from . import api_bp
 
 api = Api(api_bp)
 
-@api_bp.route('/')
-def home():
-    return 'This is api homepage!'
-
 class UserResource(Resource):
     """
     Once your Flask app is running, you can access the APIs by sending HTTP requests to the specified endpoints. For example:

@@ -20,6 +20,7 @@ class EmailConfig:
     GMAIL_SERVER = ['smtp.gmail.com', 587]
 
 class Config:
+    API_KEY = 'here_is_api_key'
     BASE_DIR = Path(__name__).parent.absolute()
     UPLOAD_DIR = BASE_DIR / 'uploads'
     LOG_FILE = BASE_DIR / 'app.log'

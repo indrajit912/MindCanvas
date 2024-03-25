@@ -4,10 +4,10 @@
 
 from functools import wraps
 
-from flask import flash, redirect, url_for
+from flask import flash, redirect, url_for, request, jsonify
 from flask_login import current_user
 
-from config import EmailConfig
+from config import EmailConfig, Config
 
 
 def logout_required(func):
