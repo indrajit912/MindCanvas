@@ -29,8 +29,8 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(128), nullable=False)
     password_salt = db.Column(db.String(32), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
-    date_joined = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    last_updated = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    date_joined = db.Column(db.DateTime, default=datetime.utcnow())
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
 
     # Define a one-to-many relationship with JournalEntry
     journal_entries = db.relationship('JournalEntry', backref='author', lazy=True, cascade="all, delete-orphan")
@@ -106,8 +106,8 @@ class JournalEntry(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     locked = db.Column(db.Boolean, default=False)
-    date_created = db.Column(db.DateTime, nullable=False, default=datetime.now(timezone.utc))
-    last_updated = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
 
     # Define foreign key relationship with User
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

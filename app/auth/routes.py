@@ -158,3 +158,4 @@ def register_user(token):
             flash('Failed to register user. Please try again.', 'danger')
 
     return render_template('register_user.html', form=form, user_data=user_data)
+

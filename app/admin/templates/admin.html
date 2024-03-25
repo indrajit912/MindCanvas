@@ -1,0 +1,180 @@
+<!-- app/admin/templates/admin/admin.html -->
+{% extends 'base.html' %}
+
+{% block title %}Admin Page{% endblock %}
+
+{% block content %}
+
+    {% include 'flash_msgs.html' %}
+
+    <h1 class="heading">Welcome admin!</h1>
+
+    <!-- <h2>All Users</h2> -->
+    <div class="accordion" id="accordionPanelsStayOpenExample">
+        {% for user in users %}
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne{{ user.id }}" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne{{ user.id }}">
+            <strong># {{ loop.index }}. {{ user.fullname }}</strong> 
+            </button>
+          </h2>
+
+          <div id="panelsStayOpen-collapseOne{{ user.id }}" class="accordion-collapse collapse">
+            <div class="accordion-body">
+                <p class="card-text">
+                    <strong>Username:</strong> <code>{{ user.username }}</code>
+                    <br>
+                    <strong>Email:</strong> <code>{{ user.email }}</code>
+                    <br>
+                    <strong>Admin:</strong> <code>{{ user.is_admin }}</code>
+                    <br>
+                    <strong>Date Joined:</strong> <code>{{ convert_utc_to_ist(user.last_updated.strftime("%Y-%m-%d %H:%M:%S")) }}</code>
+                    <br>
+                    <!-- TODO: Remove the following -->
+                    <strong>Journal Entries:</strong>
+                            {{ user.journal_entries }}
+                </p>
+
+                <!-- Start of Delete user btn logic -->
+
+                {% if user.id == current_user.id or user.email == indrajit %}
+                    <button type="button" class="btn btn-danger btn-sm" disabled>Delete User</button>
+                {% else %}
+
+                    <button type="button" class="btn btn-danger me-md-2 btn-sm" data-bs-toggle="modal" data-bs-target="#userDelBtn{{ user.id }}">
+                      Delete User
+                    </button>
+
+                    <!-- Delete Modal -->
+                    <div class="modal fade" id="userDelBtn{{ user.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="userDelBtnLabel{{ user.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                        
+                            <div class="modal-header">
+                              <h1 class="modal-title fs-5" id="userDelBtnLabel{{ user.id }}">Delete '{{ user.fullname }}' ?</h1>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                        
+                            <div class="modal-body">
+                              Ensure that you are certain about deleting the user before proceeding.
+                            </div>
+                        
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                              <button type="button" id="delUser{{ user.id }}" class="btn btn-danger" onclick='deleteUser("{{ user.id }}")'>
+                                Delete
+                             </button>
+                            </div>
+                        
+                          </div>
+                        </div>
+                    </div>
+
+                {% endif %}
+
+                <!-- End of Delete btn logic -->
+
+                {% if current_user.email == indrajit %}
+
+                    <!-- Admin toggler -->
+                    <button
+                      type="button"
+                      class="btn btn-danger me-md-2 btn-sm"
+                      data-bs-toggle="modal"
+                      data-bs-target="#adminTogglerModal{{ user.id }}"
+                    >
+                        {% if user.is_admin %}
+                            Disable Admin
+                        {% else %}
+                            Make Admin
+                        {% endif %}
+                    </button>
+
+                    <!-- Admin status Modal -->
+                    <div class="modal fade" id="adminTogglerModal{{ user.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="adminTogglerModalLabel{{ user.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="adminTogglerModalLabel{{ user.id }}">
+                                    {% if user.is_admin %}
+                                        Disable '{{ user.fullname }}' from admin ?
+                                    {% else %}
+                                        Make '{{ user.fullname }}' admin ?
+                                    {% endif %}
+                                </h1>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <div class="modal-body">
+                              Ensure that you are certain about toggling the admin status of that user.
+                            </div>
+
+                            <div class="modal-footer">
+                            <!-- TODO: Post request to the api -->
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                              <form method="post" action="#" style="display: inline;">
+                                    {% if user.is_admin %}
+                                        <button type="submit" class="btn btn-danger">Disable Admin</button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-danger">Make Admin</button>
+                                    {% endif %}
+                              </form>
+                               
+                            </div>
+
+                          </div>
+                        </div>
+                    </div>
+
+                {% endif %}
+                <!-- End of admin toggling -->
+
+                <br><br>
+                <p class="card-text"><small class="text-body-secondary">Last updated: {{ convert_utc_to_ist(user.last_updated.strftime("%Y-%m-%d %H:%M:%S")) }}</small></p>
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <script>
+        function deleteUser(userId) {
+            fetch(`/api/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // If the response is successful, return the success message
+                    return response.json();
+                } else {
+                    // If there's an error response, handle it accordingly
+                    return response.json().then(error => {
+                        console.error('Error:', error.message);
+                        // Optionally display an error message to the user
+                        alert('Error deleting user: ' + error.message);
+                        throw new Error('Error deleting user: ' + error.message); // Propagate the error to catch block
+                    });
+                }
+            })
+            .then(data => {
+                // Handle the success response here
+                console.log('Success:', data.message);
+                alert(data.message); // Alert the success message to the user
+                // Optionally, you can reload the page here if needed
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Handle any network errors
+                alert('Network error while deleting user. Please try again.');
+            });
+        }
+    </script>
+
+{% endblock %}

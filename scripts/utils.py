@@ -7,7 +7,6 @@
 import hashlib
 from datetime import datetime, timedelta, timezone
 
-
 def sha256_hash(raw_text:str):
     """Hash the given text using SHA-256 algorithm.
 
