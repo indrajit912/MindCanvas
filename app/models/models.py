@@ -23,6 +23,7 @@ journal_entry_tag_association = db.Table(
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String(36), unique=True, nullable=False, default=str(uuid.uuid4()))
     username = db.Column(db.String(100), unique=True, nullable=False)
     fullname = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -73,6 +74,7 @@ class User(db.Model, UserMixin):
         """Return a dictionary representation of the user."""
         return {
             'id': self.id,
+            'uuid': self.uuid,
             'username': self.username,
             'fullname': self.fullname,
             'email': self.email,
