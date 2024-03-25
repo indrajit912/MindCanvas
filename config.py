@@ -38,11 +38,13 @@ class Config:
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT') or token_hex(16)
 
 class DevelopmentConfig(Config):
+    HOST = 'http://localhost:8080'
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(Config.BASE_DIR, 'mindcanvas.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 class ProductionConfig(Config):
+    HOST = os.environ.get('HOST') or 'http://localhost:8080'
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = Config.DATABASE_URI or 'sqlite:///' + os.path.join(Config.BASE_DIR, 'mindcanvas.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False

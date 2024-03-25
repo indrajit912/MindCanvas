@@ -3,12 +3,13 @@
 # Created On: Mar 24, 2024
 #
 
-from flask import render_template, url_for, flash, redirect
+from flask import render_template, url_for, flash, redirect, request, current_app
 from flask_login import login_user, login_required, current_user, logout_user
 from sqlalchemy import desc
 
 from app.forms.auth_forms import UserLoginForm, EmailRegistrationForm, UserRegistrationForm
 from app.models.models import User, JournalEntry, Tag
+from app.api.endpoints import api
 from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
 from scripts.utils import convert_utc_to_ist
@@ -17,6 +18,7 @@ from config import EmailConfig
 
 from datetime import datetime
 import logging
+import requests
 
 from . import auth_bp
 
@@ -137,16 +139,22 @@ def register_user(token):
     form = UserRegistrationForm()
 
     if form.validate_on_submit():
-        # Create the user
-        user = User(
-            fullname=user_data['fullname'],
-            email = user_data['email'],
-            username = form.username.data
-        )
+        # Prepare data for the POST request
+        new_user_data = {
+            'fullname': user_data['fullname'],
+            'email': user_data['email'],
+            'username': form.username.data,
+            'password': form.passwd.data
+        }
 
-        # Set password for the user using the set_hashed_password method
-        user.set_hashed_password(form.passwd.data)
+        # Send POST request to the API
+        api_user_post_url = current_app.config['HOST'] + '/api/users'
+        response = requests.post(api_user_post_url, json=new_user_data)
 
-        print(user)
-    
+        if response.status_code == 201:
+            flash('User registered successfully!', 'success')
+            return redirect(url_for('auth.login'))
+        else:
+            flash('Failed to register user. Please try again.', 'danger')
+
     return render_template('register_user.html', form=form, user_data=user_data)

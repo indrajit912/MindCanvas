@@ -9,3 +9,4 @@ Flask-Login
 Flask-RESTful
 Flask-WTF
 email-validator
+requests

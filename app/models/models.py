@@ -69,6 +69,18 @@ class User(db.Model, UserMixin):
         token = auth_serializer.dumps({'id': self.id})
         return token
     
+    def json(self):
+        """Return a dictionary representation of the user."""
+        return {
+            'id': self.id,
+            'username': self.username,
+            'fullname': self.fullname,
+            'email': self.email,
+            'is_admin': self.is_admin,
+            'date_joined': self.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
+            'last_updated': self.last_updated.strftime('%Y-%m-%d %H:%M:%S')
+        }
+    
     @staticmethod
     def verify_reset_password_token(token):
         auth_serializer = URLSafeTimedSerializer(
@@ -105,6 +117,19 @@ class JournalEntry(db.Model):
 
     def __repr__(self):
         return f"JournalEntry(title={self.title}, date_created={self.date_created} [UTC])"
+    
+    def json(self):
+        """Return a dictionary representation of the journal entry."""
+        return {
+            'id': self.id,
+            'uuid': self.uuid,
+            'title': self.title,
+            'content': self.content,
+            'locked': self.locked,
+            'date_created': self.date_created.strftime('%Y-%m-%d %H:%M:%S'),
+            'last_updated': self.last_updated.strftime('%Y-%m-%d %H:%M:%S'),
+            'user_id': self.user_id,
+        }
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -117,9 +142,20 @@ class Tag(db.Model):
     # Define the foreign key relationship with User
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-
     def __repr__(self):
         return f"Tag(name={self.name})"
 
     def color_rgb(self):
         return f'rgb({self.color_red}, {self.color_green}, {self.color_blue})'
+    
+    def json(self):
+        """Return a dictionary representation of the tag."""
+        return {
+            'id': self.id,
+            'uuid': self.uuid,
+            'name': self.name,
+            'color_red': self.color_red,
+            'color_green': self.color_green,
+            'color_blue': self.color_blue,
+            'creator_id': self.creator_id,
+        }
