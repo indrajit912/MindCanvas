@@ -9,7 +9,7 @@ from wtforms.validators import DataRequired, EqualTo, Optional, Length, Email, V
 
 
 class UserLoginForm(FlaskForm):
-    email = EmailField("Email address", validators=[DataRequired()])
+    username_or_email = StringField("Username or Email address", validators=[DataRequired()])
     passwd = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Log in")
 
@@ -23,13 +23,12 @@ class EmailRegistrationForm(FlaskForm):
 
 
 class UserRegistrationForm(FlaskForm):
+    username = StringField("Username")
     passwd = PasswordField(
         "Password", 
         validators=[DataRequired(), EqualTo('confirm_passwd', message='Passwords must match')]
     )
     confirm_passwd = PasswordField("Confirm password")
-    nickname = StringField("Nickname", validators=[Optional()])
-    telegram = IntegerField("Telegram User ID", validators=[Optional()])
 
     submit = SubmitField("Register")
 

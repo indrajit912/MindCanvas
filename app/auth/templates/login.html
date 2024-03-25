@@ -1,0 +1,34 @@
+<!-- app/auth/templates/login.html -->
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+    {% include 'flash_msgs.html' %}
+
+    <h1 class="heading">Log in</h1>
+
+    <!-- Login form goes here -->
+    <form method="POST" class="form-container">
+        {{ form.hidden_tag() }}
+
+        <div class="form-floating mb-3">
+            {{ form.username_or_email(class="form-control", placeholder="johndoe344 or someone@somewhere.com") }}
+            {{ form.username_or_email.label(class="form-label") }}
+        </div>
+
+
+        <div class="form-floating mb-3">
+            {{ form.passwd(class="form-control", placeholder="password") }}
+            {{ form.passwd.label(class="form-label") }}         
+        </div>
+
+        
+        <div class="col-sm-10">
+            {{ form.submit(class="btn btn-primary") }}
+            <div class="form-text"><a href="#">Forgot password?</a></div>
+            <span class="form-text">New here? <a href="{{ url_for('auth.register_email') }}">Register now.</a></span>
+        </div> 
+    </form>
+
+{% endblock %}

@@ -63,3 +63,27 @@ h4 {
     font-size: 18px;
     font-weight: 400;
 }
+
+section {
+    padding-top: 4vh;
+    margin: 0 10rem;
+    margin-bottom: 8.7rem;
+    box-sizing: border-box;
+    min-height: fit-content;
+}
+
+.heading {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.form-container {
+    margin: 0 auto;
+    width: 50%;
+}
+
+/* Style for bootstrap icon */
+.bi {
+    width: 1.5em;
+    height: 1.5em;
+}

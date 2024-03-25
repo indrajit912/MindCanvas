@@ -1,0 +1,15 @@
+<!-- 
+  app/auth/templates/auth/dashboard.html 
+  Author: Indrajit Ghosh
+  Created On: Feb 02, 2024
+-->
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+
+{% block content %}
+    {% include 'flash_msgs.html' %}
+    Welcome, <h5 class="card-header">{{ user.fullname }}</h5>
+
+{% endblock %}

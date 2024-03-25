@@ -13,6 +13,12 @@ from secrets import token_hex
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
+class EmailConfig:
+    INDRAJITS_BOT_EMAIL_ID = os.environ.get("INDRAJITS_BOT_EMAIL_ID")
+    INDRAJITS_BOT_EMAIL_PASSWD = os.environ.get("INDRAJITS_BOT_APP_PASSWORD")
+    INDRAJIT912_GMAIL = os.environ.get("INDRAJIT912_GMAIL")
+    GMAIL_SERVER = ['smtp.gmail.com', 587]
+
 class Config:
     BASE_DIR = Path(__name__).parent.absolute()
     UPLOAD_DIR = BASE_DIR / 'uploads'
@@ -29,6 +35,7 @@ class Config:
         FLASK_ENV = 'development'
     
     SECRET_KEY = os.environ.get('SECRET_KEY') or token_hex(16)
+    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT') or token_hex(16)
 
 class DevelopmentConfig(Config):
     DEBUG = True
