@@ -62,6 +62,7 @@ class User(db.Model, UserMixin):
 
     journal_entries = db.relationship('JournalEntry', backref='author', lazy=True, cascade="all, delete-orphan")
     tags = db.relationship('Tag', backref='creator', lazy=True, cascade="all, delete-orphan")
+    devices = db.relationship('Device', backref='user', lazy=True, cascade="all, delete-orphan")
 
     def __repr__(self):
         """Representation of the User object."""
@@ -228,3 +229,43 @@ class Tag(db.Model):
             'color_blue': self.color_blue,
             'creator_id': self.creator_id,
         }
+    
+
+class Device(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80))
+    key = db.Column(db.String(80))
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __init__(self, name, user_id, date_created, key=None):
+        self.name = name
+        self.user_id = user_id
+        self.key = key or uuid.uuid4().hex
+        self.date_created = date_created
+
+    def json(self):
+        return {
+            'device_name': self.name, 
+            'device_key': self.key, 
+            'user_id': self.user_id,
+            'date_created': self.date_created
+        }
+
+    @classmethod
+    def find_by_name(cls, device_name):
+        return cls.query.filter_by(name=device_name).first()
+
+    @classmethod
+    def find_by_device_key(cls, device_key):
+        return cls.query.filter_by(key=device_key).first()
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete_from_db(self):
+        db.session.delete(self)
+        db.session.commit()

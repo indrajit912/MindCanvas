@@ -53,6 +53,9 @@ def create_app(config_class=get_config()):
     from app.api.users import UserResource
     api.add_resource(UserResource, '/user', '/user/<int:user_id>')
 
+    from app.api.devices import AddDevice
+    api.add_resource(AddDevice, '/user/add-device')
+
     # Register blueprints
     from app.main import main_bp
     app.register_blueprint(main_bp)
