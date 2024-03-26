@@ -42,7 +42,7 @@ def convert_utc_to_ist_str(dt):
         dt (datetime.datetime): A datetime object with timezone information UTC.
 
     Returns:
-        str: A string representation of the datetime object in IST format (e.g., "Tue, 26 Mar 2024 07:51:18 PM [IST]").
+        str: A string representation of the datetime object in IST format (e.g., "Tue, 26 Mar 2024 07:51:18 PM (IST)").
     """
     # Add 5 hours and 30 minutes to the datetime object
     dt_ist = dt + timedelta(hours=5, minutes=30)
