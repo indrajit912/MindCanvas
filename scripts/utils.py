@@ -6,6 +6,17 @@
 #
 import hashlib
 from datetime import datetime, timedelta, timezone
+import pytz
+
+
+def utcnow():
+    """
+    Get the current UTC datetime.
+
+    Returns:
+        datetime: A datetime object representing the current UTC time.
+    """
+    return datetime.now(timezone.utc)
 
 def sha256_hash(raw_text:str):
     """Hash the given text using SHA-256 algorithm.
@@ -24,7 +35,7 @@ def sha256_hash(raw_text:str):
     return hashed
 
 
-def convert_utc_to_ist(utc_datetime_str:str):
+def convert_utc_to_ist_old(utc_datetime_str:str):
     """
     Convert a UTC datetime string to Indian Standard Time (IST) format.
 
@@ -52,3 +63,42 @@ def convert_utc_to_ist(utc_datetime_str:str):
     formatted_datetime = ist_datetime.strftime("%b %d, %Y %I:%M %p IST")
 
     return formatted_datetime
+
+def convert_utc_to_ist(utc_datetime):
+    """
+    Convert a UTC datetime object to Indian Standard Time (IST).
+
+    Args:
+        utc_datetime (datetime): A datetime object in UTC timezone.
+
+    Returns:
+        datetime: A datetime object converted to IST timezone.
+    """
+    return utc_datetime.astimezone(tz=pytz.timezone('Asia/Kolkata'))
+
+
+def format_datetime_with_timezone(dt):
+    """
+    Convert a timezone-aware datetime object into a string in the format '%b %d, %Y %I:%M %p [TIMEZONE]'.
+
+    Args:
+        dt (datetime): A timezone-aware datetime object.
+
+    Returns:
+        str: A string representing the datetime in the specified format with timezone.
+    """
+    # Format the datetime string
+    formatted_datetime = dt.strftime("%b %d, %Y %I:%M %p") + " [" + dt.tzname() + "]"
+
+    return formatted_datetime
+
+
+if __name__ == '__main__':
+
+    print(convert_utc_to_ist(utcnow()))
+
+    conv_time = utcnow().astimezone(tz=pytz.timezone('Asia/Kolkata'))
+
+    print(conv_time)
+
+    print(format_datetime_with_timezone(conv_time))

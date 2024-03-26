@@ -12,7 +12,7 @@ from datetime import datetime
 import secrets
 import uuid
 
-from scripts.utils import sha256_hash
+from scripts.utils import sha256_hash, utcnow
 
 # Association Table for many-to-many relationship between JournalEntry and Tag
 journal_entry_tag_association = db.Table(
@@ -50,19 +50,18 @@ class User(db.Model, UserMixin):
     """
 
     id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String(36), unique=True, nullable=False, default=str(uuid.uuid4()))
+    uuid = db.Column(db.String(36), unique=True, nullable=False, default=uuid.uuid4().hex)
     username = db.Column(db.String(100), unique=True, nullable=False)
     fullname = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     password_salt = db.Column(db.String(32), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
-    date_joined = db.Column(db.DateTime, default=datetime.utcnow())
-    last_updated = db.Column(db.DateTime, default=datetime.utcnow())
+    date_joined = db.Column(db.DateTime, default=utcnow())
+    last_updated = db.Column(db.DateTime, default=utcnow())
 
     journal_entries = db.relationship('JournalEntry', backref='author', lazy=True, cascade="all, delete-orphan")
     tags = db.relationship('Tag', backref='creator', lazy=True, cascade="all, delete-orphan")
-    devices = db.relationship('Device', backref='user', lazy=True, cascade="all, delete-orphan")
 
     def __repr__(self):
         """Representation of the User object."""
@@ -136,8 +135,8 @@ class User(db.Model, UserMixin):
             'fullname': self.fullname,
             'email': self.email,
             'is_admin': self.is_admin,
-            'date_joined': self.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
-            'last_updated': self.last_updated.strftime('%Y-%m-%d %H:%M:%S')
+            'date_joined': self.date_joined,
+            'last_updated': self.last_updated
         }
     
     @staticmethod
@@ -170,12 +169,12 @@ class User(db.Model, UserMixin):
 
 class JournalEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String(36), unique=True, nullable=False, default=str(uuid.uuid4()))
+    uuid = db.Column(db.String(36), unique=True, nullable=False, default=uuid.uuid4().hex)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     locked = db.Column(db.Boolean, default=False)
-    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
-    last_updated = db.Column(db.DateTime, default=datetime.utcnow())
+    date_created = db.Column(db.DateTime, nullable=False, default=utcnow())
+    last_updated = db.Column(db.DateTime, default=utcnow())
 
     # Define foreign key relationship with User
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -194,20 +193,20 @@ class JournalEntry(db.Model):
             'title': self.title,
             'content': self.content,
             'locked': self.locked,
-            'date_created': self.date_created.strftime('%Y-%m-%d %H:%M:%S'),
-            'last_updated': self.last_updated.strftime('%Y-%m-%d %H:%M:%S'),
+            'date_created': self.date_created,
+            'last_updated': self.last_updated,
             'user_id': self.user_id,
         }
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String(36), unique=True, nullable=False, default=str(uuid.uuid4()))
+    uuid = db.Column(db.String(36), unique=True, nullable=False, default=uuid.uuid4().hex)
     name = db.Column(db.String(50), nullable=False)
     color_red = db.Column(db.Integer, nullable=False)
     color_green = db.Column(db.Integer, nullable=False)
     color_blue = db.Column(db.Integer, nullable=False)
-    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
-    last_updated = db.Column(db.DateTime, default=datetime.utcnow())
+    date_created = db.Column(db.DateTime, nullable=False, default=utcnow())
+    last_updated = db.Column(db.DateTime, default=utcnow())
 
     # Define the foreign key relationship with User
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -228,44 +227,7 @@ class Tag(db.Model):
             'color_green': self.color_green,
             'color_blue': self.color_blue,
             'creator_id': self.creator_id,
+            'date_created': self.date_created,
+            'last_updated': self.last_updated
         }
     
-
-class Device(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80))
-    key = db.Column(db.String(80))
-    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
-
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-    def __init__(self, name, user_id, date_created, key=None):
-        self.name = name
-        self.user_id = user_id
-        self.key = key or uuid.uuid4().hex
-        self.date_created = date_created
-
-    def json(self):
-        return {
-            'device_name': self.name, 
-            'device_key': self.key, 
-            'user_id': self.user_id,
-            'date_created': self.date_created
-        }
-
-    @classmethod
-    def find_by_name(cls, device_name):
-        return cls.query.filter_by(name=device_name).first()
-
-    @classmethod
-    def find_by_device_key(cls, device_key):
-        return cls.query.filter_by(key=device_key).first()
-
-    def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
-
-    def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()
