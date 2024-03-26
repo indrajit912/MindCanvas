@@ -8,7 +8,6 @@ from app.extensions import db
 from itsdangerous import URLSafeTimedSerializer
 from flask import current_app
 from flask_login import UserMixin
-from datetime import datetime
 import secrets
 import uuid
 
@@ -65,7 +64,7 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         """Representation of the User object."""
-        return f"User(username={self.username}, email={self.email}, created_at={self.date_joined} [UTC])"
+        return f"User(username={self.username}, email={self.email}, created_at={self.date_joined})"
     
     def set_hashed_password(self, password):
         """
@@ -183,7 +182,7 @@ class JournalEntry(db.Model):
     tags = db.relationship('Tag', secondary=journal_entry_tag_association, backref=db.backref('journal_entries', lazy='dynamic'))
 
     def __repr__(self):
-        return f"JournalEntry(title={self.title}, date_created={self.date_created} [UTC])"
+        return f"JournalEntry(title={self.title}, date_created={self.date_created})"
     
     def json(self):
         """Return a dictionary representation of the journal entry."""

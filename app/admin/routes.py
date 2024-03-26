@@ -9,7 +9,7 @@ from sqlalchemy import desc
 from app.models.models import User, JournalEntry, Tag
 from app.utils.decorators import admin_required
 from config import EmailConfig
-from scripts.utils import convert_utc_to_ist
+from scripts.utils import convert_utc_to_ist_str
 
 from datetime import datetime
 import logging
@@ -31,7 +31,7 @@ def home():
     return render_template(
         'admin.html', 
         users=users,
-        convert_utc_to_ist=convert_utc_to_ist,
+        convert_utc_to_ist_str=convert_utc_to_ist_str,
         host=current_app.config['HOST'],
         token = current_app.config['SECRET_API_TOKEN']
     )

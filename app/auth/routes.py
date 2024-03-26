@@ -11,7 +11,6 @@ from app.forms.auth_forms import UserLoginForm, EmailRegistrationForm, UserRegis
 from app.models.models import User, JournalEntry, Tag
 from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
-from scripts.utils import convert_utc_to_ist
 from scripts.email_message import EmailMessage
 from config import EmailConfig
 
@@ -62,8 +61,7 @@ def dashboard():
     return render_template(
         'dashboard.html', 
         user=user,
-        user_journal_entries = user_journal_entries,
-        convert_utc_to_ist=convert_utc_to_ist
+        user_journal_entries = user_journal_entries
     )
 
 
