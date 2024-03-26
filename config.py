@@ -20,10 +20,12 @@ class EmailConfig:
     GMAIL_SERVER = ['smtp.gmail.com', 587]
 
 class Config:
+    FLASK_APP = 'MindCanvas'
     API_KEY = 'here_is_api_key'
+
     BASE_DIR = Path(__name__).parent.absolute()
-    UPLOAD_DIR = BASE_DIR / 'uploads'
-    LOG_FILE = BASE_DIR / 'app.log'
+    LOG_FILE = BASE_DIR / f'{FLASK_APP.lower()}.log'
+    
     PORT = os.environ.get("PORT") or 8080
     DATABASE_URI = os.environ.get("DATABASE_URI")
 
@@ -41,13 +43,14 @@ class Config:
 class DevelopmentConfig(Config):
     HOST = 'http://localhost:8080'
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(Config.BASE_DIR, 'mindcanvas.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(Config.BASE_DIR, f'{Config.FLASK_APP.lower()}.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 class ProductionConfig(Config):
     HOST = os.environ.get('HOST') or 'http://localhost:8080'
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = Config.DATABASE_URI or 'sqlite:///' + os.path.join(Config.BASE_DIR, 'mindcanvas.db')
+    SQLALCHEMY_DATABASE_URI = Config.DATABASE_URI or \
+        'sqlite:///' + os.path.join(Config.BASE_DIR, f'{Config.FLASK_APP.lower()}.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 def get_config():

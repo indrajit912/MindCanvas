@@ -148,7 +148,7 @@ def register_user(token):
         }
 
         # Send POST request to the API
-        api_user_post_url = current_app.config['HOST'] + '/api/users'
+        api_user_post_url = current_app.config['HOST'] + '/api/user'
         response = requests.post(api_user_post_url, json=new_user_data)
 
         if response.status_code == 201:

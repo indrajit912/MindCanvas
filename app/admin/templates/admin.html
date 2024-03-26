@@ -28,7 +28,7 @@
                     <br>
                     <strong>Admin:</strong> <code>{{ user.is_admin }}</code>
                     <br>
-                    <strong>Date Joined:</strong> <code>{{ convert_utc_to_ist(user.last_updated.strftime("%Y-%m-%d %H:%M:%S")) }}</code>
+                    <strong>Date Joined:</strong> <code>{{ convert_utc_to_ist(user.date_joined.strftime("%Y-%m-%d %H:%M:%S")) }}</code>
                     <br>
                     <!-- TODO: Remove the following -->
                     <strong>Journal Entries:</strong>

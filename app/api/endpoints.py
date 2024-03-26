@@ -7,6 +7,7 @@ from flask import jsonify
 from flask_restful import Api, Resource, reqparse
 from app.models.models import User
 from app.extensions import db
+from datetime import datetime
 
 from . import api_bp
 
@@ -109,6 +110,9 @@ class UserResource(Resource):
             user.is_admin = args.get('is_admin')
         if args.get('password'):
             user.set_hashed_password(args.get('password'))
+
+        # Change last updated info
+        user.last_updated = datetime.utcnow()
 
         # Commit changes to the database
         db.session.commit()
