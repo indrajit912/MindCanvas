@@ -21,7 +21,6 @@ class EmailConfig:
 
 class Config:
     FLASK_APP = 'MindCanvas'
-    API_KEY = 'here_is_api_key'
 
     BASE_DIR = Path(__name__).parent.absolute()
     LOG_FILE = BASE_DIR / f'{FLASK_APP.lower()}.log'
@@ -38,6 +37,7 @@ class Config:
         FLASK_ENV = 'development'
     
     SECRET_KEY = os.environ.get('SECRET_KEY') or token_hex(16)
+    SECRET_API_TOKEN = os.environ.get('SECRET_API_TOKEN') or token_hex(16)
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT') or token_hex(16)
 
 class DevelopmentConfig(Config):

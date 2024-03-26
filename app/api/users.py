@@ -7,6 +7,7 @@ from flask import jsonify
 from flask_restful import Resource, reqparse
 from app.models.models import User
 from app.extensions import db
+from app.utils.decorators import token_required
 from datetime import datetime
 
 
@@ -14,13 +15,14 @@ class UsersResource(Resource):
     """
     - GET /api/users - Get all users in the db
     """
+    @token_required
     def get(self):
         users = {'users': [u.json() for u in User.query.all()]}
         return jsonify(users)
+    
 
 class UserResource(Resource):
     """
-    TODO: Add API_KEY base authentication
     Once your Flask app is running, you can access the APIs by sending HTTP requests to the specified endpoints. 
     For example:
 
@@ -29,11 +31,12 @@ class UserResource(Resource):
      - PUT /api/user/<user_id> - Update a specific user
      - DELETE /api/user/<user_id> - Delete a specific user
     """
-
+    @token_required
     def get(self, user_id):
         user = User.query.get_or_404(user_id)
         return jsonify(user.json())
     
+    @token_required
     def post(self):
 
         parser = reqparse.RequestParser()
@@ -70,6 +73,7 @@ class UserResource(Resource):
 
         return new_user.json(), 201
 
+    @token_required
     def put(self, user_id): 
 
         parser = reqparse.RequestParser()
@@ -116,6 +120,7 @@ class UserResource(Resource):
 
         return {'message': 'User updated successfully'}, 200
 
+    @token_required
     def delete(self, user_id):
         # Retrieve the user to delete
         user = User.query.get_or_404(user_id)

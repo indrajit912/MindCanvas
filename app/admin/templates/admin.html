@@ -61,7 +61,7 @@
                         
                             <div class="modal-footer">
                               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                              <button type="button" id="delUser{{ user.id }}" class="btn btn-danger" onclick='deleteUser("{{ user.id }}")'>
+                              <button type="button" id="delUser{{ user.id }}" class="btn btn-danger" onclick='deleteUser("{{ user.id }}", "{{ token }}")'>
                                 Delete
                              </button>
                             </div>
@@ -74,62 +74,6 @@
 
                 <!-- End of Delete btn logic -->
 
-                {% if current_user.email == indrajit %}
-
-                    <!-- Admin toggler -->
-                    <button
-                      type="button"
-                      class="btn btn-danger me-md-2 btn-sm"
-                      data-bs-toggle="modal"
-                      data-bs-target="#adminTogglerModal{{ user.id }}"
-                    >
-                        {% if user.is_admin %}
-                            Disable Admin
-                        {% else %}
-                            Make Admin
-                        {% endif %}
-                    </button>
-
-                    <!-- Admin status Modal -->
-                    <div class="modal fade" id="adminTogglerModal{{ user.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="adminTogglerModalLabel{{ user.id }}" aria-hidden="true">
-                        <div class="modal-dialog">
-                          <div class="modal-content">
-
-                            <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="adminTogglerModalLabel{{ user.id }}">
-                                    {% if user.is_admin %}
-                                        Disable '{{ user.fullname }}' from admin ?
-                                    {% else %}
-                                        Make '{{ user.fullname }}' admin ?
-                                    {% endif %}
-                                </h1>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-
-                            <div class="modal-body">
-                              Ensure that you are certain about toggling the admin status of that user.
-                            </div>
-
-                            <div class="modal-footer">
-                            <!-- TODO: Post request to the api -->
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                              <form method="post" action="#" style="display: inline;">
-                                    {% if user.is_admin %}
-                                        <button type="submit" class="btn btn-danger">Disable Admin</button>
-                                    {% else %}
-                                        <button type="submit" class="btn btn-danger">Make Admin</button>
-                                    {% endif %}
-                              </form>
-                               
-                            </div>
-
-                          </div>
-                        </div>
-                    </div>
-
-                {% endif %}
-                <!-- End of admin toggling -->
-
                 <br><br>
                 <p class="card-text"><small class="text-body-secondary">Last updated: {{ convert_utc_to_ist(user.last_updated.strftime("%Y-%m-%d %H:%M:%S")) }}</small></p>
 
@@ -141,40 +85,28 @@
     </div>
 
     <script>
-        function deleteUser(userId) {
-            fetch(`/api/users/${userId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    // If the response is successful, return the success message
-                    return response.json();
-                } else {
-                    // If there's an error response, handle it accordingly
-                    return response.json().then(error => {
-                        console.error('Error:', error.message);
-                        // Optionally display an error message to the user
-                        alert('Error deleting user: ' + error.message);
-                        throw new Error('Error deleting user: ' + error.message); // Propagate the error to catch block
-                    });
-                }
-            })
-            .then(data => {
-                // Handle the success response here
-                console.log('Success:', data.message);
-                alert(data.message); // Alert the success message to the user
-                // Optionally, you can reload the page here if needed
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Handle any network errors
-                alert('Network error while deleting user. Please try again.');
-            });
-        }
-    </script>
+      async function deleteUser(userId, token) {
+          const host = "{{ host }}"; // Replace "{{ HOST }}" with the actual host value passed through render_template()
+          const url = `${host}/api/user/${userId}`;
+          const options = {
+              method: 'DELETE',
+              headers: {
+                  'Authorization': `Bearer ${token}`
+              }
+          };
+
+          try {
+              const response = await fetch(url, options);
+              if (!response.ok) {
+                  const errorData = await response.json();
+                  throw new Error(errorData.message || 'Failed to delete user');
+              }
+              return 'User deleted successfully';
+          } catch (error) {
+              console.error('Error:', error.message);
+              return error.message;
+          }
+      }
+  </script>
 
 {% endblock %}

@@ -4,10 +4,23 @@
 
 from functools import wraps
 
-from flask import flash, redirect, url_for, request, jsonify
+from flask import flash, redirect, url_for, request, jsonify, make_response
 from flask_login import current_user
 
 from config import EmailConfig, Config
+
+def token_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.headers.get('Authorization')
+
+        if not token or token != f"Bearer {Config.SECRET_API_TOKEN}":
+            response = make_response(jsonify({'message': 'Unauthorized!.'}))
+            response.status_code = 401
+            return response
+
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 def logout_required(func):
