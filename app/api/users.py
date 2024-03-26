@@ -4,14 +4,11 @@
 # Created On: Mar 25, 2024
 # 
 from flask import jsonify
-from flask_restful import Api, Resource, reqparse
+from flask_restful import Resource, reqparse
 from app.models.models import User
 from app.extensions import db
 from datetime import datetime
 
-from . import api_bp
-
-api = Api(api_bp)
 
 class UsersResource(Resource):
     """
@@ -129,6 +126,3 @@ class UserResource(Resource):
 
         return {'message': 'User deleted successfully'}, 200
 
-
-api.add_resource(UsersResource, '/users')
-api.add_resource(UserResource, '/user', '/user/<int:user_id>')

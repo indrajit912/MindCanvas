@@ -9,7 +9,6 @@ from sqlalchemy import desc
 
 from app.forms.auth_forms import UserLoginForm, EmailRegistrationForm, UserRegistrationForm
 from app.models.models import User, JournalEntry, Tag
-from app.api.endpoints import api
 from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
 from scripts.utils import convert_utc_to_ist

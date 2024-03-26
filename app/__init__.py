@@ -4,6 +4,7 @@
 # Created On: Mar 24, 2024
 
 from flask import Flask
+from flask_restful import Api
 import logging
 from config import get_config, LOG_FILE
 from .extensions import db, migrate, login_manager
@@ -28,6 +29,9 @@ def create_app(config_class=get_config()):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
+    # Initializing api
+    api = Api(app, prefix='/api')
+
     # Configure logging
     configure_logging(app)
 
@@ -42,14 +46,19 @@ def create_app(config_class=get_config()):
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
 
+    # Register api resources
+    from app.api.users import UsersResource
+    api.add_resource(UsersResource, '/users')
+
+    from app.api.users import UserResource
+    api.add_resource(UserResource, '/user', '/user/<int:user_id>')
+
+    # Register blueprints
     from app.main import main_bp
     app.register_blueprint(main_bp)
 
     from app.auth import auth_bp
     app.register_blueprint(auth_bp)
-
-    from app.api import api_bp
-    app.register_blueprint(api_bp)
 
     from app.admin import admin_bp
     app.register_blueprint(admin_bp)
