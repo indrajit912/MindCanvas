@@ -3,15 +3,13 @@
 # Created On: Feb 02, 2024
 #
 from flask import render_template, url_for, flash, redirect, request, current_app
-from flask_login import login_user, login_required, current_user, logout_user
+from flask_login import current_user
 from sqlalchemy import desc
 
 from app.models.models import User, JournalEntry, Tag
 from app.utils.decorators import admin_required
-from config import EmailConfig
 from scripts.utils import convert_utc_to_ist_str
 
-from datetime import datetime
 import logging
 import requests
 
@@ -47,7 +45,10 @@ def delete_user():
         headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"}
     )
     if response.status_code == 200:
+        logger.info(f"A user has been deleted by the administrator: `{current_user.username}`")
         flash("User deleted successfully!", "success")
     else:
-        flash("Error occurred while deletion. Try again", 'error')
+        logger.error(f"An error occurred while deleting the user with ID {user_id}. Admin: `{current_user.username}`.")
+        flash("An error occurred during user deletion. Please try again.", 'error')
     return redirect(url_for('admin.home'))
+

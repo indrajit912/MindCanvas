@@ -146,12 +146,19 @@ def register_user(token):
 
         # Send POST request to the API
         api_user_post_url = current_app.config['HOST'] + '/api/user'
-        response = requests.post(api_user_post_url, json=new_user_data)
+        response = requests.post(
+            api_user_post_url, 
+            json=new_user_data,
+            headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"}
+        )
 
-        if response.status_code == 201:
-            flash('User registered successfully!', 'success')
+        if response.status_code == 200:
+            # TODO: Capture the user_json sent by the POST request.
+            logger.info(f"A new user registered.")
+            flash('You are registered successfully!', 'success')
             return redirect(url_for('auth.login'))
         else:
+            logger.error("Failed to register the user.")
             flash('Failed to register user. Please try again.', 'danger')
 
     return render_template('register_user.html', form=form, user_data=user_data)
