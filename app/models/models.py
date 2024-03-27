@@ -49,15 +49,15 @@ class User(db.Model, UserMixin):
     """
 
     id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String(36), unique=True, nullable=False, default=uuid.uuid4().hex)
+    uuid = db.Column(db.String(36), unique=True, nullable=False, default=lambda: uuid.uuid4().hex)
     username = db.Column(db.String(100), unique=True, nullable=False)
     fullname = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     password_salt = db.Column(db.String(32), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
-    date_joined = db.Column(db.DateTime, default=utcnow())
-    last_updated = db.Column(db.DateTime, default=utcnow())
+    date_joined = db.Column(db.DateTime, default=utcnow)
+    last_updated = db.Column(db.DateTime, default=utcnow)
 
     journal_entries = db.relationship('JournalEntry', backref='author', lazy=True, cascade="all, delete-orphan")
     tags = db.relationship('Tag', backref='creator', lazy=True, cascade="all, delete-orphan")
@@ -168,12 +168,12 @@ class User(db.Model, UserMixin):
 
 class JournalEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String(36), unique=True, nullable=False, default=uuid.uuid4().hex)
+    uuid = db.Column(db.String(36), unique=True, nullable=False, default=lambda: uuid.uuid4().hex)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     locked = db.Column(db.Boolean, default=False)
-    date_created = db.Column(db.DateTime, nullable=False, default=utcnow())
-    last_updated = db.Column(db.DateTime, default=utcnow())
+    date_created = db.Column(db.DateTime, nullable=False, default=lambda: utcnow)
+    last_updated = db.Column(db.DateTime, default=utcnow)
 
     # Define foreign key relationship with User
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -199,13 +199,13 @@ class JournalEntry(db.Model):
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String(36), unique=True, nullable=False, default=uuid.uuid4().hex)
+    uuid = db.Column(db.String(36), unique=True, nullable=False, default=lambda: uuid.uuid4().hex)
     name = db.Column(db.String(50), nullable=False)
     color_red = db.Column(db.Integer, nullable=False)
     color_green = db.Column(db.Integer, nullable=False)
     color_blue = db.Column(db.Integer, nullable=False)
-    date_created = db.Column(db.DateTime, nullable=False, default=utcnow())
-    last_updated = db.Column(db.DateTime, default=utcnow())
+    date_created = db.Column(db.DateTime, nullable=False, default=utcnow)
+    last_updated = db.Column(db.DateTime, default=utcnow)
 
     # Define the foreign key relationship with User
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

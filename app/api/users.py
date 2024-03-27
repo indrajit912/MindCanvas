@@ -45,7 +45,6 @@ class UserResource(Resource):
         parser.add_argument('email', type=str, required=True, help='Email is required')
         parser.add_argument('username', type=str, required=True, help='Username is required')
         parser.add_argument('password', type=str, required=True, help='Password is required')
-        parser.add_argument('is_admin', type=bool, default=False)
         
         args = parser.parse_args()
 
@@ -64,7 +63,6 @@ class UserResource(Resource):
             fullname=args['fullname'],
             email=args['email'],
             username=args['username'],
-            is_admin=args['is_admin']
         )
         new_user.set_hashed_password(args['password'])
 

@@ -34,3 +34,13 @@ def home():
         convert_utc_to_ist_str=convert_utc_to_ist_str,
         token = current_app.config['SECRET_API_TOKEN']
     )
+
+# Route to handle the POST request to delete the user
+@admin_bp.route('/delete_user', methods=['POST'])
+def delete_user():
+    user_id = request.form['user_id']  # Assuming user_id is sent as form data
+    print(user_id)
+
+
+
+
