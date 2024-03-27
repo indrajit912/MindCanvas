@@ -11,13 +11,8 @@ from flask_login import UserMixin
 import secrets
 import uuid
 from scripts.utils import sha256_hash, utcnow
+from app.models.tag import Tag
 
-# Association Table for many-to-many relationship between JournalEntry and Tag
-journal_entry_tag_association = db.Table(
-    'journal_entry_tag',
-    db.Column('journal_entry_id', db.Integer, db.ForeignKey('journal_entry.id'), primary_key=True),
-    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), primary_key=True)
-)
 
 class User(db.Model, UserMixin):
     """
@@ -177,69 +172,4 @@ class User(db.Model, UserMixin):
             return None  # Invalid token structure
         
         return User.query.get(user_id)
-    
-
-class JournalEntry(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String(36), unique=True, nullable=False, default=lambda: uuid.uuid4().hex)
-    title = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    locked = db.Column(db.Boolean, default=False)
-    date_created = db.Column(db.DateTime, nullable=False, default=lambda: utcnow)
-    last_updated = db.Column(db.DateTime, default=utcnow)
-
-    # Define foreign key relationship with User
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-    # Define many-to-many relationship with Tag
-    tags = db.relationship('Tag', secondary=journal_entry_tag_association, backref=db.backref('journal_entries', lazy='dynamic'))
-
-    def __repr__(self):
-        return f"JournalEntry(title={self.title}, date_created={self.date_created})"
-    
-    def json(self):
-        """Return a dictionary representation of the journal entry."""
-        return {
-            'id': self.id,
-            'uuid': self.uuid,
-            'title': self.title,
-            'content': self.content,
-            'locked': self.locked,
-            'date_created': User.format_datetime_to_str(self.date_created),
-            'last_updated': User.format_datetime_to_str(self.last_updated),
-            'user_id': self.user_id,
-        }
-
-class Tag(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String(36), unique=True, nullable=False, default=lambda: uuid.uuid4().hex)
-    name = db.Column(db.String(50), nullable=False)
-    color_red = db.Column(db.Integer, nullable=False)
-    color_green = db.Column(db.Integer, nullable=False)
-    color_blue = db.Column(db.Integer, nullable=False)
-    date_created = db.Column(db.DateTime, nullable=False, default=utcnow)
-    last_updated = db.Column(db.DateTime, default=utcnow)
-
-    # Define the foreign key relationship with User
-    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-    def __repr__(self):
-        return f"Tag(name={self.name})"
-
-    def color_rgb(self):
-        return f'rgb({self.color_red}, {self.color_green}, {self.color_blue})'
-    
-    def json(self):
-        """Return a dictionary representation of the tag."""
-        return {
-            'id': self.id,
-            'uuid': self.uuid,
-            'name': self.name,
-            'color_red': self.color_red,
-            'color_green': self.color_green,
-            'color_blue': self.color_blue,
-            'creator_id': self.creator_id,
-            'date_created': User.format_datetime_to_str(self.date_created),
-            'last_updated': User.format_datetime_to_str(self.last_updated)
-        }
     

@@ -6,7 +6,7 @@ from flask import render_template, url_for, flash, redirect, request, current_ap
 from flask_login import current_user
 from sqlalchemy import desc
 
-from app.models.models import User, JournalEntry, Tag
+from app.models.user import User
 from app.utils.decorators import admin_required
 from scripts.utils import convert_utc_to_ist_str
 

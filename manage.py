@@ -10,7 +10,7 @@ import logging
 
 from app.extensions import db
 from app import create_app
-from app.models.models import User, JournalEntry, Tag
+from app.models.user import User
 
 cli = FlaskGroup(create_app=create_app)
 logger = logging.getLogger(__name__)

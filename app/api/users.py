@@ -5,7 +5,7 @@
 # 
 from flask import jsonify
 from flask_restful import Resource, reqparse
-from app.models.models import User
+from app.models.user import User
 from app.extensions import db
 from app.utils.decorators import token_required
 from scripts.utils import utcnow

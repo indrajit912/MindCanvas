@@ -3,18 +3,18 @@
 # Created On: Mar 24, 2024
 #
 
-from flask import render_template, url_for, flash, redirect, request, current_app
+from flask import render_template, url_for, flash, redirect, current_app
 from flask_login import login_user, login_required, current_user, logout_user
 from sqlalchemy import desc
 
 from app.forms.auth_forms import UserLoginForm, EmailRegistrationForm, UserRegistrationForm
-from app.models.models import User, JournalEntry, Tag
+from app.models.user import User
+from app.models.journal_entry import JournalEntry
 from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
 from scripts.email_message import EmailMessage
 from config import EmailConfig
 
-from datetime import datetime
 import logging
 import requests
 

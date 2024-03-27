@@ -67,7 +67,7 @@ def create_app(config_class=get_config()):
     @login_manager.user_loader
     def load_user(user_id):
         # Replace this with the actual code to load a user from the database
-        from app.models.models import User  # Import your User model
+        from app.models.user import User  # Import your User model
         return User.query.get(int(user_id))
 
     @app.route('/test/')
