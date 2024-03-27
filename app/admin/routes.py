@@ -32,6 +32,5 @@ def home():
         'admin.html', 
         users=users,
         convert_utc_to_ist_str=convert_utc_to_ist_str,
-        host=current_app.config['HOST'],
         token = current_app.config['SECRET_API_TOKEN']
     )

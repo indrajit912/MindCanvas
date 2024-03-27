@@ -35,16 +35,17 @@
                             {{ user.journal_entries }}
                 </p>
 
+
                 <!-- Start of Delete user btn logic -->
 
                 {% if user.id == current_user.id or user.email == indrajit %}
-                    <button type="button" class="btn btn-danger btn-sm" disabled>Delete User</button>
+                <button type="button" class="btn btn-danger btn-sm" disabled>Delete User</button>
                 {% else %}
 
                     <button type="button" class="btn btn-danger me-md-2 btn-sm" data-bs-toggle="modal" data-bs-target="#userDelBtn{{ user.id }}">
                       Delete User
                     </button>
-
+                
                     <!-- Delete Modal -->
                     <div class="modal fade" id="userDelBtn{{ user.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="userDelBtnLabel{{ user.id }}" aria-hidden="true">
                         <div class="modal-dialog">
@@ -60,19 +61,19 @@
                             </div>
                         
                             <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                              <button type="button" id="delUser{{ user.id }}" class="btn btn-danger" onclick='deleteUser("{{ user.id }}", "{{ token }}")'>
-                                Delete
-                             </button>
+                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                              <button type="button" class="btn btn-danger btn-sm" onclick="deleteUser('{{ user.id }}')">
+                                Delete User
+                              </button> 
                             </div>
                         
                           </div>
                         </div>
                     </div>
-
+                
                 {% endif %}
-
-                <!-- End of Delete btn logic -->
+                
+                <!-- End of Delete user btn logic -->
 
                 <br><br>
                 <p class="card-text"><small class="text-body-secondary">Last updated: {{ convert_utc_to_ist_str(user.last_updated) }}</small></p>
@@ -83,30 +84,52 @@
         {% endfor %}
 
     </div>
-
+  
     <script>
-      async function deleteUser(userId, token) {
-          const host = "{{ host }}"; // Replace "{{ HOST }}" with the actual host value passed through render_template()
-          const url = `${host}/api/user/${userId}`;
-          const options = {
+      function deleteUser(userId) {
+          userId = parseInt(userId); // Convert userId to an integer
+          
+          const url = `/api/user/${userId}`;
+          const token = "{{ token }}"; // Assuming you have access to the token here
+          
+          fetch(url, {
               method: 'DELETE',
               headers: {
-                  'Authorization': `Bearer ${token}`
+                  'Authorization': `Bearer ${token}` // Use the token here
               }
-          };
-
-          try {
-              const response = await fetch(url, options);
-              if (!response.ok) {
-                  const errorData = await response.json();
-                  throw new Error(errorData.message || 'Failed to delete user');
+          })
+          .then(response => {
+              if (response.ok) {
+                  return response.json(); // Parse response body as JSON
+              } else {
+                  throw new Error('Failed to delete user');
               }
-              return 'User deleted successfully';
-          } catch (error) {
-              console.error('Error:', error.message);
-              return error.message;
-          }
+          })
+          .then(data => {
+              // Check if the response contains the success message
+              if (data.message === 'User deleted successfully') {
+                  // User deleted successfully, alert the user and then reload the page
+                  alert(`User deleted successfully`);
+                  // Reload the page
+                  window.location.reload();
+              } else {
+                  // Handle unexpected response
+                  console.error('Unexpected response:', data);
+                  // Optionally show an error message to the user
+                  alert('An unexpected response was received from the server.');
+              }
+          })
+          .catch(error => {
+              // Handle errors
+              console.error('Error:', error);
+              // Optionally show an error message to the user
+              alert('An error occurred while deleting the user. Please try again later.');
+          });
       }
   </script>
+  
+  
+  
+  
 
 {% endblock %}

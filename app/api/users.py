@@ -3,7 +3,7 @@
 # Author: Indrajit Ghosh
 # Created On: Mar 25, 2024
 # 
-from flask import jsonify
+from flask import jsonify, make_response
 from flask_restful import Resource, reqparse
 from app.models.models import User
 from app.extensions import db
@@ -72,7 +72,7 @@ class UserResource(Resource):
         db.session.add(new_user)
         db.session.commit()
 
-        return new_user.json(), 201
+        return make_response(new_user.json(), 201)
 
     @token_required
     def put(self, user_id): 
