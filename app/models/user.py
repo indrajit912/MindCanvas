@@ -1,4 +1,4 @@
-# Models for the app
+# app/models/user.py
 # 
 # Author: Indrajit Ghosh
 # Created On: Mar 24, 2024

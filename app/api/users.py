@@ -3,7 +3,6 @@
 # Author: Indrajit Ghosh
 # Created On: Mar 25, 2024
 # 
-from flask import jsonify
 from flask_restful import Resource, reqparse
 from app.models.user import User
 from app.extensions import db
@@ -13,11 +12,19 @@ from scripts.utils import utcnow
 class UsersResource(Resource):
     """
     - GET /api/users - Get all users in the db
+    - GET /api/users/<string:username> - Get user by username
     """
     @token_required
-    def get(self):
-        users = {'users': [u.json() for u in User.query.all()]}
-        return jsonify(users)
+    def get(self, username=None):
+        if username:
+            user = User.query.filter_by(username=username).first()
+            if user:
+                return user.json(), 200
+            else:
+                return {'message': 'User not found'}, 404
+        else:
+            users = {'users': [u.json() for u in User.query.all()]}
+            return users, 200
     
 
 class UserResource(Resource):

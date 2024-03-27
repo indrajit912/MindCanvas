@@ -1,4 +1,4 @@
-# Models for the app
+# app/models/journal_entry.py
 # 
 # Author: Indrajit Ghosh
 # Created On: Mar 24, 2024
@@ -22,7 +22,7 @@ class JournalEntry(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     locked = db.Column(db.Boolean, default=False)
-    date_created = db.Column(db.DateTime, nullable=False, default=lambda: utcnow)
+    date_created = db.Column(db.DateTime, nullable=False, default=utcnow)
     last_updated = db.Column(db.DateTime, default=utcnow)
 
     # Define foreign key relationship with User

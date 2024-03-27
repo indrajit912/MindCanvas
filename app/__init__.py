@@ -36,7 +36,11 @@ def create_app(config_class=get_config()):
     configure_logging(app)
 
     # Register error handlers
-    from app.error_handlers import page_not_found, internal_server_error
+    from app.error_handlers import page_not_found, internal_server_error, bad_request, \
+        unauthorized, forbidden
+    app.register_error_handler(400, bad_request)
+    app.register_error_handler(401, unauthorized)
+    app.register_error_handler(403, forbidden)
     app.register_error_handler(404, page_not_found)
     app.register_error_handler(500, internal_server_error)
 
@@ -48,10 +52,13 @@ def create_app(config_class=get_config()):
 
     # Register api resources
     from app.api.users import UsersResource
-    api.add_resource(UsersResource, '/users')
+    api.add_resource(UsersResource, '/users', '/users/<string:username>')
 
     from app.api.users import UserResource
     api.add_resource(UserResource, '/user', '/user/<int:user_id>')
+
+    from app.api.journal_entries import JournalEntryResource
+    api.add_resource(JournalEntryResource, '/journal_entry/', '/journal_entry/<int:journal_entry_id>')
 
     # Register blueprints
     from app.main import main_bp

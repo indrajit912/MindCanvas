@@ -37,7 +37,7 @@ Created On: Mar 24, 2024
                     <li class="nav-item">
                       <a class="nav-link active" href="#">Add Entry</a>
                     </li>
-                    {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin %}
                       <li class="nav-item">
                         <a class="nav-link active" href="{{ url_for('admin.home') }}">Admin Page</a>
                       </li>

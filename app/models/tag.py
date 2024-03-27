@@ -1,4 +1,4 @@
-# Models for the app
+# app/models/tag.py
 # 
 # Author: Indrajit Ghosh
 # Created On: Mar 24, 2024
@@ -13,9 +13,9 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(db.String(36), unique=True, nullable=False, default=lambda: uuid.uuid4().hex)
     name = db.Column(db.String(50), nullable=False)
-    color_red = db.Column(db.Integer, nullable=False)
-    color_green = db.Column(db.Integer, nullable=False)
-    color_blue = db.Column(db.Integer, nullable=False)
+    color_red = db.Column(db.Integer, default=128)
+    color_green = db.Column(db.Integer, default=128)
+    color_blue = db.Column(db.Integer, default=128)
     date_created = db.Column(db.DateTime, nullable=False, default=utcnow)
     last_updated = db.Column(db.DateTime, default=utcnow)
 
