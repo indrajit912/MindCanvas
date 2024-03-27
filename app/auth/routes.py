@@ -153,9 +153,10 @@ def register_user(token):
         )
 
         if response.status_code == 200:
-            # TODO: Capture the user_json sent by the POST request.
-            logger.info(f"A new user registered.")
-            flash('You are registered successfully!', 'success')
+            # Capture the user_json sent by the POST request.
+            user_json = response.json()
+            logger.info(f"A new user registered with the username `{user_json['username']}`.")
+            flash("You have successfully registered! You may now log in using these credentials.", 'success')
             return redirect(url_for('auth.login'))
         else:
             logger.error("Failed to register the user.")
