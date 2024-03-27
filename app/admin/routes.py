@@ -35,12 +35,20 @@ def home():
         token = current_app.config['SECRET_API_TOKEN']
     )
 
+
 # Route to handle the POST request to delete the user
 @admin_bp.route('/delete_user', methods=['POST'])
 def delete_user():
     user_id = request.form['user_id']  # Assuming user_id is sent as form data
-    print(user_id)
 
-
-
-
+    # Make DELETE request to the api
+    api_endpoint = f"{current_app.config['HOST']}/api/user/{user_id}"
+    response = requests.delete(
+        api_endpoint,
+        headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"}
+    )
+    if response.status_code == 200:
+        flash("User deleted successfully!", "success")
+    else:
+        flash("Error occurred while deletion. Try again", 'error')
+    return redirect(url_for('admin.home'))

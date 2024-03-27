@@ -62,9 +62,12 @@
                         
                             <div class="modal-footer">
                               <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                              <button type="button" class="btn btn-danger btn-sm" onclick="deleteUser('{{ user.id }}')">
-                                Delete User
-                              </button> 
+                              
+                              <form method="post" action="{{ url_for('admin.delete_user') }}">
+                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete User</button>
+                              </form> 
+
                             </div>
                         
                           </div>
@@ -84,52 +87,5 @@
         {% endfor %}
 
     </div>
-  
-    <script>
-      function deleteUser(userId) {
-          userId = parseInt(userId); // Convert userId to an integer
-          
-          const url = `/api/user/${userId}`;
-          const token = "{{ token }}"; // Assuming you have access to the token here
-          
-          fetch(url, {
-              method: 'DELETE',
-              headers: {
-                  'Authorization': `Bearer ${token}` // Use the token here
-              }
-          })
-          .then(response => {
-              if (response.ok) {
-                  return response.json(); // Parse response body as JSON
-              } else {
-                  throw new Error('Failed to delete user');
-              }
-          })
-          .then(data => {
-              // Check if the response contains the success message
-              if (data.message === 'User deleted successfully') {
-                  // User deleted successfully, alert the user and then reload the page
-                  alert(`User deleted successfully`);
-                  // Reload the page
-                  window.location.reload();
-              } else {
-                  // Handle unexpected response
-                  console.error('Unexpected response:', data);
-                  // Optionally show an error message to the user
-                  alert('An unexpected response was received from the server.');
-              }
-          })
-          .catch(error => {
-              // Handle errors
-              console.error('Error:', error);
-              // Optionally show an error message to the user
-              alert('An error occurred while deleting the user. Please try again later.');
-          });
-      }
-  </script>
-  
-  
-  
-  
 
 {% endblock %}

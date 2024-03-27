@@ -134,8 +134,8 @@ class User(db.Model, UserMixin):
             'fullname': self.fullname,
             'email': self.email,
             'is_admin': self.is_admin,
-            'date_joined': self.date_joined,
-            'last_updated': self.last_updated
+            'date_joined': self.date_joined.isoformat(),
+            'last_updated': self.last_updated.isoformat()
         }
     
     @staticmethod
@@ -192,8 +192,8 @@ class JournalEntry(db.Model):
             'title': self.title,
             'content': self.content,
             'locked': self.locked,
-            'date_created': self.date_created,
-            'last_updated': self.last_updated,
+            'date_created': self.date_created.isoformat(),
+            'last_updated': self.last_updated.isoformat(),
             'user_id': self.user_id,
         }
 
@@ -226,7 +226,7 @@ class Tag(db.Model):
             'color_green': self.color_green,
             'color_blue': self.color_blue,
             'creator_id': self.creator_id,
-            'date_created': self.date_created,
-            'last_updated': self.last_updated
+            'date_created': self.date_created.isoformat(),
+            'last_updated': self.last_updated.isoformat()
         }
     

@@ -70,7 +70,7 @@ class UserResource(Resource):
         db.session.add(new_user)
         db.session.commit()
 
-        return make_response(new_user.json(), 201)
+        return new_user.json(), 200
 
     @token_required
     def put(self, user_id): 
