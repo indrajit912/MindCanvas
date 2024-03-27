@@ -3,14 +3,12 @@
 # Author: Indrajit Ghosh
 # Created On: Mar 25, 2024
 # 
-from flask import jsonify, make_response
+from flask import jsonify
 from flask_restful import Resource, reqparse
 from app.models.models import User
 from app.extensions import db
 from app.utils.decorators import token_required
 from scripts.utils import utcnow
-from datetime import datetime
-
 
 class UsersResource(Resource):
     """
@@ -35,7 +33,7 @@ class UserResource(Resource):
     @token_required
     def get(self, user_id):
         user = User.query.get_or_404(user_id)
-        return jsonify(user.json())
+        return user.json()
     
     @token_required
     def post(self):

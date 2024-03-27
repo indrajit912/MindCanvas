@@ -20,24 +20,23 @@ from . import admin_bp
 logger = logging.getLogger(__name__)
 
 @admin_bp.route('/')
+@admin_required
 def home():
     # Retrieve all users and monitored ads from the database
     users = User.query.order_by(desc(User.date_joined)).all()
 
-    # User api url
-        
-    # logger.info(f"Admin dashboard visited by the admin '{current_user.email}'.")
+    logger.info(f"Admin dashboard visited by the admin '{current_user.email}'.")
 
     return render_template(
         'admin.html', 
         users=users,
-        convert_utc_to_ist_str=convert_utc_to_ist_str,
-        token = current_app.config['SECRET_API_TOKEN']
+        convert_utc_to_ist_str=convert_utc_to_ist_str
     )
 
 
 # Route to handle the POST request to delete the user
 @admin_bp.route('/delete_user', methods=['POST'])
+@admin_required
 def delete_user():
     user_id = request.form['user_id']  # Assuming user_id is sent as form data
 

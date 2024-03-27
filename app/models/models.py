@@ -10,7 +10,6 @@ from flask import current_app
 from flask_login import UserMixin
 import secrets
 import uuid
-
 from scripts.utils import sha256_hash, utcnow
 
 # Association Table for many-to-many relationship between JournalEntry and Tag
@@ -134,9 +133,23 @@ class User(db.Model, UserMixin):
             'fullname': self.fullname,
             'email': self.email,
             'is_admin': self.is_admin,
-            'date_joined': self.date_joined.astimezone(),
-            'last_updated': self.last_updated.astimezone()
+            'date_joined': User.format_datetime_to_str(self.date_joined),
+            'last_updated': User.format_datetime_to_str(self.last_updated)
         }
+    
+    @staticmethod
+    def format_datetime_to_str(dt):
+        """
+        Formats a datetime object to the UTC string format: "Wed, 27 Mar 2024 07:10:10 UTC".
+
+        Parameters:
+            dt (datetime): A datetime object to be formatted.
+
+        Returns:
+            str: A string representing the datetime object in the UTC format.
+        """
+        return dt.strftime('%a, %d %b %Y %H:%M:%S UTC')
+
     
     @staticmethod
     def verify_reset_password_token(token):
@@ -192,8 +205,8 @@ class JournalEntry(db.Model):
             'title': self.title,
             'content': self.content,
             'locked': self.locked,
-            'date_created': self.date_created.isoformat(),
-            'last_updated': self.last_updated.isoformat(),
+            'date_created': User.format_datetime_to_str(self.date_created),
+            'last_updated': User.format_datetime_to_str(self.last_updated),
             'user_id': self.user_id,
         }
 
@@ -226,7 +239,7 @@ class Tag(db.Model):
             'color_green': self.color_green,
             'color_blue': self.color_blue,
             'creator_id': self.creator_id,
-            'date_created': self.date_created.isoformat(),
-            'last_updated': self.last_updated.isoformat()
+            'date_created': User.format_datetime_to_str(self.date_created),
+            'last_updated': User.format_datetime_to_str(self.last_updated)
         }
     
