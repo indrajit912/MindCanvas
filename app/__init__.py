@@ -58,7 +58,16 @@ def create_app(config_class=get_config()):
     api.add_resource(UserResource, '/user', '/user/<int:user_id>')
 
     from app.api.journal_entries import JournalEntryResource
-    api.add_resource(JournalEntryResource, '/journal_entry/', '/journal_entry/<int:journal_entry_id>')
+    api.add_resource(JournalEntryResource, '/journal_entry', '/journal_entry/<int:journal_entry_id>')
+
+    from app.api.journal_entries import UserJournalEntriesResource
+    api.add_resource(UserJournalEntriesResource, '/user/<user_id>/journal_entries')
+
+    from app.api.tag_resources import TagsResource
+    api.add_resource(TagsResource, '/tags')
+
+    from app.api.tag_resources import TagResource
+    api.add_resource(TagResource, '/tag', '/tag/<int:tag_id>')
 
     # Register blueprints
     from app.main import main_bp

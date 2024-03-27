@@ -45,6 +45,7 @@ class JournalEntry(db.Model):
             'date_created': self.format_datetime_to_str(self.date_created),
             'last_updated': self.format_datetime_to_str(self.last_updated),
             'user_id': self.user_id,
+            'tags': [tag.json() for tag in self.tags]
         }
     
     @staticmethod

@@ -3,7 +3,9 @@
 # Author: Indrajit Ghosh
 # Created On: Mar 27, 2024
 # 
+from flask import jsonify
 from flask_restful import Resource, reqparse
+from app.models.user import User
 from app.models.journal_entry import JournalEntry
 from app.models.tag import Tag
 from app.extensions import db
@@ -64,3 +66,23 @@ class JournalEntryResource(Resource):
         db.session.commit()
 
         return new_journal_entry.json(), 200
+    
+
+class UserJournalEntriesResource(Resource):
+    """
+    API Resource to handle requests related to journal entries of a specific user.
+
+    - GET /api/user/<user_id>/journal_entries
+    """
+    @token_required
+    def get(self, user_id):
+        # Retrieve the user from the database
+        user = User.query.get_or_404(user_id)
+
+        # Access the journal_entries attribute of the user
+        user_journal_entries = user.journal_entries
+
+        # Convert the journal entries to JSON format
+        journal_entries_json = [journal_entry.json() for journal_entry in user_journal_entries]
+
+        return jsonify(journal_entries_json)

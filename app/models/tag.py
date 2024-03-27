@@ -28,6 +28,16 @@ class Tag(db.Model):
     def color_rgb(self):
         return f'rgb({self.color_red}, {self.color_green}, {self.color_blue})'
     
+    def get_hex_color_code(self):
+        """
+        Returns the hexadecimal color code representation of the RGB color values.
+
+        Returns:
+            str: Hexadecimal color code representing the RGB values.
+        """
+        hex_color = '#{:02x}{:02x}{:02x}'.format(self.color_red, self.color_green, self.color_blue)
+        return hex_color
+    
     def json(self):
         """Return a dictionary representation of the tag."""
         return {
@@ -37,6 +47,7 @@ class Tag(db.Model):
             'color_red': self.color_red,
             'color_green': self.color_green,
             'color_blue': self.color_blue,
+            'hex_color': self.get_hex_color_code(), 
             'creator_id': self.creator_id,
             'date_created': self.format_datetime_to_str(self.date_created),
             'last_updated': self.format_datetime_to_str(self.last_updated)
