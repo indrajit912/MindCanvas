@@ -134,8 +134,8 @@ class User(db.Model, UserMixin):
             'fullname': self.fullname,
             'email': self.email,
             'is_admin': self.is_admin,
-            'date_joined': self.date_joined.isoformat(),
-            'last_updated': self.last_updated.isoformat()
+            'date_joined': self.date_joined.astimezone(),
+            'last_updated': self.last_updated.astimezone()
         }
     
     @staticmethod
