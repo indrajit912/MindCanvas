@@ -58,7 +58,7 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         """Representation of the User object."""
-        return f"User(username={self.username}, email={self.email}, created_at={self.date_joined})"
+        return f"User(username={self.username}, email={self.email}, date_joined={self.date_joined})"
     
     def set_hashed_password(self, password):
         """

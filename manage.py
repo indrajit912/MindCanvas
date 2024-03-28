@@ -5,15 +5,21 @@
 
 from flask import current_app
 from flask.cli import FlaskGroup
-import getpass
+import pwinput
+import sys
 import logging
+from tabulate import tabulate
+from config import EmailConfig
 
 from app.extensions import db
 from app import create_app
 from app.models.user import User
+from app.models.tag import Tag
+from scripts.app_defaults import default_tags
 
 cli = FlaskGroup(create_app=create_app)
 logger = logging.getLogger(__name__)
+bullet_unicode = '\u2022'
 
 def create_demo_user():
     """
@@ -37,7 +43,7 @@ def create_demo_user():
         print(f"\nERROR: {e}")
 
 
-@cli.command("setup_db")
+@cli.command("setup-db")
 def setup_database():
     """
     Command-line utility to set up the database.
@@ -63,21 +69,25 @@ def setup_database():
             create_demo_user()
 
 
-@cli.command("all_users")
+@cli.command("all-users")
 def all_users():
     """
-    Command-line utility to retrieve and print all users' email addresses.
+    Command-line utility to retrieve and print all users' details.
 
-    This command queries the database and prints the email addresses of all registered users.
+    This command queries the database and prints the details of all registered users.
 
     Usage:
         python manage.py all_users
 
     Example:
         $ python manage.py all_users
-        user1@example.com
-        user2@example.com
-        ...
+        +----------+---------------------+-------+
+        | Username | Email               | Admin |
+        +----------+---------------------+-------+
+        | user1    | user1@example.com   | False |
+        | user2    | user2@example.com   | True  |
+        | ...      | ...                 | ...   |
+        +----------+---------------------+-------+
 
     Returns:
         None
@@ -85,39 +95,131 @@ def all_users():
     with current_app.app_context():
         users = User.query.all()
         if users:
-            for user in users:
-                print(user.username, user.email, user.is_admin)
+            user_data = [
+                (user.username, user.email, user.is_admin, User.format_datetime_to_str(user.date_joined)) 
+                for user in users
+            ]
+            headers = ["Username", "Email", "Admin", "Date Joined"]
+            print(tabulate(user_data, headers=headers, tablefmt="grid"))
         else:
             print("No users found!")
 
 
-@cli.command("create_admin")
-def create_admin():
-    """Creates the admin user."""
-    fullname = input("Enter fullname: ")
-    username = input("Enter a username: ")
-    email = input("Enter email address: ")
-    password = getpass.getpass("Enter password: ")
-    confirm_password = getpass.getpass("Enter password again: ")
-    if password != confirm_password:
+@cli.command("all-tags")
+def all_tags():
+    """
+    Command-line utility to retrieve and print all tags' details.
+
+    This command queries the database and prints the details of all tags.
+
+    Usage:
+        python manage.py all_tags
+
+    Example:
+        $ python manage.py all_tags
+        +-----------------+---------------------+-------+---------------------------------------------+
+        | Name            | Color               | Creator Username    | Date Created                  |
+        +-----------------+---------------------+-------+---------------------------------------------+
+        | personal-growth | (128, 0, 128)       | indrajit            | Mon, 02 Jan 2023 07:45:00 UTC |
+        | health-wellness | (0, 191, 255)       | indrajit            | Mon, 02 Jan 2023 07:45:00 UTC |
+        | ...             | ...                 | ...                 | ...                           |
+        +-----------------+---------------------+-------+---------------------------------------------+
+
+    Returns:
+        None
+    """
+    with current_app.app_context():
+        tags = Tag.query.all()
+        if tags:
+            tag_data = [
+                (tag.name, tag.color_rgb(), tag.creator.username, Tag.format_datetime_to_str(tag.date_created)) 
+                for tag in tags
+            ]
+            headers = ["Name", "Color", "Creator Username", "Date Created"]
+            print(tabulate(tag_data, headers=headers, tablefmt="grid"))
+        else:
+            print("No tags found!")
+
+
+def _create_indrajit_tags():
+    """
+    Creates a number of records for Tag. These are used by Indrajit.
+    """
+    # Get the user with email=EmailConfig.INDRAJIT912
+    indrajit_user = User.query.filter_by(email=EmailConfig.INDRAJIT912_GMAIL).first()
+    if not indrajit_user:
+        print("Indrajit's user account not found!")
+        return
+    
+    for tag_data in default_tags:
+        tag = Tag(
+            name=tag_data['name'],
+            description=tag_data['description'],
+            color_red=tag_data['color_red'],
+            color_green=tag_data['color_green'],
+            color_blue=tag_data['color_blue'],
+            creator_id=indrajit_user.id
+        )
+        db.session.add(tag)
+
+
+@cli.command("create-indrajit")
+def create_indrajit():
+    """Creates the admin Indrajit Ghosh and his associated details."""
+    # Check whether Indrajit is in db already
+    indrajit_exists = User.query.filter_by(email=EmailConfig.INDRAJIT912_GMAIL).first()
+
+    if indrajit_exists:
+        print("Admin `Indrajit` is already in the db!")
+        sys.exit()
+    
+    indrajit_passwd = pwinput.pwinput(
+        "Creating the admin `Indrajit Ghosh` ...\nEnter Indrajit's password: ",
+        mask=bullet_unicode
+    )
+    confirm_password = pwinput.pwinput("Enter password again: ", mask=bullet_unicode)
+    if indrajit_passwd != confirm_password:
         print("Passwords don't match")
     else:
         try:
-            user = User(
-                fullname=fullname,
-                username=username,
-                email=email,
-                is_admin=True
-            )
-            user.set_hashed_password(password)
+            with current_app.app_context():
+                # Create Indrajit
+                indrajit_data = {
+                    "fullname": "Indrajit Ghosh",
+                    "username": "indrajit"
+                }
 
-            db.session.add(user)
-            db.session.commit()
-            print(f"Admin with email {email} created successfully!")
-            logger.info(f"Admin with email {email} created successfully!")
+                if not EmailConfig.INDRAJIT912_GMAIL:
+                    print("Indrajit's email address is not found in the `.env` file! Exiting...")
+                    logger.warning("Indrajit's email address is not found in the `.env` file! Exiting...")
+                    sys.exit()
+                
+                indrajit_data['email'] = EmailConfig.INDRAJIT912_GMAIL
+
+                indrajit = User(
+                    username = indrajit_data['username'],
+                    fullname=indrajit_data['fullname'],
+                    email=indrajit_data['email'],
+                    is_admin=True
+                )
+                indrajit.set_hashed_password(indrajit_passwd)
+
+                # Add Indrajit to db
+                db.session.add(indrajit)
+                print("Admin Indrajit created successfully!")
+                logger.info("Admin Indrajit created successfully!")
+
+                # TODO: Create all default tags of Indrajit
+                _create_indrajit_tags()
+
+                print("Indrajit's default tags created successfully!")
+                logger.info("Indrajit's default tags created successfully!")
+
+                db.session.commit()
+
         except Exception as e:
-            print("Couldn't create admin user.")
-            logger.error(f"Couldn't create admin.\nERROR: {e}")
+            print("Some error occurred.")
+            logger.error(f"Error occurred while creating records of the admin `Indrajit Ghosh`.\nERROR: {e}")
             print(f"\nERROR: {e}")
 
 

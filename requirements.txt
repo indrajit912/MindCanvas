@@ -10,3 +10,5 @@ Flask-RESTful
 Flask-WTF
 email-validator
 requests
+tabulate
+pwinput
