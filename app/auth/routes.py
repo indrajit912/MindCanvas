@@ -13,6 +13,7 @@ from app.models.journal_entry import JournalEntry
 from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
 from scripts.email_message import EmailMessage
+from scripts.utils import count_words
 from config import EmailConfig
 
 import logging
@@ -57,13 +58,36 @@ def login():
 @login_required
 def dashboard():
     user = current_user
-    user_journal_entries = JournalEntry.query.filter_by(user_id=current_user.id).order_by(desc(JournalEntry.last_updated)).all()
+    user_journal_entries = JournalEntry.query.filter_by(author_id=current_user.id).order_by(desc(JournalEntry.last_updated)).all()
     return render_template(
         'dashboard.html', 
         user=user,
         user_journal_entries = user_journal_entries
     )
 
+@auth_bp.route('/profile')
+@login_required
+def profile():
+    # Get the current user's journal entries and tags
+    journal_entries = current_user.journal_entries
+    tags = current_user.tags
+    # Query the database for the last six journal entries of the current user
+    recent_journal_entries = JournalEntry.query.filter_by(author_id=current_user.id).order_by(JournalEntry.date_created.desc()).limit(6).all()
+    
+    # Count the total number of journal entries, tags, and words
+    total_journal_entries = len(journal_entries)
+    total_tags = len(tags)
+    total_words_in_journal_entries = sum(count_words(entry.content) for entry in journal_entries)
+    
+    # Pass the count_words function to the template
+    return render_template(
+        'profile.html',
+        user=current_user, 
+        total_journal_entries=total_journal_entries, 
+        total_tags=total_tags, 
+        total_words_in_journal_entries=total_words_in_journal_entries,
+        recent_journal_entries=recent_journal_entries
+    )
 
 @auth_bp.route('/logout', methods=['GET', 'POST'])
 @login_required

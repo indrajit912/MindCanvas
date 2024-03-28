@@ -42,7 +42,10 @@ Created On: Mar 24, 2024
                         <a class="nav-link active" href="{{ url_for('admin.home') }}">Admin Page</a>
                       </li>
                     {% endif %}
-                    <li class="nav-item">
+                    <li class="nav-item d-lg-none">
+                      <a class="nav-link active" href="{{ url_for('auth.profile') }}">Profile</a>
+                    </li>
+                    <li class="nav-item d-lg-none">
                       <a class="nav-link active" href="{{ url_for('auth.logout') }}">Logout</a>
                     </li>
               {% else %}
@@ -53,8 +56,21 @@ Created On: Mar 24, 2024
                         <a class="nav-link active" href="{{ url_for('auth.login') }}">Login</a>
                     </li>
               {% endif %}
-
+            </ul>
           </div>
+            {% if current_user.is_authenticated %}
+            <div class="dropdown hide-on-mobile">
+                <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img class="img-fluid rounded-circle" src="{{ current_user.avatar(20) }}" alt="user-avatar">
+                    {{ current_user.username }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                  <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">Profile</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+              </ul>
+            </div>
+            {% endif %}
         </div>
       </nav>
   

@@ -98,16 +98,16 @@ These are the restricted API endpoints. To make a request, a header with a priva
 ### User:
 
 - **Get a Specific User:**
-  - `GET /api/user/<user_id>`
+  - `GET /api/users/<int:user_id>`
 
 - **Create New User:**
   - `POST /api/create/user/`
 
 - **Update a Specific User:**
-  - `PUT /api/user/<user_id>`
+  - `PUT /api/users/<int:user_id>`
 
 - **Delete a Specific User:**
-  - `DELETE /api/user/<user_id>`
+  - `DELETE /api/users/<int:user_id>`
 
 - **Get All Users:**
   - `GET /api/users`
@@ -115,36 +115,42 @@ These are the restricted API endpoints. To make a request, a header with a priva
 - **Get User by Username:**
   - `GET /api/users/<string:username>`
 
+- **Get User's journal entries on this day**
+  - `GET /api/users/<string:username>/journal_entries?today=MM-DD`
+
+- **Get All tags created by a specific User**
+  - `GET /api/users/<string:username>/tags`
+
 ### Journal Entry:
 
 - **Get a Specific Journal Entry:**
-  - `GET /api/journal_entry/<journal_entry_id>`
+  - `GET /api/journal_entries/<int:journal_entry_id>`
 
 - **Create New Journal Entry:**
   - `POST /api/create/journal_entry/`
 
 - **Update a Specific Journal Entry:**
-  - `PUT /api/journal_entry/<journal_entry_id>`
+  - `PUT /api/journal_entries/<int:journal_entry_id>`
 
 - **Delete a Specific Journal Entry:**
-  - `DELETE /api/journal_entry/<journal_entry_id>`
+  - `DELETE /api/journal_entries/<int:journal_entry_id>`
 
 - **Get All Journal Entries of a User:**
-  - `GET /api/user/<user_id>/journal_entries`
+  - `GET /api/users/<int:user_id>/journal_entries`
 
 ### Tag:
 
 - **Get a Specific Tag:**
-  - `GET /api/tag/<tag_id>`
+  - `GET /api/tags/<int:tag_id>`
 
 - **Create New Tag:**
   - `POST /api/create/tag/`
 
 - **Update a Specific Tag:**
-  - `PUT /api/tag/<tag_id>`
+  - `PUT /api/tags/<int:tag_id>`
 
 - **Delete a Specific Tag:**
-  - `DELETE /api/tag/<tag_id>`
+  - `DELETE /api/tags/<int:tag_id>`
 
 - **Get All Tags:**
   - `GET /api/tags`

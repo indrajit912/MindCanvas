@@ -51,10 +51,11 @@ def create_app(config_class=get_config()):
     api = Api(app, prefix='/api')
     
     # Register api resources
-    from app.api.users import UsersResource, UserResource, OnThisDayEntriesResource
+    from app.api.users import UsersResource, UserResource, OnThisDayEntriesResource, UserTagsResource
     api.add_resource(UsersResource, '/users', '/users/<string:username>')
     api.add_resource(UserResource, '/create/user', '/users/<int:user_id>')
     api.add_resource(OnThisDayEntriesResource, '/users/<string:username>/journal_entries')
+    api.add_resource(UserTagsResource, '/users/<string:username>/tags')
 
     from app.api.journal_entries import JournalEntryResource, UserJournalEntriesResource
     api.add_resource(JournalEntryResource, '/create/journal_entry', '/journal_entries/<int:journal_entry_id>')

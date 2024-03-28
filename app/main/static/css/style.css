@@ -87,3 +87,12 @@ section {
     width: 1.5em;
     height: 1.5em;
 }
+
+@media (max-width:700px) {
+    .form-container {
+        width: 90%;
+    }   
+    .hide-on-mobile {
+        display: none;
+    } 
+}

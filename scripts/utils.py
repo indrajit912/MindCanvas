@@ -7,6 +7,16 @@
 import hashlib
 from datetime import datetime, timedelta, timezone
 
+def count_words(text):
+    """
+    Count the number of words in a given text.
+    """
+    if text:
+        return len(text.split())
+    else:
+        return 0
+
+
 def sha256_hash(raw_text:str):
     """Hash the given text using SHA-256 algorithm.
 

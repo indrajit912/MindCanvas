@@ -7,6 +7,7 @@ from flask_restful import Resource, reqparse
 from flask import request
 from sqlalchemy import extract, func
 from app.models.user import User
+from app.models.tag import Tag
 from app.models.journal_entry import JournalEntry
 from app.extensions import db
 from app.utils.decorators import token_required
@@ -173,3 +174,23 @@ class OnThisDayEntriesResource(Resource):
         entries_json = [entry.json() for entry in journal_entries]
 
         return {'journal_entries': entries_json, "author": username, "day": f"{month}-{day} (month-day)"}, 200
+    
+
+class UserTagsResource(Resource):
+    """
+    - GET /api/users/<string:username>/tags - Get all tags of a given user.
+    """
+    @token_required
+    def get(self, username):
+        # Retrieve the user
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return {'message': 'User not found'}, 404
+
+        # Retrieve all tags associated with the user
+        tags = Tag.query.filter_by(creator_id=user.id).all()
+
+        # Serialize tags into JSON format
+        tags_json = [tag.json() for tag in tags]
+
+        return {'tags': tags_json}, 200
