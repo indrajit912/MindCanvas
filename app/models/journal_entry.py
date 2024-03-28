@@ -26,7 +26,7 @@ class JournalEntry(db.Model):
     last_updated = db.Column(db.DateTime, default=utcnow)
 
     # Define foreign key relationship with User
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     # Define many-to-many relationship with Tag
     tags = db.relationship('Tag', secondary=journal_entry_tag_association, backref=db.backref('journal_entries', lazy='dynamic'))
@@ -44,7 +44,7 @@ class JournalEntry(db.Model):
             'locked': self.locked,
             'date_created': self.format_datetime_to_str(self.date_created),
             'last_updated': self.format_datetime_to_str(self.last_updated),
-            'user_id': self.user_id,
+            'author_id': self.author_id,
             'tags': [tag.json() for tag in self.tags]
         }
     

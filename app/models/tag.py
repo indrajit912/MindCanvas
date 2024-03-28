@@ -6,24 +6,51 @@
 
 from app.extensions import db
 import uuid
+import random
 from scripts.utils import utcnow
 
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(db.String(36), unique=True, nullable=False, default=lambda: uuid.uuid4().hex)
-    name = db.Column(db.String(50), nullable=False)
-    color_red = db.Column(db.Integer, default=128)
-    color_green = db.Column(db.Integer, default=128)
-    color_blue = db.Column(db.Integer, default=128)
+    name = db.Column(db.String(50), nullable=False)  # Keep this definition for name attribute
+    description = db.Column(db.Text, nullable=True)
+    color_red = db.Column(db.Integer, default=lambda: random.randint(0, 255))
+    color_green = db.Column(db.Integer, default=lambda: random.randint(0, 255))
+    color_blue = db.Column(db.Integer, default=lambda: random.randint(0, 255))
     date_created = db.Column(db.DateTime, nullable=False, default=utcnow)
     last_updated = db.Column(db.DateTime, default=utcnow)
 
     # Define the foreign key relationship with User
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+    def __init__(self, name, creator_id, color_red=None, color_green=None, color_blue=None, description=None):
+        """
+        Initializes a new Tag instance.
+        """
+        self.name = self.preprocess_tag_name(name)
+        self.creator_id = creator_id
+        self.color_red = color_red
+        self.color_green = color_green
+        self.color_blue = color_blue
+        self.description = description
+
     def __repr__(self):
         return f"Tag(name={self.name})"
+    
+    @staticmethod
+    def preprocess_tag_name(name):
+        """
+        Preprocesses the tag name by converting it to lowercase, stripping whitespace, and replacing spaces with dashes.
+
+        Parameters:
+            name (str): The original tag name.
+
+        Returns:
+            str: The processed tag name.
+        """
+        processed_name = name.lower().strip().replace(' ', '-')
+        return processed_name
 
     def color_rgb(self):
         return f'rgb({self.color_red}, {self.color_green}, {self.color_blue})'
@@ -44,10 +71,11 @@ class Tag(db.Model):
             'id': self.id,
             'uuid': self.uuid,
             'name': self.name,
+            'description': self.description,
             'color_red': self.color_red,
             'color_green': self.color_green,
             'color_blue': self.color_blue,
-            'hex_color': self.get_hex_color_code(), 
+            'color_hex': self.get_hex_color_code(), 
             'creator_id': self.creator_id,
             'date_created': self.format_datetime_to_str(self.date_created),
             'last_updated': self.format_datetime_to_str(self.last_updated)

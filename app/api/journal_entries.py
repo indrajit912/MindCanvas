@@ -19,7 +19,7 @@ class JournalEntryResource(Resource):
     For example:
 
      - GET /api/journal_entry/<journal_entry_id> - Get a specific journal entry
-     - POST /api/journal_entry/ - Create new journal entry
+     - POST /api/create/journal_entry/ - Create new journal entry
      - PUT /api/journal_entry/<journal_entry_id> - Update a specific journal entry
      - DELETE /api/journal_entry/<journal_entry_id> - Delete a specific journal entry
     """
@@ -33,7 +33,7 @@ class JournalEntryResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('title', type=str, required=True, help='Title is required')
         parser.add_argument('content', type=str, required=True, help='Content is required')
-        parser.add_argument('user_id', type=int, required=True, help='User ID is required')
+        parser.add_argument('author_id', type=int, required=True, help='Author ID is required')
         parser.add_argument('tags', type=str, action='append', required=False, help='List of tag names')
 
         args = parser.parse_args()
@@ -42,7 +42,7 @@ class JournalEntryResource(Resource):
         new_journal_entry = JournalEntry(
             title=args['title'],
             content=args['content'],
-            user_id=args['user_id']
+            author_id=args['author_id']
         )
 
         # Add tags to the journal entry
@@ -53,7 +53,7 @@ class JournalEntryResource(Resource):
                     # If tag does not exist, create a new tag
                     tag = Tag(
                         name=tag_name, 
-                        creator_id=args['user_id'],
+                        creator_id=args['author_id'],
                         color_red=128,
                         color_green=128,
                         color_blue=128
@@ -66,6 +66,42 @@ class JournalEntryResource(Resource):
         db.session.commit()
 
         return new_journal_entry.json(), 200
+    
+    @token_required
+    def put(self, journal_entry_id):
+        parser = reqparse.RequestParser()
+        parser.add_argument('title', type=str)
+        parser.add_argument('content', type=str)
+        parser.add_argument('user_id', type=int)
+        parser.add_argument('locked', type=bool)
+
+        args = parser.parse_args()
+
+        # Retrieve the journal entry to update
+        journal_entry = JournalEntry.query.get_or_404(journal_entry_id)
+
+        # Update attributes if provided
+        if args.get('title'):
+            journal_entry.title = args['title']
+        if args.get('content'):
+            journal_entry.content = args['content']
+        if args.get('author_id'):
+            journal_entry.author_id = args['author_id']
+        if args.get('locked') is not None:
+            journal_entry.locked = args.get('locked')
+
+        journal_entry.last_updated = utcnow()
+
+        db.session.commit()
+
+        return journal_entry.json(), 200
+
+    @token_required
+    def delete(self, journal_entry_id):
+        journal_entry = JournalEntry.query.get_or_404(journal_entry_id)
+        db.session.delete(journal_entry)
+        db.session.commit()
+        return {"message": "Journal entry deleted successfully"}, 200
     
 
 class UserJournalEntriesResource(Resource):

@@ -33,7 +33,7 @@ class UserResource(Resource):
     For example:
 
      - GET /api/user/<user_id> - Get a specific user
-     - POST /api/user/ - Create new user
+     - POST /api/create/user/ - Create new user
      - PUT /api/user/<user_id> - Update a specific user
      - DELETE /api/user/<user_id> - Delete a specific user
     """

@@ -29,9 +29,6 @@ def create_app(config_class=get_config()):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Initializing api
-    api = Api(app, prefix='/api')
-
     # Configure logging
     configure_logging(app)
 
@@ -50,24 +47,23 @@ def create_app(config_class=get_config()):
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
 
+    # Initializing api
+    api = Api(app, prefix='/api')
+    
     # Register api resources
-    from app.api.users import UsersResource
+    from app.api.users import UsersResource, UserResource
     api.add_resource(UsersResource, '/users', '/users/<string:username>')
-
-    from app.api.users import UserResource
-    api.add_resource(UserResource, '/user', '/user/<int:user_id>')
+    api.add_resource(UserResource, '/create/user', '/user/<int:user_id>')
 
     from app.api.journal_entries import JournalEntryResource
-    api.add_resource(JournalEntryResource, '/journal_entry', '/journal_entry/<int:journal_entry_id>')
+    api.add_resource(JournalEntryResource, '/create/journal_entry', '/journal_entry/<int:journal_entry_id>')
 
     from app.api.journal_entries import UserJournalEntriesResource
     api.add_resource(UserJournalEntriesResource, '/user/<user_id>/journal_entries')
 
-    from app.api.tag_resources import TagsResource
+    from app.api.tag_resources import TagsResource, TagResource
     api.add_resource(TagsResource, '/tags')
-
-    from app.api.tag_resources import TagResource
-    api.add_resource(TagResource, '/tag', '/tag/<int:tag_id>')
+    api.add_resource(TagResource, '/create/tag', '/tag/<int:tag_id>')
 
     # Register blueprints
     from app.main import main_bp
