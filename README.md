@@ -3,8 +3,8 @@
 MindCanvas is a simple web application developed by [Indrajit Ghosh](https://github.com/indrajit912) that allows you to journal your thoughts, ideas, and experiences. Built using Flask, this user-friendly application enables you to effortlessly create, view, update, and delete journal entries through an easy-to-use web interface.
 
 - Website: [Demo on Render!](https://demo-mindcanvas.onrender.com) (Please note that this website may take some time to load!)
-- Default username: `admin`
-- Default password: `password`
+- Demo username: `demo`
+- Demo password: `password`
 
 ![Homepage Screenshot](/app/static/images/homepage.png)
 ![ViewEntries Screenshot](/app/static/images/view_entries.png)
@@ -89,6 +89,66 @@ Enjoy using MindCanvas!
 - **Update Entry**: Click "Update" on an entry card to edit and update it.
 
 - **Delete Entry**: Use the "Delete" button to remove an entry.
+
+## Restricted API Endpoints
+
+These are the restricted API endpoints. To make a request, a header with a private token is required. This token is meant for the admins only. A new set of APIs for the users of the app will be updated soon.
+
+
+### User:
+
+- **Get a Specific User:**
+  - `GET /api/user/<user_id>`
+
+- **Create New User:**
+  - `POST /api/create/user/`
+
+- **Update a Specific User:**
+  - `PUT /api/user/<user_id>`
+
+- **Delete a Specific User:**
+  - `DELETE /api/user/<user_id>`
+
+- **Get All Users:**
+  - `GET /api/users`
+
+- **Get User by Username:**
+  - `GET /api/users/<string:username>`
+
+### Journal Entry:
+
+- **Get a Specific Journal Entry:**
+  - `GET /api/journal_entry/<journal_entry_id>`
+
+- **Create New Journal Entry:**
+  - `POST /api/create/journal_entry/`
+
+- **Update a Specific Journal Entry:**
+  - `PUT /api/journal_entry/<journal_entry_id>`
+
+- **Delete a Specific Journal Entry:**
+  - `DELETE /api/journal_entry/<journal_entry_id>`
+
+- **Get All Journal Entries of a User:**
+  - `GET /api/user/<user_id>/journal_entries`
+
+### Tag:
+
+- **Get a Specific Tag:**
+  - `GET /api/tag/<tag_id>`
+
+- **Create New Tag:**
+  - `POST /api/create/tag/`
+
+- **Update a Specific Tag:**
+  - `PUT /api/tag/<tag_id>`
+
+- **Delete a Specific Tag:**
+  - `DELETE /api/tag/<tag_id>`
+
+- **Get All Tags:**
+  - `GET /api/tags`
+
 
 
 ## Contributing
