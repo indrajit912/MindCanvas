@@ -22,8 +22,8 @@ class JournalEntry(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     locked = db.Column(db.Boolean, default=False)
-    date_created = db.Column(db.DateTime, nullable=False, default=utcnow)
-    last_updated = db.Column(db.DateTime, default=utcnow)
+    date_created = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+    last_updated = db.Column(db.DateTime(timezone=True), default=utcnow)
 
     # Define foreign key relationship with User
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

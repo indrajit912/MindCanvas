@@ -28,10 +28,10 @@ class TagResource(Resource):
     Once your Flask app is running, you can access the APIs by sending HTTP requests to the specified endpoints. 
     For example:
 
-     - GET /api/tag/<tag_id> - Get a specific Tag
+     - GET /api/tags/<tag_id> - Get a specific Tag
      - POST /api/create/tag/ - Create new Tag
-     - PUT /api/tag/<tag_id> - Update a specific Tag
-     - DELETE /api/tag/<tag_id> - Delete a specific Tag
+     - PUT /api/tags/<tag_id> - Update a specific Tag
+     - DELETE /api/tags/<tag_id> - Delete a specific Tag
     """
     @token_required
     def get(self, tag_id):
@@ -53,10 +53,13 @@ class TagResource(Resource):
         # Preprocess the tag name for comparison
         processed_name = Tag.preprocess_tag_name(args['name'])
     
-        # Check if a tag with the same name already exists
-        existing_tag = Tag.query.filter_by(name=processed_name).first()
-        if existing_tag:
-            return {'message': 'Tag with the same name already exists'}, 400
+        # Check if a tag with the same name already exists for the given creator_id
+        existing_tag_same_creator = Tag.query.filter(
+            (Tag.name == processed_name) &
+            (Tag.creator_id == args['creator_id'])
+        ).first()
+        if existing_tag_same_creator:
+            return {'message': 'Tag with the same name already exists for this creator'}, 400
 
         # Create a new Tag
         new_tag = Tag(

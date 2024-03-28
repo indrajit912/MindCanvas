@@ -50,8 +50,8 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(128), nullable=False)
     password_salt = db.Column(db.String(32), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
-    date_joined = db.Column(db.DateTime, default=utcnow)
-    last_updated = db.Column(db.DateTime, default=utcnow)
+    date_joined = db.Column(db.DateTime(timezone=True), default=utcnow)
+    last_updated = db.Column(db.DateTime(timezone=True), default=utcnow)
 
     journal_entries = db.relationship('JournalEntry', backref='author', lazy=True, cascade="all, delete-orphan")
     tags = db.relationship('Tag', backref='creator', lazy=True, cascade="all, delete-orphan")

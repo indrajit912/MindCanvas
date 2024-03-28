@@ -13,13 +13,13 @@ from scripts.utils import utcnow
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(db.String(36), unique=True, nullable=False, default=lambda: uuid.uuid4().hex)
-    name = db.Column(db.String(50), nullable=False)  # Keep this definition for name attribute
+    name = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=True)
     color_red = db.Column(db.Integer, default=lambda: random.randint(0, 255))
     color_green = db.Column(db.Integer, default=lambda: random.randint(0, 255))
     color_blue = db.Column(db.Integer, default=lambda: random.randint(0, 255))
-    date_created = db.Column(db.DateTime, nullable=False, default=utcnow)
-    last_updated = db.Column(db.DateTime, default=utcnow)
+    date_created = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+    last_updated = db.Column(db.DateTime(timezone=True), default=utcnow)
 
     # Define the foreign key relationship with User
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

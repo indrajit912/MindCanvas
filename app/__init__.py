@@ -51,19 +51,18 @@ def create_app(config_class=get_config()):
     api = Api(app, prefix='/api')
     
     # Register api resources
-    from app.api.users import UsersResource, UserResource
+    from app.api.users import UsersResource, UserResource, OnThisDayEntriesResource
     api.add_resource(UsersResource, '/users', '/users/<string:username>')
-    api.add_resource(UserResource, '/create/user', '/user/<int:user_id>')
+    api.add_resource(UserResource, '/create/user', '/users/<int:user_id>')
+    api.add_resource(OnThisDayEntriesResource, '/users/<string:username>/journal_entries')
 
-    from app.api.journal_entries import JournalEntryResource
-    api.add_resource(JournalEntryResource, '/create/journal_entry', '/journal_entry/<int:journal_entry_id>')
-
-    from app.api.journal_entries import UserJournalEntriesResource
-    api.add_resource(UserJournalEntriesResource, '/user/<user_id>/journal_entries')
+    from app.api.journal_entries import JournalEntryResource, UserJournalEntriesResource
+    api.add_resource(JournalEntryResource, '/create/journal_entry', '/journal_entries/<int:journal_entry_id>')
+    api.add_resource(UserJournalEntriesResource, '/users/<int:user_id>/journal_entries')
 
     from app.api.tag_resources import TagsResource, TagResource
     api.add_resource(TagsResource, '/tags')
-    api.add_resource(TagResource, '/create/tag', '/tag/<int:tag_id>')
+    api.add_resource(TagResource, '/create/tag', '/tags/<int:tag_id>')
 
     # Register blueprints
     from app.main import main_bp

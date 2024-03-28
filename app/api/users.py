@@ -4,7 +4,10 @@
 # Created On: Mar 25, 2024
 # 
 from flask_restful import Resource, reqparse
+from flask import request
+from sqlalchemy import extract, func
 from app.models.user import User
+from app.models.journal_entry import JournalEntry
 from app.extensions import db
 from app.utils.decorators import token_required
 from scripts.utils import utcnow
@@ -32,10 +35,10 @@ class UserResource(Resource):
     Once your Flask app is running, you can access the APIs by sending HTTP requests to the specified endpoints. 
     For example:
 
-     - GET /api/user/<user_id> - Get a specific user
+     - GET /api/users/<user_id> - Get a specific user
      - POST /api/create/user/ - Create new user
-     - PUT /api/user/<user_id> - Update a specific user
-     - DELETE /api/user/<user_id> - Delete a specific user
+     - PUT /api/users/<user_id> - Update a specific user
+     - DELETE /api/users/<user_id> - Delete a specific user
     """
     @token_required
     def get(self, user_id):
@@ -135,3 +138,38 @@ class UserResource(Resource):
 
         return {'message': 'User deleted successfully'}, 200
 
+
+class OnThisDayEntriesResource(Resource):
+    """
+    GET /api/users/<string:username>/journal_entries?today=MM-DD
+    Get all journal entries of a particular user on a given month and day (MM-DD).
+    """
+    @token_required
+    def get(self, username):
+        date = request.args.get('today')  # Get the date from query parameters (format: MM-DD)
+        if not date or len(date) != 5 or date[2] != '-':
+            return {'message': 'Date parameter in MM-DD format is required'}, 400
+
+        # Extract month and day from the date string
+        month = int(date[:2])
+        day = int(date[3:])
+
+        # Query journal entries for the specified user on the given month and day
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return {'message': 'User not found'}, 404
+
+        # Filter journal entries by month and day
+        query = JournalEntry.query.filter(
+            (JournalEntry.author_id == user.id) &
+            (extract('month', JournalEntry.date_created) == month) &
+            (extract('day', JournalEntry.date_created) == day)
+        )
+
+        # Execute the query
+        journal_entries = query.all()
+
+        # Serialize journal entries into JSON format
+        entries_json = [entry.json() for entry in journal_entries]
+
+        return {'journal_entries': entries_json, "author": username, "day": f"{month}-{day} (month-day)"}, 200

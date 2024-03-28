@@ -18,10 +18,10 @@ class JournalEntryResource(Resource):
     Once your Flask app is running, you can access the APIs by sending HTTP requests to the specified endpoints. 
     For example:
 
-     - GET /api/journal_entry/<journal_entry_id> - Get a specific journal entry
+     - GET /api/journal_entries/<journal_entry_id> - Get a specific journal entry
      - POST /api/create/journal_entry/ - Create new journal entry
-     - PUT /api/journal_entry/<journal_entry_id> - Update a specific journal entry
-     - DELETE /api/journal_entry/<journal_entry_id> - Delete a specific journal entry
+     - PUT /api/journal_entries/<journal_entry_id> - Update a specific journal entry
+     - DELETE /api/journal_entries/<journal_entry_id> - Delete a specific journal entry
     """
     @token_required
     def get(self, journal_entry_id):
@@ -108,7 +108,7 @@ class UserJournalEntriesResource(Resource):
     """
     API Resource to handle requests related to journal entries of a specific user.
 
-    - GET /api/user/<user_id>/journal_entries
+    - GET /api/users/<user_id>/journal_entries
     """
     @token_required
     def get(self, user_id):

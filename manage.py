@@ -7,6 +7,7 @@ from flask import current_app
 from flask.cli import FlaskGroup
 import pwinput
 import sys
+import argparse
 import logging
 from tabulate import tabulate
 from config import EmailConfig
@@ -223,5 +224,31 @@ def create_indrajit():
             print(f"\nERROR: {e}")
 
 
+def help_command():
+    """
+    Command-line utility to display help information about available commands.
+
+    Usage:
+        python manage.py help
+
+    Returns:
+        None
+    """
+    print("Available commands:")
+    print("1. setup-db: Set up the database.")
+    print("2. all-users: Retrieve and print all users' details.")
+    print("3. all-tags: Retrieve and print all tags' details.")
+    print("4. create-indrajit: Create the admin Indrajit Ghosh and his associated details.")
+
 if __name__ == '__main__':
-    cli()
+    parser = argparse.ArgumentParser(description='Command-line utility for managing Flask application.')
+    parser.add_argument('command', type=str, nargs='?', help='Command to execute (e.g., setup-db, all-users, all-tags, create-indrajit, help)')
+    args = parser.parse_args()
+
+    if args.command == 'help':
+        help_command()
+    elif args.command:
+        sys.argv = ['manage.py', args.command]  # Modify sys.argv to include the command
+        cli.main()  # Use cli.main() to execute the command
+    else:
+        print("Please provide a valid command. Use 'python manage.py help' to see available commands.")
