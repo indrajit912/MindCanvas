@@ -12,39 +12,9 @@
 {% include 'flash_msgs.html' %}
 <div class="container">
     <div class="row">
-        <div class="col-md-8">
-            <h1 class="display-4">Welcome, {{ user.username }}</h1>
-            <p class="lead">We're glad to see you here! This is your dashboard where you can manage your journal entries
-                and tags.</p>
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <a href="#" class="btn btn-primary btn-sm me-2"><i class="bi bi-database-fill-add"></i> Add
-                        Entry</a>
-                    <a href="#" class="btn btn-secondary btn-sm"><i class="bi bi-eye-fill"></i> View All</a>
-                </div>
-                <div>
-                    <a href="#" class="btn btn-primary btn-sm"><i class="bi bi-pencil-fill"></i> Create Tag</a>
-                </div>
-            </div>
-            <hr>
-            <br>
-            <h3>Your Recent Journal Entries</h3>
-
-            {% if user_journal_entries %}
-                {% include '_user_journal_entries.html' %}
-            {% else %}
-                <div class="alert alert-warning" role="alert">
-                    You have no journal entries yet. <a href="#" class="alert-link"><i class="bi bi-pencil-fill"></i> Create
-                        one now!</a>
-                </div>
-            {% endif %}
-
-
-
-
-        </div>
-        <div class="col-md-4">
-            <div class="card">
+        <div class="col-md-4 order-md-1">
+            <!-- User Information -->
+            <div class="card mb-3">
                 <div class="card-header">
                     <h5 class="card-title">Your Information</h5>
                 </div>
@@ -58,11 +28,12 @@
                     <p class="card-text">Role: User</p>
                     {% endif %}
                     <a href="{{ url_for('auth.profile') }}" class="btn-link"><i class="bi bi-person-lines-fill"></i>
-                        Goto Profile</a>
+                        Go to Profile</a>
                 </div>
             </div>
 
-            <div class="card mt-3">
+            <!-- User Tags -->
+            <div class="card mb-3">
                 <div class="card-header">
                     <h5 class="card-title">Your Tags</h5>
                 </div>
@@ -82,7 +53,8 @@
                 </div>
             </div>
 
-            <div class="card mt-3">
+            <!-- Memories from This Day -->
+            <div class="card">
                 <div class="card-header">
                     <h5 class="card-title">Memories from This Day</h5>
                 </div>
@@ -96,20 +68,43 @@
                                 <small>{{ format_years_ago(entry.date_created) }}</small>
                             </div>
                             <p class="mb-1">{{ entry.content[:50] }}...</p>
-                            <small>Last updated: {{ convert_utc_to_ist_str(entry.last_updated, show_time=False)
-                                }}</small>
+                            <small>Last updated: {{ convert_utc_to_ist_str(entry.last_updated, show_time=False) }}</small>
                         </a>
                         {% endfor %}
                     </div>
-
                     {% else %}
                     <p>No memories from this day in previous years.</p>
                     {% endif %}
                 </div>
             </div>
+        </div>
+        
+        <div class="col-md-8 order-md-2">
+            <h1 class="display-4">Welcome, {{ user.username }}</h1>
+            <p class="lead">We're glad to see you here! This is your dashboard where you can manage your journal entries
+                and tags.</p>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <a href="#" class="btn btn-primary btn-sm me-2"><i class="bi bi-database-fill-add"></i> Add Entry</a>
+                    <a href="#" class="btn btn-secondary btn-sm"><i class="bi bi-eye-fill"></i> View All</a>
+                </div>
+                <div>
+                    <a href="#" class="btn btn-primary btn-sm"><i class="bi bi-pencil-fill"></i> Create Tag</a>
+                </div>
+            </div>
+            <hr>
+            <br>
 
+            <!-- Recent Journal Entries -->
+            <h3>Your Recent Journal Entries</h3>
 
-
+            {% if user_journal_entries %}
+                {% include '_user_journal_entries.html' %}
+            {% else %}
+                <div class="alert alert-warning" role="alert">
+                    You have no journal entries yet. <a href="#" class="alert-link"><i class="bi bi-pencil-fill"></i> Create one now!</a>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
