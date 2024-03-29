@@ -5,7 +5,7 @@
 
 from flask import render_template, url_for, flash, redirect, current_app
 from flask_login import login_user, login_required, current_user, logout_user
-from sqlalchemy import desc
+from sqlalchemy import desc, extract
 
 from app.forms.auth_forms import UserLoginForm, EmailRegistrationForm, UserRegistrationForm
 from app.models.user import User
@@ -13,10 +13,11 @@ from app.models.journal_entry import JournalEntry
 from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
 from scripts.email_message import EmailMessage
-from scripts.utils import count_words, convert_utc_to_ist_str
+from scripts.utils import count_words, convert_utc_to_ist_str, format_years_ago
 from config import EmailConfig
 
 import logging
+from datetime import datetime
 import requests
 
 from . import auth_bp
@@ -58,13 +59,40 @@ def login():
 @login_required
 def dashboard():
     user = current_user
-    user_journal_entries = JournalEntry.query.filter_by(author_id=current_user.id).order_by(desc(JournalEntry.last_updated)).all()
+    # Last 10 journal Entries
+    user_journal_entries = JournalEntry.query.filter_by(
+        author_id=current_user.id
+    ).order_by(
+        desc(JournalEntry.last_updated)
+    ).limit(10).all()
+
+    
+    # Get today's date in MM-DD format
+    today_date = datetime.now().strftime('%m-%d')
+
+    # Extract month and day from today's date
+    month, day = map(int, today_date.split('-'))
+
+    # Get the current year
+    current_year = datetime.now().year
+    
+    # Query journal entries for the current user on the given month and day, excluding the current year
+    onthis_day_journal = JournalEntry.query.filter(
+        (JournalEntry.author_id == current_user.id) &
+        (extract('month', JournalEntry.date_created) == month) &
+        (extract('day', JournalEntry.date_created) == day) &
+        (extract('year', JournalEntry.date_created) != current_year)
+    ).all()
+        
     return render_template(
         'dashboard.html', 
         user=user,
         user_journal_entries = user_journal_entries,
-        convert_utc_to_ist_str=convert_utc_to_ist_str
+        onthis_day_journal=onthis_day_journal,
+        convert_utc_to_ist_str=convert_utc_to_ist_str,
+        format_years_ago=format_years_ago
     )
+
 
 @auth_bp.route('/profile')
 @login_required
@@ -87,7 +115,8 @@ def profile():
         total_journal_entries=total_journal_entries, 
         total_tags=total_tags, 
         total_words_in_journal_entries=total_words_in_journal_entries,
-        recent_journal_entries=recent_journal_entries
+        recent_journal_entries=recent_journal_entries,
+        convert_utc_to_ist_str=convert_utc_to_ist_str
     )
 
 @auth_bp.route('/logout', methods=['GET', 'POST'])

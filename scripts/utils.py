@@ -44,20 +44,50 @@ def utcnow():
     return datetime.now(timezone.utc)
 
 
-def convert_utc_to_ist_str(dt):
+def convert_utc_to_ist_str(dt, show_time: bool = True, weekday: bool = True):
     """
     Convert a datetime object with timezone information UTC to a string representation in IST format.
 
     Args:
         dt (datetime.datetime): A datetime object with timezone information UTC.
+        show_time (bool, optional): Whether to include the time in the output string. Defaults to True.
+        weekday (bool, optional): Whether to include the weekday in the output string. Defaults to True.
 
     Returns:
         str: A string representation of the datetime object in IST format (e.g., "Tue, 26 Mar 2024 07:51:18 PM (IST)").
     """
     # Add 5 hours and 30 minutes to the datetime object
     dt_ist = dt + timedelta(hours=5, minutes=30)
-    
+
     # Format the datetime object
-    ist_format = dt_ist.strftime("%a, %d %b %Y %I:%M %p (IST)")
-    
+    ist_format = ""
+    if weekday:
+        ist_format += dt_ist.strftime("%a, ")
+    ist_format += dt_ist.strftime("%d %b %Y")
+    if show_time:
+        ist_format += dt_ist.strftime(" %I:%M %p (IST)")
+
     return ist_format
+
+
+def format_years_ago(date):
+    """
+    Format the given date into a human-readable string indicating how many years ago it occurred.
+
+    Args:
+        date (datetime.datetime): The date to format.
+
+    Returns:
+        str: A human-readable string indicating how many years ago the date occurred.
+    """
+    current_year = datetime.now().year
+    date_year = date.year
+
+    year_difference = current_year - date_year
+
+    if year_difference == 1:
+        return "Last year"
+    elif year_difference > 1:
+        return f"{year_difference} years ago"
+    else:
+        return "This year"

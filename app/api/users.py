@@ -173,7 +173,7 @@ class OnThisDayEntriesResource(Resource):
         # Serialize journal entries into JSON format
         entries_json = [entry.json() for entry in journal_entries]
 
-        return {'journal_entries': entries_json, "author": username, "day": f"{month}-{day} (month-day)"}, 200
+        return {'journal_entries': entries_json}, 200
     
 
 class UserTagsResource(Resource):
