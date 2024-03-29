@@ -35,6 +35,8 @@ class Tag(db.Model):
         self.color_blue = color_blue
         self.description = description
 
+        self.color_hex = self.get_hex_color_code()
+
     def __repr__(self):
         return f"Tag(name={self.name})"
     

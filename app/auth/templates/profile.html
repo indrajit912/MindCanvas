@@ -32,6 +32,7 @@
 {% endblock %}
 
 {% block content %}
+{% include 'flash_msgs.html' %}
 <div class="h-100 gradient-custom-2">
   <div class="container py-5 h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
@@ -85,23 +86,29 @@
             </div>
             
             <div class="row g-2">
-                {% for entry in recent_journal_entries %}
-                <div class="col-12 mb-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">{{ entry.title }}</h5>
-                                <a href="#" class="btn btn-sm btn-primary">View</a>
-                            </div>
-                            <div class="card-text">{{ entry.content[:100] }}...</div>
-                        </div>
-                        <div class="card-footer">
-                            <small class="text-muted">{{ entry.date_created.strftime("%B %d, %Y") }}</small>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+              {% for entry in recent_journal_entries %}
+              <div class="col-12 mb-3">
+                  <div class="card">
+                      <div class="card-body">
+                          <div class="d-flex justify-content-between align-items-center">
+                              <h5 class="card-title mb-0">{{ entry.title }}</h5>
+                              <a href="#" class="btn btn-sm btn-primary">View</a>
+                          </div>
+                          <div class="card-text">{{ entry.content[:100] }}...</div>
+                          <div class="tags mt-2">
+                              {% for tag in entry.tags %}
+                              <span class="badge" data-color="{{ tag.get_hex_color_code() }}">{{ tag.name }}</span>
+                              {% endfor %}
+                          </div>
+                      </div>
+                      <div class="card-footer">
+                          <small class="text-muted">{{ entry.date_created.strftime("%B %d, %Y") }}</small>
+                      </div>
+                  </div>
+              </div>
+              {% endfor %}
+          </div>
+          
             
           </div>
         </div>
@@ -110,4 +117,6 @@
   </div>
 
 </div>
+
+
 {% endblock %}

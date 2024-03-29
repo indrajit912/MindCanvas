@@ -9,12 +9,24 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
+{% include 'flash_msgs.html' %}
 <div class="container">
     <div class="row">
         <div class="col-md-8">
-            <h1>Welcome, {{ user.username }}</h1>
-            <h2>Your Recent Journal Entries</h2>
+            <h1 class="display-4">Welcome, {{ user.username }}</h1>
+            <p class="lead">We're glad to see you here! This is your dashboard where you can manage your journal entries and tags.</p>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <a href="#" class="btn btn-primary btn-sm me-2">Add Entry</a>
+                    <a href="#" class="btn btn-secondary btn-sm">View All</a>
+                </div>
+                <div>
+                    <a href="#" class="btn btn-primary btn-sm">Create Tag</a>
+                </div>
+            </div>
             <hr>
+            <br>
+            <h3>Your Recent Journal Entries</h3>
             {% for entry in user_journal_entries %}
             <div class="card mb-3">
                 <div class="card-header">
@@ -22,10 +34,15 @@
                 </div>
                 <div class="card-body">
                     <p class="card-text">{{ entry.content[:100] }}...</p>
-                    <a href="{{ url_for('journal_entry', entry_id=entry.id) }}" class="btn btn-primary">View Entry</a>
+                    <div class="tags mt-2">
+                        {% for tag in entry.tags %}
+                        <span class="badge badge-sm mr-1" data-color="{{ tag.get_hex_color_code() }}">{{ tag.name }}</span>
+                        {% endfor %}
+                    </div>
+                    <a href="#" class="btn btn-sm btn-primary mt-2">View Entry</a>
                 </div>
                 <div class="card-footer text-muted">
-                    Last updated: {{ entry.last_updated.strftime('%Y-%m-%d %H:%M:%S') }}
+                    Last updated: {{ convert_utc_to_ist_str(entry.last_updated) }}
                 </div>
             </div>
             {% endfor %}
@@ -33,7 +50,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title">User Information</h5>
+                    <h5 class="card-title">Your Information</h5>
                 </div>
                 <div class="card-body">
                     <p class="card-text">Email: {{ user.email }}</p>
@@ -43,6 +60,18 @@
                     {% else %}
                     <p class="card-text">Role: User</p>
                     {% endif %}
+                </div>
+            </div>
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title">Your Tags</h5>
+                </div>
+                <div class="card-body">
+                    <div class="tags">
+                        {% for tag in user.tags %}
+                        <span class="badge badge-sm mr-1" data-color="{{ tag.get_hex_color_code() }}">{{ tag.name }}</span>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>

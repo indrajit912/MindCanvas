@@ -13,7 +13,7 @@ from app.models.journal_entry import JournalEntry
 from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
 from scripts.email_message import EmailMessage
-from scripts.utils import count_words
+from scripts.utils import count_words, convert_utc_to_ist_str
 from config import EmailConfig
 
 import logging
@@ -62,7 +62,8 @@ def dashboard():
     return render_template(
         'dashboard.html', 
         user=user,
-        user_journal_entries = user_journal_entries
+        user_journal_entries = user_journal_entries,
+        convert_utc_to_ist_str=convert_utc_to_ist_str
     )
 
 @auth_bp.route('/profile')
