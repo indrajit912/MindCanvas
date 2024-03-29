@@ -3,7 +3,7 @@
 # Created On: Mar 24, 2024
 #
 
-from flask import render_template, url_for, flash, redirect, current_app
+from flask import render_template, url_for, flash, redirect, current_app, request, session
 from flask_login import login_user, login_required, current_user, logout_user
 from sqlalchemy import desc, extract
 
@@ -41,6 +41,7 @@ def login():
             if user.check_password(form.passwd.data):
                 # Password matched!
                 login_user(user)
+                session['entries_unlocked'] = False
                 flash("Login successful!", 'success')
                 logger.info(f"User '{user.email}' successfully logged in.")
 
@@ -91,8 +92,56 @@ def dashboard():
         user_journal_entries = user_journal_entries,
         onthis_day_journal=onthis_day_journal,
         convert_utc_to_ist_str=convert_utc_to_ist_str,
-        format_years_ago=format_years_ago
+        format_years_ago=format_years_ago,
+        redirect_destination='dashboard'
     )
+
+
+@auth_bp.route('/unlock-entries/<destination>', methods=['POST'])
+@login_required
+def unlock_entries(destination):
+    password = request.form.get('password')
+    print(destination)
+
+    # Check if the password is correct
+    if current_user.check_password(password):
+        # Save a flag in session indicating that all locked entries are unlocked
+        session['entries_unlocked'] = True
+        flash('All locked entries have been successfully unlocked!', 'success')
+    else:
+        flash('Incorrect password. Please try again.', 'danger')
+
+    # Redirect to the specified destination
+    if destination == 'dashboard':
+        return redirect(url_for('auth.dashboard'))
+    elif destination == 'profile':
+        return redirect(url_for('auth.profile'))
+    else:
+        # Handle invalid destination
+        return redirect(url_for('auth.dashboard')) 
+
+
+@auth_bp.route('/lock-entries/<destination>', methods=['POST'])
+@login_required
+def lock_entries(destination):
+    password = request.form.get('password')
+
+    # Check if the password is correct
+    if current_user.check_password(password):
+        # Save a flag in session indicating that all locked entries are unlocked
+        session['entries_unlocked'] = False
+        flash('All unlocked entries have been successfully locked!', 'success')
+    else:
+        flash('Incorrect password. Please try again.', 'danger')
+
+    # Redirect to the specified destination
+    if destination == 'dashboard':
+        return redirect(url_for('auth.dashboard'))
+    elif destination == 'profile':
+        return redirect(url_for('auth.profile'))
+    else:
+        # Handle invalid destination
+        return redirect(url_for('auth.dashboard')) 
 
 
 @auth_bp.route('/profile')
@@ -102,7 +151,11 @@ def profile():
     journal_entries = current_user.journal_entries
     tags = current_user.tags
     # Query the database for the last six journal entries of the current user
-    recent_journal_entries = JournalEntry.query.filter_by(author_id=current_user.id).order_by(JournalEntry.date_created.desc()).limit(6).all()
+    user_journal_entries = JournalEntry.query.filter_by(
+        author_id=current_user.id
+    ).order_by(
+        JournalEntry.date_created.desc()
+    ).limit(6).all()
     
     # Count the total number of journal entries, tags, and words
     total_journal_entries = len(journal_entries)
@@ -116,8 +169,9 @@ def profile():
         total_journal_entries=total_journal_entries, 
         total_tags=total_tags, 
         total_words_in_journal_entries=total_words_in_journal_entries,
-        recent_journal_entries=recent_journal_entries,
-        convert_utc_to_ist_str=convert_utc_to_ist_str
+        user_journal_entries=user_journal_entries,
+        convert_utc_to_ist_str=convert_utc_to_ist_str,
+        redirect_destination='profile'
     )
 
 @auth_bp.route('/logout', methods=['GET', 'POST'])

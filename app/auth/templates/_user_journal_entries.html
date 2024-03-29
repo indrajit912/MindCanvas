@@ -1,0 +1,103 @@
+<!-- app/auth/templates/_user_journal_entries.html -->
+
+{% for entry in user_journal_entries %}
+<div class="card mb-3">
+
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            {% if not entry.locked %}
+            {{ entry.title }}
+            {% else %}
+            This entry is Locked!
+            {% endif %}
+        </h5>
+    </div>
+
+    <div class="card-body">
+        {% if entry.locked and not session.get('entries_unlocked') %}
+        <p class="card-text">This entry is locked. Click on the lock icon to unlock it.</p>
+        {% else %}
+        <p class="card-text">{{ entry.content[:100] }}...</p>
+        {% endif %}
+
+        {% if not entry.locked or session.get('entries_unlocked') %}
+        <div class="tags mt-2">
+            {% for tag in entry.tags %}
+            <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="mt-3">
+            <a href="#" class="text-primary me-2"><i class="bi bi-pencil-fill"></i> Edit</a>
+            <a href="#" class="text-secondary"><i class="bi bi-eye-fill"></i> View</a>
+            <a href="#" class="text-danger me-2"><i class="bi bi-trash3"></i> Delete</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card-footer text-muted">
+        Last updated: {{ convert_utc_to_ist_str(entry.last_updated) }}
+        {% if entry.locked %}
+        {% if session.get('entries_unlocked') == True %}
+        <a href="#" class="text-success ms-2" data-bs-toggle="modal" data-bs-target="#lockModal"><i
+                class="bi bi-unlock-fill"></i> Lock</a>
+        {% else %}
+        <a href="#" class="text-danger ms-2" data-bs-toggle="modal" data-bs-target="#unlockModal"><i
+                class="bi bi-lock-fill"></i> Unlock</a>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+<!-- Unlock Modal -->
+<div class="modal fade" id="unlockModal" tabindex="-1" aria-labelledby="unlockModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="unlockModalLabel">Unlock Entries</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>This action will unlock all locked entries. Please enter your password to confirm.</p>
+                <form method="post" action="{{ url_for('auth.unlock_entries', destination=redirect_destination) }}">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <input type="hidden" name="unlock_all" value="true">
+                    <button type="submit" class="btn btn-primary btn-sm">Unlock Entries</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lock Modal -->
+<div class="modal fade" id="lockModal" tabindex="-1" aria-labelledby="lockModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lockModalLabel">Lock Entries</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>This action will lock all unlocked entries. Please enter your password to confirm.</p>
+                <form method="post" action="{{ url_for('auth.lock_entries', destination=redirect_destination) }}">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <input type="hidden" name="lock_all" value="true">
+                    <button type="submit" class="btn btn-primary btn-sm">Lock Entries</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
