@@ -1,9 +1,15 @@
 """
 config.py
 
+Module for configuring the MindCanvas application.
+
 Author: Indrajit Ghosh
 Created on: Mar 24, 2024
+
+This module provides configuration settings for the MindCanvas application,
+including email configuration, environment settings, and database URIs.
 """
+
 import os
 from os.path import join, dirname
 from dotenv import load_dotenv
