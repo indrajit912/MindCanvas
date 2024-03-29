@@ -59,6 +59,7 @@ def login():
 @login_required
 def dashboard():
     user = current_user
+    
     # Last 10 journal Entries
     user_journal_entries = JournalEntry.query.filter_by(
         author_id=current_user.id
@@ -75,7 +76,7 @@ def dashboard():
 
     # Get the current year
     current_year = datetime.now().year
-    
+
     # Query journal entries for the current user on the given month and day, excluding the current year
     onthis_day_journal = JournalEntry.query.filter(
         (JournalEntry.author_id == current_user.id) &
@@ -83,7 +84,7 @@ def dashboard():
         (extract('day', JournalEntry.date_created) == day) &
         (extract('year', JournalEntry.date_created) != current_year)
     ).all()
-        
+
     return render_template(
         'dashboard.html', 
         user=user,

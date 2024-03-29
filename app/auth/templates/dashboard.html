@@ -14,10 +14,12 @@
     <div class="row">
         <div class="col-md-8">
             <h1 class="display-4">Welcome, {{ user.username }}</h1>
-            <p class="lead">We're glad to see you here! This is your dashboard where you can manage your journal entries and tags.</p>
+            <p class="lead">We're glad to see you here! This is your dashboard where you can manage your journal entries
+                and tags.</p>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <a href="#" class="btn btn-primary btn-sm me-2"><i class="bi bi-database-fill-add"></i> Add Entry</a>
+                    <a href="#" class="btn btn-primary btn-sm me-2"><i class="bi bi-database-fill-add"></i> Add
+                        Entry</a>
                     <a href="#" class="btn btn-secondary btn-sm"><i class="bi bi-eye-fill"></i> View All</a>
                 </div>
                 <div>
@@ -27,7 +29,8 @@
             <hr>
             <br>
             <h3>Your Recent Journal Entries</h3>
-            
+
+            {% if user_journal_entries %}
             {% for entry in user_journal_entries %}
             <div class="card mb-3">
                 <div class="card-header">
@@ -37,7 +40,7 @@
                     <p class="card-text">{{ entry.content[:100] }}...</p>
                     <div class="tags mt-2">
                         {% for tag in entry.tags %}
-                        <span class="badge badge-sm mr-1" data-color="{{ tag.get_hex_color_code() }}">{{ tag.name }}</span>
+                        <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
                         {% endfor %}
                     </div>
                     <div class="mt-3">
@@ -46,13 +49,19 @@
                         <a href="#" class="text-danger me-2"><i class="bi bi-trash3"></i> Delete</a>
                     </div>
                 </div>
-                
+
                 <div class="card-footer text-muted">
                     Last updated: {{ convert_utc_to_ist_str(entry.last_updated) }}
                 </div>
             </div>
             {% endfor %}
-            
+            {% else %}
+            <div class="alert alert-warning" role="alert">
+                You have no journal entries yet. <a href="#" class="alert-link"><i class="bi bi-pencil-fill"></i> Create one now!</a>
+            </div>
+            {% endif %}
+
+
         </div>
         <div class="col-md-4">
             <div class="card">
@@ -68,8 +77,9 @@
                     {% else %}
                     <p class="card-text">Role: User</p>
                     {% endif %}
-                    <a href="{{ url_for('auth.profile') }}" class="btn-link"><i class="bi bi-person-lines-fill"></i> Goto Profile</a>
-                </div>                
+                    <a href="{{ url_for('auth.profile') }}" class="btn-link"><i class="bi bi-person-lines-fill"></i>
+                        Goto Profile</a>
+                </div>
             </div>
 
             <div class="card mt-3">
@@ -79,11 +89,13 @@
                 <div class="card-body">
                     <div class="tags">
                         {% if user.tags %}
-                            {% for tag in user.tags %}
-                            <span class="badge badge-sm mr-1" data-color="{{ tag.get_hex_color_code() }}">{{ tag.name }}</span>
-                            {% endfor %}
+                        {% for tag in user.tags %}
+                        <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+                        {% endfor %}
                         {% else %}
-                            <p class="card-text">No tags yet. <a href="#">Create one!</a></p>
+                        <div class="alert alert-warning" role="alert">
+                            You have no tags yet. <a href="#" class="alert-link"><i class="bi bi-pencil-fill"></i> Create one now!</a>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -103,17 +115,18 @@
                                 <small>{{ format_years_ago(entry.date_created) }}</small>
                             </div>
                             <p class="mb-1">{{ entry.content[:50] }}...</p>
-                            <small>Last updated: {{ convert_utc_to_ist_str(entry.last_updated, show_time=False) }}</small>
+                            <small>Last updated: {{ convert_utc_to_ist_str(entry.last_updated, show_time=False)
+                                }}</small>
                         </a>
                         {% endfor %}
                     </div>
-            
+
                     {% else %}
                     <p>No memories from this day in previous years.</p>
                     {% endif %}
                 </div>
             </div>
-            
+
 
 
         </div>

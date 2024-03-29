@@ -35,8 +35,6 @@ class Tag(db.Model):
         self.color_blue = color_blue
         self.description = description
 
-        self.color_hex = self.get_hex_color_code()
-
     def __repr__(self):
         return f"Tag(name={self.name})"
     
@@ -57,7 +55,7 @@ class Tag(db.Model):
     def color_rgb(self):
         return f'rgb({self.color_red}, {self.color_green}, {self.color_blue})'
     
-    def get_hex_color_code(self):
+    def color_hex(self):
         """
         Returns the hexadecimal color code representation of the RGB color values.
 
@@ -77,7 +75,7 @@ class Tag(db.Model):
             'color_red': self.color_red,
             'color_green': self.color_green,
             'color_blue': self.color_blue,
-            'color_hex': self.get_hex_color_code(), 
+            'color_hex': self.color_hex(), 
             'creator_id': self.creator_id,
             'date_created': self.format_datetime_to_str(self.date_created),
             'last_updated': self.format_datetime_to_str(self.last_updated)
