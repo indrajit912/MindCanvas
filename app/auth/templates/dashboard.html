@@ -2,14 +2,50 @@
   app/auth/templates/auth/dashboard.html 
   Author: Indrajit Ghosh
   Created On: Feb 02, 2024
+  Modified On: Mar 29, 2024
 -->
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block title %}Dashboard{% endblock %}
 
-
 {% block content %}
-    {% include 'flash_msgs.html' %}
-    Welcome, <h5 class="card-header">{{ user.fullname }}</h5>
-
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>Welcome, {{ user.username }}</h1>
+            <h2>Your Recent Journal Entries</h2>
+            <hr>
+            {% for entry in user_journal_entries %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{{ entry.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ entry.content[:100] }}...</p>
+                    <a href="{{ url_for('journal_entry', entry_id=entry.id) }}" class="btn btn-primary">View Entry</a>
+                </div>
+                <div class="card-footer text-muted">
+                    Last updated: {{ entry.last_updated.strftime('%Y-%m-%d %H:%M:%S') }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">User Information</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Email: {{ user.email }}</p>
+                    <p class="card-text">Joined: {{ user.date_joined.strftime('%Y-%m-%d') }}</p>
+                    {% if user.is_admin %}
+                    <p class="card-text">Role: Admin</p>
+                    {% else %}
+                    <p class="card-text">Role: User</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
