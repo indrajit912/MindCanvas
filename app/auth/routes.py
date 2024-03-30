@@ -142,12 +142,12 @@ def profile():
     total_tags = len(tags)
     total_words_in_journal_entries = sum(count_words(entry.content) for entry in journal_entries)
 
-    # Query the database for the last six journal entries of the current user
+    # Query the database for the last five journal entries of the current user
     user_journal_entries = JournalEntry.query.filter_by(
         author_id=current_user.id
     ).order_by(
         JournalEntry.date_created.desc()
-    ).limit(6).all()
+    ).limit(5).all()
 
     
     # Pass the count_words function to the template
