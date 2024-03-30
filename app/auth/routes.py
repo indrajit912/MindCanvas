@@ -3,11 +3,12 @@
 # Created On: Mar 24, 2024
 #
 
-from flask import render_template, url_for, flash, redirect, current_app, request, session
+from flask import render_template, url_for, flash, redirect, current_app, request, session, abort
 from flask_login import login_user, login_required, current_user, logout_user
 from sqlalchemy import desc, extract
 
 from app.forms.auth_forms import UserLoginForm, EmailRegistrationForm, UserRegistrationForm
+from app.forms.user_forms import AddEntryForm
 from app.models.user import User
 from app.models.journal_entry import JournalEntry
 from app.utils.decorators import logout_required
@@ -97,6 +98,70 @@ def dashboard():
     )
 
 
+@auth_bp.route('/users/<int:user_id>/journal_entries')
+@login_required
+def user_journal_entries(user_id):
+    # Check if the current user's ID matches the provided user_id
+    if current_user.id != user_id:
+        abort(403)  # Forbidden - Current user does not have access to view another user's journal entries
+
+    # Get the current user's journal entries and tags
+    journal_entries = current_user.journal_entries
+    tags = current_user.tags
+
+    # Count the total number of journal entries, tags, and words
+    total_journal_entries = len(journal_entries)
+    total_tags = len(tags)
+    total_words_in_journal_entries = sum(count_words(entry.content) for entry in journal_entries)
+
+    # Query all JournalEntry objects associated with the specified user_id
+    user_journal_entries = JournalEntry.query.filter_by(
+        author_id=user_id
+    ).order_by(JournalEntry.date_created.desc()).all()
+
+    return render_template(
+        'user_all_entries.html',
+        user_journal_entries=user_journal_entries,
+        convert_utc_to_ist_str=convert_utc_to_ist_str,
+        redirect_destination='user-all-entries',
+        total_journal_entries=total_journal_entries,
+        total_tags=total_tags,
+        total_words_in_journal_entries=total_words_in_journal_entries
+    )
+
+
+@auth_bp.route('/profile')
+@login_required
+def profile():
+    # Get the current user's journal entries and tags
+    journal_entries = current_user.journal_entries
+    tags = current_user.tags
+
+    # Count the total number of journal entries, tags, and words
+    total_journal_entries = len(journal_entries)
+    total_tags = len(tags)
+    total_words_in_journal_entries = sum(count_words(entry.content) for entry in journal_entries)
+
+    # Query the database for the last six journal entries of the current user
+    user_journal_entries = JournalEntry.query.filter_by(
+        author_id=current_user.id
+    ).order_by(
+        JournalEntry.date_created.desc()
+    ).limit(6).all()
+
+    
+    # Pass the count_words function to the template
+    return render_template(
+        'profile.html',
+        user=current_user, 
+        total_journal_entries=total_journal_entries, 
+        total_tags=total_tags, 
+        total_words_in_journal_entries=total_words_in_journal_entries,
+        user_journal_entries=user_journal_entries,
+        convert_utc_to_ist_str=convert_utc_to_ist_str,
+        redirect_destination='profile'
+    )
+
 @auth_bp.route('/unlock-entries/<destination>', methods=['POST'])
 @login_required
 def unlock_entries(destination):
@@ -116,6 +181,8 @@ def unlock_entries(destination):
         return redirect(url_for('auth.dashboard'))
     elif destination == 'profile':
         return redirect(url_for('auth.profile'))
+    elif destination == 'user-all-entries':
+        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
     else:
         # Handle invalid destination
         return redirect(url_for('auth.dashboard')) 
@@ -139,40 +206,75 @@ def lock_entries(destination):
         return redirect(url_for('auth.dashboard'))
     elif destination == 'profile':
         return redirect(url_for('auth.profile'))
+    elif destination == 'user-all-entries':
+        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
     else:
         # Handle invalid destination
         return redirect(url_for('auth.dashboard')) 
-
-
-@auth_bp.route('/profile')
+    
+@auth_bp.route('/users/<int:user_id>/add_entry', methods=['GET', 'POST'])
 @login_required
-def profile():
-    # Get the current user's journal entries and tags
-    journal_entries = current_user.journal_entries
-    tags = current_user.tags
-    # Query the database for the last six journal entries of the current user
-    user_journal_entries = JournalEntry.query.filter_by(
-        author_id=current_user.id
-    ).order_by(
-        JournalEntry.date_created.desc()
-    ).limit(6).all()
+def add_entry(user_id):
+    # Check if the current user is authorized to add an entry for the specified user
+    if current_user.id != user_id:
+        abort(403)  # Forbidden
+
+    form = AddEntryForm()
+
+    if form.validate_on_submit():
+        # Tags those are already created by the current_user
+        user_tags = current_user.tags
+
+        # Split the input string to get a list of tags
+        tags_for_the_new_entry = [tag.strip() for tag in form.tags.data.split(',') if tag.strip()]
+
+        # Create a json body for the api request
+        entry_json = {
+            "title": form.title.data,
+            "content": form.content.data,
+            "author_id": current_user.id,
+            "tags": tags_for_the_new_entry,
+            "locked": form.locked.data
+        }
+
+        print(entry_json)
+
+        # TODO: Make POST request to the api endpoint /api/create/journal_entry
+
+
+        # TODO: Flash success message if the response code is 200 or if there is some error
+        # in the response flash them
+
+
+        # Remove the user data
+        form = AddEntryForm(formdata=None)
+
+        # If the user is authorized, redirect to the route
+        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
+
+    # Render the add entry form template
+    return render_template('add_entry.html', form=form)
     
-    # Count the total number of journal entries, tags, and words
-    total_journal_entries = len(journal_entries)
-    total_tags = len(tags)
-    total_words_in_journal_entries = sum(count_words(entry.content) for entry in journal_entries)
-    
-    # Pass the count_words function to the template
-    return render_template(
-        'profile.html',
-        user=current_user, 
-        total_journal_entries=total_journal_entries, 
-        total_tags=total_tags, 
-        total_words_in_journal_entries=total_words_in_journal_entries,
-        user_journal_entries=user_journal_entries,
-        convert_utc_to_ist_str=convert_utc_to_ist_str,
-        redirect_destination='profile'
+# Route to handle the POST request to delete a JournalEntry
+@auth_bp.route('/delete_entry', methods=['POST'])
+@login_required
+def delete_entry():
+    journal_entry_id = request.form['journal_entry_id']
+
+    # Make DELETE request to the api
+    api_endpoint = f"{current_app.config['HOST']}/api/journal_entries/{journal_entry_id}"
+    response = requests.delete(
+        api_endpoint,
+        headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"}
     )
+    if response.status_code == 200:
+        logger.info(f"JournalEntry deleted successfully by {current_user.username}!")
+        flash(f"JournalEntry deleted successfully by {current_user.username}!", "success")
+    else:
+        logger.error(f"An error occurred while deleting the JournalEntry with ID {journal_entry_id}.")
+        flash("An error occurred during JournalEntry deletion. Please try again.", 'error')
+    return redirect(url_for('auth.dashboard'))
+
 
 @auth_bp.route('/logout', methods=['GET', 'POST'])
 @login_required

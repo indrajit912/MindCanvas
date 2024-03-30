@@ -1,9 +1,9 @@
 <!-- app/auth/templates/_user_journal_entries.html -->
 
 {% for entry in user_journal_entries %}
-<div class="card mb-3">
+<div class="card border-secotext-secondary mb-3">
 
-    <div class="card-header">
+    <div class="card-header text-secondary">
         <h5 class="card-title mb-0">
             {% if not entry.locked %}
             {{ entry.title }}
@@ -13,7 +13,7 @@
         </h5>
     </div>
 
-    <div class="card-body">
+    <div class="card-body text-secondary">
         {% if entry.locked and not session.get('entries_unlocked') %}
         <p class="card-text">This entry is locked. Click on the lock icon to unlock it.</p>
         {% else %}
@@ -28,9 +28,13 @@
         </div>
 
         <div class="mt-3">
-            <a href="#" class="text-primary me-2"><i class="bi bi-pencil-fill"></i> Edit</a>
-            <a href="#" class="text-secondary"><i class="bi bi-eye-fill"></i> View</a>
-            <a href="#" class="text-danger me-2"><i class="bi bi-trash3"></i> Delete</a>
+            
+            <form id="delete-form-{{ entry.id }}" method="post" action="{{ url_for('auth.delete_entry') }}">
+                <a href="#" class="icon-link icon-link-hover text-primary me-2"><i class="bi bi-pencil-fill"></i> Edit</a>
+                <a href="#" class="icon-link icon-link-hover text-secondary me-2"><i class="bi bi-eye-fill"></i> View</a>
+                <input type="hidden" name="journal_entry_id" value="{{ entry.id }}">
+                <a href="#" id="delBtn{{ entry.id }}" class="icon-link icon-link-hover text-danger me-2" onclick="deleteEntry('{{ entry.id }}')"><i class="bi bi-trash3"></i> Delete</a>
+            </form>
         </div>
         {% endif %}
     </div>
@@ -101,3 +105,13 @@
         </div>
     </div>
 </div>
+
+
+<script>
+    function deleteEntry(entryId) {
+        // Get the form element
+        var form = document.getElementById('delete-form-' + entryId);
+        // Submit the form
+        form.submit();
+    }
+</script>

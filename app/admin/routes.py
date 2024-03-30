@@ -51,4 +51,3 @@ def delete_user():
         logger.error(f"An error occurred while deleting the user with ID {user_id}. Admin: `{current_user.username}`.")
         flash("An error occurred during user deletion. Please try again.", 'error')
     return redirect(url_for('admin.home'))
-

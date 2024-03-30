@@ -1,0 +1,40 @@
+<!-- app/auth/templates/add_entry.html -->
+{% extends "base.html" %}
+
+{% block title %}Add Entry ({{ current_user.username }}){% endblock %}
+
+{% block content %}
+{% include 'flash_msgs.html' %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="display-4">Add New Journal Entry</h1>
+            <form method="post" action="{{ url_for('auth.add_entry', user_id=current_user.id) }}">
+                {{ form.csrf_token }}
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    {{ form.title(class="form-control", required=true, placeholder="E.g., My Awesome Journal Entry") }}
+                </div>
+                <div class="mb-3">
+                    <label for="content" class="form-label">Content</label>
+                    {{ form.content(class="form-control", required=true, rows=9, placeholder="E.g., Today I did something amazing...") }}
+                </div>
+                <div class="mb-3">
+                    <label for="tags" class="form-label">Tags</label>
+                    {{ form.tags(class="form-control", placeholder="Enter tags separated by commas") }}
+                </div>
+                <div class="mb-3 form-check">
+                    {{ form.locked(class="form-check-input") }}
+                    <label class="form-check-label" for="locked">Locked</label>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-database-fill-add"></i> Add</button>
+                        <a href="{{ url_for('auth.dashboard') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

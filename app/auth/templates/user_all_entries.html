@@ -1,0 +1,62 @@
+<!-- 
+  app/auth/templates/auth/user_all_entries.html 
+  Author: Indrajit Ghosh
+  Created On: Mar 30, 2024
+-->
+{% extends "base.html" %}
+
+{% block title %}All Entries ({{ current_user.username }}){% endblock %}
+
+{% block content %}
+{% include 'flash_msgs.html' %}
+
+{% if user_journal_entries %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h3 class="card-title mb-0">Journal Stats</h3>
+        </div>
+        <div class="card-body">
+          <div class="row justify-content-between">
+            <div class="col-md-4 text-center mb-3 mb-md-0">
+              <p class="mb-1 h5">{{ total_journal_entries }}</p>
+              <p class="small text-muted mb-0">Journal Entries</p>
+            </div>
+            <div class="col-md-4 text-center mb-3 mb-md-0">
+              <p class="mb-1 h5">{{ total_tags }}</p>
+              <p class="small text-muted mb-0">Tags</p>
+            </div>
+            <div class="col-md-4 text-center">
+              <p class="mb-1 h5">{{ total_words_in_journal_entries }}</p>
+              <p class="small text-muted mb-0">Word Count</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4 justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h3 class="card-title mb-0">Your Journal Entries</h3>
+        </div>
+        <div class="card-body">
+          {% include '_user_journal_entries.html' %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+{% else %}
+<div class="container mt-5">
+  <div class="alert alert-warning" role="alert">
+    You have no journal entries yet. <a href="#" class="alert-link"><i class="bi bi-pencil-fill"></i> Create one now!</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -35,6 +35,7 @@ class JournalEntryResource(Resource):
         parser.add_argument('content', type=str, required=True, help='Content is required')
         parser.add_argument('author_id', type=int, required=True, help='Author ID is required')
         parser.add_argument('tags', type=str, action='append', required=False, help='List of tag names')
+        parser.add_argument('locked', type=bool, required=False, help='Is this entry locked? (T/F)')
 
         args = parser.parse_args()
 
@@ -42,7 +43,8 @@ class JournalEntryResource(Resource):
         new_journal_entry = JournalEntry(
             title=args['title'],
             content=args['content'],
-            author_id=args['author_id']
+            author_id=args['author_id'],
+            locked=args.get('locked', False)  # Set locked attribute, defaulting to False if not provided
         )
 
         # Add tags to the journal entry
@@ -60,6 +62,7 @@ class JournalEntryResource(Resource):
                     )
                     db.session.add(tag)
                 new_journal_entry.tags.append(tag)
+
 
         # Add the new_journal_entry to the database
         db.session.add(new_journal_entry)
