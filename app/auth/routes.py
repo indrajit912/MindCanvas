@@ -166,7 +166,6 @@ def profile():
 @login_required
 def unlock_entries(destination):
     password = request.form.get('password')
-    print(destination)
 
     # Check if the password is correct
     if current_user.check_password(password):
@@ -174,7 +173,7 @@ def unlock_entries(destination):
         session['entries_unlocked'] = True
         flash('All locked entries have been successfully unlocked!', 'success')
     else:
-        flash('Incorrect password. Please try again.', 'danger')
+        flash('Incorrect password. Please try again.', 'error')
 
     # Redirect to the specified destination
     if destination == 'dashboard':
@@ -199,7 +198,7 @@ def lock_entries(destination):
         session['entries_unlocked'] = False
         flash('All unlocked entries have been successfully locked!', 'success')
     else:
-        flash('Incorrect password. Please try again.', 'danger')
+        flash('Incorrect password. Please try again.', 'error')
 
     # Redirect to the specified destination
     if destination == 'dashboard':
@@ -256,24 +255,39 @@ def add_entry(user_id):
     return render_template('add_entry.html', form=form)
     
 # Route to handle the POST request to delete a JournalEntry
-@auth_bp.route('/delete_entry', methods=['POST'])
+@auth_bp.route('/delete_entry/<destination>', methods=['POST'])
 @login_required
-def delete_entry():
+def delete_entry(destination):
+    password = request.form.get('password')
     journal_entry_id = request.form['journal_entry_id']
 
-    # Make DELETE request to the api
-    api_endpoint = f"{current_app.config['HOST']}/api/journal_entries/{journal_entry_id}"
-    response = requests.delete(
-        api_endpoint,
-        headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"}
-    )
-    if response.status_code == 200:
-        logger.info(f"JournalEntry deleted successfully by {current_user.username}!")
-        flash(f"JournalEntry deleted successfully by {current_user.username}!", "success")
+    if not current_user.check_password(password):
+        # If the password is not correct, then don't delete the entry
+        flash('Incorrect password. Please try again.', 'error')
     else:
-        logger.error(f"An error occurred while deleting the JournalEntry with ID {journal_entry_id}.")
-        flash("An error occurred during JournalEntry deletion. Please try again.", 'error')
-    return redirect(url_for('auth.dashboard'))
+        # Make DELETE request to the api
+        api_endpoint = f"{current_app.config['HOST']}/api/journal_entries/{journal_entry_id}"
+        response = requests.delete(
+            api_endpoint,
+            headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"}
+        )
+        if response.status_code == 200:
+            logger.info(f"JournalEntry deleted successfully by {current_user.username}!")
+            flash(f"JournalEntry deleted successfully by {current_user.username}!", "success")
+        else:
+            logger.error(f"An error occurred while deleting the JournalEntry with ID {journal_entry_id}.")
+            flash("An error occurred during JournalEntry deletion. Please try again.", 'error')
+    
+    # Redirect to the specified destination
+    if destination == 'dashboard':
+        return redirect(url_for('auth.dashboard'))
+    elif destination == 'profile':
+        return redirect(url_for('auth.profile'))
+    elif destination == 'user-all-entries':
+        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
+    else:
+        # Handle invalid destination
+        return redirect(url_for('auth.dashboard')) 
 
 
 @auth_bp.route('/logout', methods=['GET', 'POST'])
