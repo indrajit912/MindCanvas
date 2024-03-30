@@ -9,19 +9,32 @@
     <div class="row">
         <div class="col-md-8 offset-md-2">
             <h1 class="display-4">Add New Journal Entry</h1>
+            <br>
             <form method="post" action="{{ url_for('auth.add_entry', user_id=current_user.id) }}">
                 {{ form.csrf_token }}
                 <div class="mb-3">
-                    <label for="title" class="form-label">Title</label>
-                    {{ form.title(class="form-control", required=true, placeholder="E.g., My Awesome Journal Entry") }}
+                    {{ form.title(class="form-control", required=true, placeholder="Give a title. E.g., My Awesome Journal Entry") }}
                 </div>
                 <div class="mb-3">
-                    <label for="content" class="form-label">Content</label>
-                    {{ form.content(class="form-control", required=true, rows=9, placeholder="E.g., Today I did something amazing...") }}
+                    {{ form.content(class="form-control", required=true, rows=9, placeholder="Write the content here. E.g., Today I did something amazing...") }}
                 </div>
                 <div class="mb-3">
-                    <label for="tags" class="form-label">Tags</label>
-                    {{ form.tags(class="form-control", placeholder="Enter tags separated by commas") }}
+                    {{ form.tags(class="form-control", placeholder="Tags (separate with commas)")}}
+                    
+
+                    <!-- Dropdown menu for user_tags -->
+                    <div class="col-auto">
+                        <select id="usertagsDropdown" class="form-control" multiple onchange="updateUserTags()">
+                            <option value="" selected disabled>Select your tags</option>
+                            {% for tag in user_tags %}
+                                <option value="{{ tag.name }}" data-color="{{ tag.color_hex() }}">
+                                    {{ tag.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        
+                        
+                    </div>
                 </div>
                 <div class="mb-3 form-check">
                     {{ form.locked(class="form-check-input") }}
@@ -37,4 +50,44 @@
         </div>
     </div>
 </div>
+
+<script>
+    function updateUserTags() {
+        var tagsField = document.getElementById('tags');
+        var usertagsDropdown = document.getElementById('usertagsDropdown');
+        
+        if (usertagsDropdown.value === 'selectAll') {
+            // Select All option selected, set recipients to all user emails
+            var allTags = Array.from(usertagsDropdown.options).slice(2).map(option => option.value).join(', ');
+            tagsField.value = allTags;
+        } else {
+            // Single tag selected, append the tag to the tags field
+            var currentTags = tagsField.value;
+            var selectedUserTag = usertagsDropdown.value;
+
+            // Check if the tag is not already in the list before appending
+            if (!currentTags.includes(selectedUserTag)) {
+                if (currentTags) {
+                    tagsField.value = currentTags + ', ' + selectedUserTag;
+                } else {
+                    tagsField.value = selectedUserTag;
+                }
+            }
+        }
+    }
+</script>
+
+
+<script>
+    $(document).ready(function() {
+        $('#usertagsDropdown').select2({
+            templateResult: function(option) {
+                if (!option.id) { return option.text; }
+                return $('<span><span class="badge badge-sm mr-1" style="background-color:' + $(option.element).data('color') + '">' + option.text + '</span></span>');
+            }
+        });
+    });
+</script>
+
+
 {% endblock %}

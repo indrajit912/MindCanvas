@@ -220,9 +220,10 @@ def add_entry(user_id):
 
     form = AddEntryForm()
 
+    # Tags those are already created by the current_user
+    user_tags = current_user.tags
+
     if form.validate_on_submit():
-        # Tags those are already created by the current_user
-        user_tags = current_user.tags
 
         # Split the input string to get a list of tags
         tags_for_the_new_entry = [tag.strip() for tag in form.tags.data.split(',') if tag.strip()]
@@ -236,23 +237,27 @@ def add_entry(user_id):
             "locked": form.locked.data
         }
 
-        print(entry_json)
+        # Make a POST request to the API endpoint
+        api_url = current_app.config['HOST'] + '/api/create/journal_entry'
+        headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
+        response = requests.post(api_url, json=entry_json, headers=headers)
 
-        # TODO: Make POST request to the api endpoint /api/create/journal_entry
-
-
-        # TODO: Flash success message if the response code is 200 or if there is some error
-        # in the response flash them
+        # Check the response status code and flash messages accordingly
+        if response.status_code == 200:
+            flash('Journal entry added successfully!', 'success')
+            logger.info("A new JournalEntry added by `{current_user.username}`.")
+            # If the user is authorized, redirect to the route
+            return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
+        else:
+            flash('Failed to add journal entry. Please try again later.', 'error')
 
 
         # Remove the user data
         form = AddEntryForm(formdata=None)
 
-        # If the user is authorized, redirect to the route
-        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
-
     # Render the add entry form template
-    return render_template('add_entry.html', form=form)
+    return render_template('add_entry.html', form=form, user_tags=user_tags)
+
     
 # Route to handle the POST request to delete a JournalEntry
 @auth_bp.route('/delete_entry/<destination>', methods=['POST'])

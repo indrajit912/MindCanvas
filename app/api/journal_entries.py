@@ -47,6 +47,9 @@ class JournalEntryResource(Resource):
             locked=args.get('locked', False)  # Set locked attribute, defaulting to False if not provided
         )
 
+        # Add the new_journal_entry to the session
+        db.session.add(new_journal_entry)
+
         # Add tags to the journal entry
         if args.get('tags'):
             for tag_name in args['tags']:
