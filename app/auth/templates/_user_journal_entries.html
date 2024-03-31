@@ -6,12 +6,16 @@
     <div class="card-header text-secondary">
         <h5 class="card-title mb-0">
             <!-- TODO: the following logic needs to be updated! -->
-            {% if entry.locked and not session.get('entries_unlocked') %}
-            This entry is Locked!
+            {% if entry.locked %}
+                <a href="#" class="icon-link icon-link-hover text-danger me-2" data-bs-toggle="modal" data-bs-target="#unlockEntryModal{{ entry.id }}"><i class="bi bi-lock-fill"></i></a>
+                    {% if session.get('entries_unlocked') %}
+                        {{ entry.title }}
+                    {% else %}
+                        This entry is Locked!
+                    {% endif %}    
             {% else %}
-            <!-- TODO: implement this lock -->
-            <a href="#" class="icon-link icon-link-hover text-success me-2" data-bs-toggle="modal" data-bs-target="#lockEntryModal{{ entry.id }}"><i class="bi bi-unlock-fill"></i></a>
-            {{ entry.title }}
+                <a href="#" class="icon-link icon-link-hover text-success me-2" data-bs-toggle="modal" data-bs-target="#lockEntryModal{{ entry.id }}"><i class="bi bi-unlock-fill"></i></a>
+                {{ entry.title }}
             {% endif %}
         </h5>
     </div>
@@ -52,7 +56,7 @@
     </div>
 </div>
 
-<!-- Lock Entry Modal -->
+<!-- Toggle Entry lock Modal -->
 <div class="modal fade" id="lockEntryModal{{ entry.id }}" tabindex="-1" aria-labelledby="lockEntryModalLabel{{ entry.id }}" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -65,12 +69,13 @@
                     <br>
                         <code>{{ entry.title }}</code>
                     </p>
-                <form id="lock-entry-form-{{ entry.id }}" method="post" action="#">
+                <form id="lock-entry-form-{{ entry.id }}" method="post" action="{{ url_for('auth.toggle_entry_lock') }}">
                     <div class="mb-3">
                         <label for="password" class="form-label">Please enter your password to confirm.</label>
                         <input type="password" class="form-control" id="password" name="password" required>
                     </div>
                     <input type="hidden" name="journal_entry_id" value="{{ entry.id }}">
+                    <input type="hidden" name="destination" value="{{ redirect_destination }}">
                     <button id="lockEntryBtn{{ entry.id }}" type="submit" class="btn btn-primary btn-sm">Lock</button>
                 </form>
             </div>

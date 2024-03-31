@@ -258,6 +258,59 @@ def add_entry(user_id):
     # Render the add entry form template
     return render_template('add_entry.html', form=form, user_tags=user_tags)
 
+
+# Route to toggle the is_admin value
+@auth_bp.route('/toggle_entry_lock', methods=['POST'])
+@login_required
+def toggle_entry_lock():
+
+    # TODO: Get the password and `journal_entry_id` from the form
+    password = request.form.get('password')
+    journal_entry_id  = request.form.get('journal_entry_id')
+    destination = request.form.get('destination')
+
+    # Get the JournalEntry by ID
+    journal_entry = JournalEntry.query.get_or_404(journal_entry_id)
+    print(journal_entry)
+
+    # TODO: Make sure that the current_user is the author of this journal entry
+    if not journal_entry.author_id == current_user.id:
+        abort(403)
+
+    # Check if the password is correct
+    if current_user.check_password(password):
+        # TODO: Toggle the locked attribute of the journal_entry
+        payload = {"locked": not journal_entry.locked}
+
+        # Make PUT request to the endpoint 
+        api_endpoint = f"{current_app.config['HOST']}/api/journal_entries/{journal_entry_id}"
+        response = requests.put(
+            api_endpoint,
+            headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"},
+            json=payload
+        )
+        
+        if response.status_code == 200:
+            logger.info(f"`{current_user.username}` changed one of their JournalEntry as `locked`.")
+            flash("JournalEntry is now set to be a `locked` entry.")
+        else:
+            logger.error(f"Failed to update journal entry locked status. Status code: {response.status_code}\n{response.text}")
+            flash(f"API_ERROR: Failed to update journal entry locked status. Status code: {response.status_code}", 'error')
+    else:
+        flash('Incorrect password. Please try again.', 'error')
+
+    # Redirect to the specified destination
+    if destination == 'dashboard':
+        return redirect(url_for('auth.dashboard'))
+    elif destination == 'profile':
+        return redirect(url_for('auth.profile'))
+    elif destination == 'user-all-entries':
+        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
+    else:
+        # Handle invalid destination
+        return redirect(url_for('auth.dashboard')) 
+
+
     
 # Route to handle the POST request to delete a JournalEntry
 @auth_bp.route('/delete_entry/<destination>', methods=['POST'])
