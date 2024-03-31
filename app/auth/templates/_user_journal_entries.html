@@ -7,15 +7,17 @@
         <h5 class="card-title mb-0">
             <!-- TODO: the following logic needs to be updated! -->
             {% if entry.locked %}
-                <a href="#" class="icon-link icon-link-hover text-danger me-2" data-bs-toggle="modal" data-bs-target="#unlockEntryModal{{ entry.id }}"><i class="bi bi-lock-fill"></i></a>
-                    {% if session.get('entries_unlocked') %}
-                        {{ entry.title }}
-                    {% else %}
-                        This entry is Locked!
-                    {% endif %}    
+            <a href="#" class="icon-link icon-link-hover text-danger me-2" data-bs-toggle="modal"
+                data-bs-target="#unlockEntryModal{{ entry.id }}"><i class="bi bi-lock-fill"></i></a>
+            {% if session.get('entries_unlocked') %}
+            {{ entry.title }}
             {% else %}
-                <a href="#" class="icon-link icon-link-hover text-success me-2" data-bs-toggle="modal" data-bs-target="#lockEntryModal{{ entry.id }}"><i class="bi bi-unlock-fill"></i></a>
-                {{ entry.title }}
+            This entry is Locked!
+            {% endif %}
+            {% else %}
+            <a href="#" class="icon-link icon-link-hover text-success me-2" data-bs-toggle="modal"
+                data-bs-target="#lockEntryModal{{ entry.id }}"><i class="bi bi-unlock-fill"></i></a>
+            {{ entry.title }}
             {% endif %}
         </h5>
     </div>
@@ -37,7 +39,8 @@
         <div class="mt-3">
             <a href="#" class="icon-link icon-link-hover text-primary me-2"><i class="bi bi-pencil-fill"></i> Edit</a>
             <a href="#" class="icon-link icon-link-hover text-secondary me-2"><i class="bi bi-eye-fill"></i> View</a>
-            <a href="#" class="icon-link icon-link-hover text-danger me-2" data-bs-toggle="modal" data-bs-target="#delEntryModal{{ entry.id }}"><i class="bi bi-trash3"></i> Delete</a>
+            <a href="#" class="icon-link icon-link-hover text-danger me-2" data-bs-toggle="modal"
+                data-bs-target="#delEntryModal{{ entry.id }}"><i class="bi bi-trash3"></i> Delete</a>
         </div>
         {% endif %}
     </div>
@@ -57,7 +60,8 @@
 </div>
 
 <!-- Toggle Entry lock Modal -->
-<div class="modal fade" id="lockEntryModal{{ entry.id }}" tabindex="-1" aria-labelledby="lockEntryModalLabel{{ entry.id }}" aria-hidden="true">
+<div class="modal fade" id="lockEntryModal{{ entry.id }}" tabindex="-1"
+    aria-labelledby="lockEntryModalLabel{{ entry.id }}" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -67,9 +71,10 @@
             <div class="modal-body">
                 <p>This action will lock the Journal Entry with the title:
                     <br>
-                        <code>{{ entry.title }}</code>
-                    </p>
-                <form id="lock-entry-form-{{ entry.id }}" method="post" action="{{ url_for('auth.toggle_entry_lock') }}">
+                    <code>{{ entry.title }}</code>
+                </p>
+                <form id="lock-entry-form-{{ entry.id }}" method="post"
+                    action="{{ url_for('auth.toggle_entry_lock') }}">
                     <div class="mb-3">
                         <label for="password" class="form-label">Please enter your password to confirm.</label>
                         <input type="password" class="form-control" id="password" name="password" required>
@@ -86,8 +91,41 @@
     </div>
 </div>
 
+<!-- Toggle Entry unlock Modal -->
+<div class="modal fade" id="unlockEntryModal{{ entry.id }}" tabindex="-1"
+    aria-labelledby="unlockEntryModalLabel{{ entry.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="unlockEntryModalLabel{{ entry.id }}">Unlock this entry ?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>This action will unlock the Journal Entry with the title:
+                    <br>
+                    <code>{{ entry.title }}</code>
+                </p>
+                <form id="lock-entry-form-{{ entry.id }}" method="post"
+                    action="{{ url_for('auth.toggle_entry_lock') }}">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Please enter your password to confirm.</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <input type="hidden" name="journal_entry_id" value="{{ entry.id }}">
+                    <input type="hidden" name="destination" value="{{ redirect_destination }}">
+                    <button id="lockEntryBtn{{ entry.id }}" type="submit" class="btn btn-primary btn-sm">Unlock</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Delete Entry Modal -->
-<div class="modal fade" id="delEntryModal{{ entry.id }}" tabindex="-1" aria-labelledby="delEntryModalLabel{{ entry.id }}" aria-hidden="true">
+<div class="modal fade" id="delEntryModal{{ entry.id }}" tabindex="-1"
+    aria-labelledby="delEntryModalLabel{{ entry.id }}" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -97,9 +135,10 @@
             <div class="modal-body">
                 <p>This action will delete the Journal Entry with the title:
                     <br>
-                        <code>{{ entry.title }}</code>
-                    </p>
-                <form id="delete-form-{{ entry.id }}" method="post" action="{{ url_for('auth.delete_entry', destination=redirect_destination) }}">
+                    <code>{{ entry.title }}</code>
+                </p>
+                <form id="delete-form-{{ entry.id }}" method="post"
+                    action="{{ url_for('auth.delete_entry', destination=redirect_destination) }}">
                     <div class="mb-3">
                         <label for="password" class="form-label">Please enter your password to confirm.</label>
                         <input type="password" class="form-control" id="password" name="password" required>

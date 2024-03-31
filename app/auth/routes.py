@@ -67,14 +67,13 @@ def dashboard():
         author_id=current_user.id
     ).order_by(
         desc(JournalEntry.last_updated)
-    ).limit(10).all()
+    ).limit(3).all()
 
-    
     # Get today's date in MM-DD format
     today_date = datetime.now().strftime('%m-%d')
 
     # Extract month and day from today's date
-    month, day = map(int, today_date.split('-'))
+    month, day = today_date.split('-')
 
     # Get the current year
     current_year = datetime.now().year
@@ -86,6 +85,7 @@ def dashboard():
         (extract('day', JournalEntry.date_created) == day) &
         (extract('year', JournalEntry.date_created) != current_year)
     ).all()
+
 
     return render_template(
         'dashboard.html', 
@@ -147,7 +147,7 @@ def profile():
         author_id=current_user.id
     ).order_by(
         JournalEntry.date_created.desc()
-    ).limit(5).all()
+    ).limit(3).all()
 
     
     # Pass the count_words function to the template
@@ -264,7 +264,7 @@ def add_entry(user_id):
 @login_required
 def toggle_entry_lock():
 
-    # TODO: Get the password and `journal_entry_id` from the form
+    # Get the password and `journal_entry_id` from the form
     password = request.form.get('password')
     journal_entry_id  = request.form.get('journal_entry_id')
     destination = request.form.get('destination')
@@ -273,13 +273,13 @@ def toggle_entry_lock():
     journal_entry = JournalEntry.query.get_or_404(journal_entry_id)
     print(journal_entry)
 
-    # TODO: Make sure that the current_user is the author of this journal entry
+    # Make sure that the current_user is the author of this journal entry
     if not journal_entry.author_id == current_user.id:
         abort(403)
 
     # Check if the password is correct
     if current_user.check_password(password):
-        # TODO: Toggle the locked attribute of the journal_entry
+        # Toggle the locked attribute of the journal_entry
         payload = {"locked": not journal_entry.locked}
 
         # Make PUT request to the endpoint 
@@ -291,8 +291,8 @@ def toggle_entry_lock():
         )
         
         if response.status_code == 200:
-            logger.info(f"`{current_user.username}` changed one of their JournalEntry as `locked`.")
-            flash("JournalEntry is now set to be a `locked` entry.")
+            logger.info(f"`{current_user.username}` changed the `locked` status of one of their JournalEntry.")
+            flash("The 'locked' status of the JournalEntry has been updated!", 'success')
         else:
             logger.error(f"Failed to update journal entry locked status. Status code: {response.status_code}\n{response.text}")
             flash(f"API_ERROR: Failed to update journal entry locked status. Status code: {response.status_code}", 'error')
@@ -311,7 +311,6 @@ def toggle_entry_lock():
         return redirect(url_for('auth.dashboard')) 
 
 
-    
 # Route to handle the POST request to delete a JournalEntry
 @auth_bp.route('/delete_entry/<destination>', methods=['POST'])
 @login_required

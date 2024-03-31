@@ -16,21 +16,20 @@
             <h1 class="display-4">Welcome, {{ user.username }}</h1>
             <p class="lead">We're glad to see you here! This is your dashboard where you can manage your journal entries
                 and tags.</p>
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <a href="{{ url_for('auth.add_entry', user_id=user.id) }}" class="btn btn-primary btn-sm me-2"><i class="bi bi-database-fill-add"></i> Add
-                        Entry</a>
-                    <a href="{{ url_for('auth.user_journal_entries', user_id=user.id) }}"
-                        class="btn btn-secondary btn-sm me-2"><i class="bi bi-eye-fill"></i> View All
-                    </a>
-                    {% if onthis_day_journal %}
-                        <a href="#memories" class="btn btn-info btn-sm"><i class="bi bi-calendar-date"></i> Memories</a>
-                    {% endif %}
+            <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-center mb-3">
+                <div class="mb-2 mb-md-0">
+                    <a href="{{ url_for('auth.add_entry', user_id=user.id) }}" class="btn btn-primary btn-sm me-2"><i
+                            class="bi bi-database-fill-add"></i> Add Entry</a>
+                    <a href="#" class="btn btn-primary btn-sm me-2"><i class="bi bi-pencil-fill"></i> Create Tag</a>
                 </div>
-                <div>
-                    <a href="#" class="btn btn-primary btn-sm"><i class="bi bi-pencil-fill"></i> Create Tag</a>
+                {% if onthis_day_journal %}
+                <div class="mb-2 mb-md-0">
+                    <a href="#memories" class="btn btn-info btn-sm"><i class="bi bi-calendar-date"></i> Memories</a>
                 </div>
+                {% endif %}
             </div>
+
+
             <hr>
             <br>
 
@@ -39,8 +38,11 @@
             <div class="row">
                 <div class="col-md">
                     <div class="card shadow">
-                        <div class="card-header bg-primary text-white">
-                            <h3 class="card-title mb-0">Your Recent Journal Entries</h3>
+                        <div
+                            class="card-header bg-primary text-white d-flex flex-wrap justify-content-between align-items-center">
+                            <h3 class="card-title mb-0 me-md-3">Your Recent Journal Entries</h3>
+                            <a href="{{ url_for('auth.user_journal_entries', user_id=user.id) }}"
+                                class="alert-link ms-md-auto"><i class="bi bi-eye-fill"></i> View all</a>
                         </div>
                         <div class="card-body">
                             {% include '_user_journal_entries.html' %}
@@ -50,7 +52,7 @@
             </div>
             {% else %}
             <div class="alert alert-warning" role="alert">
-                You have no journal entries yet. <a href="#" class="alert-link"><i class="bi bi-pencil-fill"></i> Create
+                You have no journal entries yet. <a href="#" class="btn-link"><i class="bi bi-pencil-fill"></i> Create
                     one now!</a>
             </div>
             {% endif %}
@@ -97,6 +99,9 @@
                         </div>
                         {% endif %}
                     </div>
+                    <br>
+                    <a href="{{ url_for('auth.profile') }}" class="btn-link"><i class="bi bi-gear-fill"></i>
+                        Manage your tags.</a>
                 </div>
             </div>
 
