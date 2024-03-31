@@ -32,8 +32,6 @@
                                 </option>
                             {% endfor %}
                         </select>
-                        
-                        
                     </div>
                 </div>
                 <div class="mb-3 form-check">
@@ -43,7 +41,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <button type="submit" class="btn btn-primary"><i class="bi bi-database-fill-add"></i> Add</button>
-                        <a href="{{ url_for('auth.dashboard') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+                        <a class="btn btn-secondary" onclick="goBack()"><i class="bi bi-arrow-left"></i> Back</a>
                     </div>
                 </div>
             </form>
@@ -56,22 +54,16 @@
         var tagsField = document.getElementById('tags');
         var usertagsDropdown = document.getElementById('usertagsDropdown');
         
-        if (usertagsDropdown.value === 'selectAll') {
-            // Select All option selected, set recipients to all user emails
-            var allTags = Array.from(usertagsDropdown.options).slice(2).map(option => option.value).join(', ');
-            tagsField.value = allTags;
-        } else {
-            // Single tag selected, append the tag to the tags field
-            var currentTags = tagsField.value;
+        // Single tag selected, append the tag to the tags field
+        var currentTags = tagsField.value;
             var selectedUserTag = usertagsDropdown.value;
 
-            // Check if the tag is not already in the list before appending
-            if (!currentTags.includes(selectedUserTag)) {
-                if (currentTags) {
-                    tagsField.value = currentTags + ', ' + selectedUserTag;
-                } else {
-                    tagsField.value = selectedUserTag;
-                }
+        // Check if the tag is not already in the list before appending
+        if (!currentTags.includes(selectedUserTag)) {
+            if (currentTags) {
+                tagsField.value = currentTags + ', ' + selectedUserTag;
+            } else {
+                tagsField.value = selectedUserTag;
             }
         }
     }

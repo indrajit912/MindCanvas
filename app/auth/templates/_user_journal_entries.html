@@ -5,7 +5,6 @@
 
     <div class="card-header text-secondary">
         <h5 class="card-title mb-0">
-            <!-- TODO: the following logic needs to be updated! -->
             {% if entry.locked %}
             <a href="#" class="icon-link icon-link-hover text-danger me-2" data-bs-toggle="modal"
                 data-bs-target="#unlockEntryModal{{ entry.id }}"><i class="bi bi-lock-fill"></i></a>
@@ -37,10 +36,15 @@
         </div>
 
         <div class="mt-3">
-            <a href="#" class="icon-link icon-link-hover text-primary me-2"><i class="bi bi-pencil-fill"></i> Edit</a>
-            <a href="#" class="icon-link icon-link-hover text-secondary me-2"><i class="bi bi-eye-fill"></i> View</a>
+            <a href="#" class="icon-link icon-link-hover text-primary me-2" data-bs-toggle="modal"
+            data-bs-target="#editEntryModal{{ entry.id }}"><i class="bi bi-pencil-fill"></i> Edit</a>
+
+            <a href="{{ url_for('auth.view_entry', entry_id=entry.id) }}" class="icon-link icon-link-hover text-secondary me-2"><i class="bi bi-eye-fill"></i> View</a>
+            
+            <!-- Trigger for delete entry -->
             <a href="#" class="icon-link icon-link-hover text-danger me-2" data-bs-toggle="modal"
                 data-bs-target="#delEntryModal{{ entry.id }}"><i class="bi bi-trash3"></i> Delete</a>
+
         </div>
         {% endif %}
     </div>

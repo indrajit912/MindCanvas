@@ -93,6 +93,7 @@ Created On: Mar 24, 2024
     {% block content %}{% endblock %}
   </section>
 
+
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
     integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
@@ -107,30 +108,24 @@ Created On: Mar 24, 2024
   <!-- The following is needed for Select2 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
-  <script>
-    $(document).ready(function () {
-      $('.badge').each(function () {
-        var color = $(this).data('color');
-        $(this).css('background-color', color);
-      });
-    });
-  </script>
+  <!-- Other JS files -->
+  <script src="{{ url_for('main.static', filename='js/script.js') }}"></script>
 
   <!-- The follwoing is for displaying LaTeX code outputs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
   <!-- MathJax congigauration -->
   <script type="text/x-mathjax-config">
-        MathJax.Hub.Config({
-            tex2jax: {
-                inlineMath: [ ['\\(','\\)'] ],
-                displayMath: [ ['$$','$$'], ['\\[','\\]'] ],
-                processEscapes: true,
-                processClass: "mathjax"
-            },
-            "HTML-CSS": { availableFonts: ["TeX"] }
-        });
-    </script>
+      MathJax.Hub.Config({
+          tex2jax: {
+              inlineMath: [ ['\\(','\\)'] ],
+              displayMath: [ ['$$','$$'], ['\\[','\\]'] ],
+              processEscapes: true,
+              processClass: "mathjax"
+          },
+          "HTML-CSS": { availableFonts: ["TeX"] }
+      });
+  </script>
 </body>
 
 </html>

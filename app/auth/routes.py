@@ -8,7 +8,7 @@ from flask_login import login_user, login_required, current_user, logout_user
 from sqlalchemy import desc, extract
 
 from app.forms.auth_forms import UserLoginForm, EmailRegistrationForm, UserRegistrationForm
-from app.forms.user_forms import AddEntryForm
+from app.forms.user_forms import AddEntryForm, EditEntryForm
 from app.models.user import User
 from app.models.journal_entry import JournalEntry
 from app.utils.decorators import logout_required
@@ -250,6 +250,7 @@ def add_entry(user_id):
             return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
         else:
             flash('Failed to add journal entry. Please try again later.', 'error')
+            logger.error(f"`{current_user.username}` tried to add a new JournalEntry but error occurred.")
 
 
         # Remove the user data
@@ -271,7 +272,6 @@ def toggle_entry_lock():
 
     # Get the JournalEntry by ID
     journal_entry = JournalEntry.query.get_or_404(journal_entry_id)
-    print(journal_entry)
 
     # Make sure that the current_user is the author of this journal entry
     if not journal_entry.author_id == current_user.id:
@@ -309,6 +309,71 @@ def toggle_entry_lock():
     else:
         # Handle invalid destination
         return redirect(url_for('auth.dashboard')) 
+
+@auth_bp.route('/view_entry/<int:entry_id>', methods=['GET'])
+@login_required
+def view_entry(entry_id):
+    entry = JournalEntry.query.get_or_404(entry_id)
+    if entry.author_id != current_user.id:
+        abort(404)  # Or handle the case where the entry is not found or doesn't belong to the current user
+    return render_template(
+        'view_entry.html', 
+        entry=entry, 
+        convert_utc_to_ist_str=convert_utc_to_ist_str,
+        redirect_destination='user-all-entries',
+        user_tags=current_user.tags
+    )
+
+@auth_bp.route('/edit_entry', methods=['POST'])
+@login_required
+def edit_entry():
+    # Get the data
+    journal_entry_id = request.form['journal_entry_id']
+
+    # Get the JournalEntry by ID
+    journal_entry = JournalEntry.query.get_or_404(journal_entry_id)
+
+    # Make sure that the current_user is the author of this journal entry
+    if not journal_entry.author_id == current_user.id:
+        abort(403)
+
+    entry_title:str = request.form['title']
+    entry_content:str = request.form['content']
+    entry_tags:list =  [tag.strip() for tag in request.form['tags'].split(',') if tag.strip()]
+    # Check if the locked field is present in the form data
+    entry_locked = request.form.get('locked')
+    if entry_locked:
+        # Convert 'on' to True if the checkbox is checked
+        entry_locked = True
+    else:
+        # If the checkbox is not checked, set it to False
+        entry_locked = False
+
+    # Make the journal_entry json
+    entry_data = {
+        "title": entry_title,
+        "content": entry_content,
+        "tags": entry_tags,
+        "locked": entry_locked
+    }
+
+    # Make a PUT request to the API endpoint
+    api_url = current_app.config['HOST'] + f'/api/journal_entries/{journal_entry_id}'
+    headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
+    response = requests.put(api_url, json=entry_data, headers=headers)
+
+    # Check the response status code and flash messages accordingly
+    if response.status_code == 200:
+        logger.info("JournalEntry updated by `{current_user.username}`.")
+        flash('Journal entry updated successfully!', 'success')
+        
+    else:
+        logger.error(f"`{current_user.username}` tried to update journal entry but error occurred.")
+        flash('Failed to update journal entry. Please try again later.', 'error')
+        
+    
+    # If the user is authorized, redirect to the route
+    return redirect(url_for('auth.view_entry', entry_id=journal_entry_id))
 
 
 # Route to handle the POST request to delete a JournalEntry
