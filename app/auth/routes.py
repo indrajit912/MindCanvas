@@ -8,7 +8,7 @@ from flask_login import login_user, login_required, current_user, logout_user
 from sqlalchemy import desc, extract
 
 from app.forms.auth_forms import UserLoginForm, EmailRegistrationForm, UserRegistrationForm
-from app.forms.user_forms import AddEntryForm, EditEntryForm
+from app.forms.user_forms import AddEntryForm
 from app.models.user import User
 from app.models.journal_entry import JournalEntry
 from app.utils.decorators import logout_required
@@ -447,7 +447,7 @@ def register_email():
             msg = EmailMessage(
                 sender_email_id=EmailConfig.INDRAJITS_BOT_EMAIL_ID,
                 to=form.email.data,
-                subject="AdNotifier: New Account Registration",
+                subject=f"{current_app.config['FLASK_APP_NAME']}: New Account Registration",
                 email_html_text=_email_html_text
             )
 
@@ -492,7 +492,7 @@ def register_user(token):
         }
 
         # Send POST request to the API
-        api_user_post_url = current_app.config['HOST'] + '/api/user'
+        api_user_post_url = current_app.config['HOST'] + '/api/create/user'
         response = requests.post(
             api_user_post_url, 
             json=new_user_data,
