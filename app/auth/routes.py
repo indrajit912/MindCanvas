@@ -245,7 +245,7 @@ def add_entry(user_id):
         # Check the response status code and flash messages accordingly
         if response.status_code == 200:
             flash('Journal entry added successfully!', 'success')
-            logger.info("A new JournalEntry added by `{current_user.username}`.")
+            logger.info(f"A new JournalEntry added by `{current_user.username}`.")
             # If the user is authorized, redirect to the route
             return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
         else:
