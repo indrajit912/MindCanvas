@@ -52,7 +52,7 @@
             </div>
             {% else %}
             <div class="alert alert-warning" role="alert">
-                You have no journal entries yet. <a href="#" class="btn-link"><i class="bi bi-pencil-fill"></i> Create
+                You have no journal entries yet. <a href="{{ url_for('auth.add_entry', user_id=user.id) }}" class="btn-link"><i class="bi bi-pencil-fill"></i> Create
                     one now!</a>
             </div>
             {% endif %}

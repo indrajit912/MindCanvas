@@ -9,15 +9,16 @@
     <div class="card">
         <div class="card-body">
             <p class="text-muted">Created: {{ convert_utc_to_ist_str(entry.date_created) }}</p>
-            <p>{{ entry.content }}</p>
+            <!-- <p>{{ entry.content }}</p> -->
+            {% autoescape false %}
+            {{ entry.content | replace('\n', "<br />") }}
+            {% endautoescape %}
 
             {% if not entry.locked or session.get('entries_unlocked') %}
             <div class="tags mt-4 mb-3">
-                <div class="row">
+                <div class="tags mt-2">
                     {% for tag in entry.tags %}
-                    <div class="col-auto">
-                        <span class="badge bg-primary">{{ tag.name }}</span>
-                    </div>
+                    <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
                     {% endfor %}
                 </div>
             </div>
