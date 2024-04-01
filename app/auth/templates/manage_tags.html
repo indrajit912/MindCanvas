@@ -14,6 +14,7 @@
             <a href="{{ url_for('auth.create_tag', user_id=current_user.id) }}" class="btn btn-primary btn-sm"><i
                     class="bi bi-plus"></i> Create New Tag</a>
             <br>
+            {% if user_tags %}
             <ul class="list-group">
                 {% for tag in user_tags %}
                 <li class="list-group-item">
@@ -115,7 +116,8 @@
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form id="edit-form-{{ tag.id }}" method="post" action="{{ url_for('auth.update_tag') }}">
+                                <form id="edit-form-{{ tag.id }}" method="post"
+                                    action="{{ url_for('auth.update_tag') }}">
                                     <div class="mb-3">
                                         <label for="name" class="form-label"><strong>Name</strong></label>
                                         <input type="name" class="form-control" id="name" name="name"
@@ -135,7 +137,7 @@
                                     <input type="hidden" id="color_blue" name="color_blue">
                                     <input type="hidden" name="tag_id" value="{{ tag.id }}">
                                     <button id="editTagBtn{{ tag.id }}" type="submit"
-                                    class="btn btn-primary btn-sm">Update</button>
+                                        class="btn btn-primary btn-sm">Update</button>
                                 </form>
                             </div>
                             <div class="modal-footer">
@@ -146,6 +148,12 @@
                 </div>
                 {% endfor %}
             </ul>
+            {% else %}
+            <div class="alert alert-warning" role="alert">
+                You have no tags yet. <a href="{{ url_for('auth.create_tag', user_id=current_user.id) }}" class="alert-link"><i class="bi bi-pencil-fill"></i>
+                    Create one now!</a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

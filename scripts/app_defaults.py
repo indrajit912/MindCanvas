@@ -24,7 +24,7 @@ default_tags = [
     {'name': 'love', 'description': 'Tag for expressing affection, passion, and romantic feelings.', 'color_red': 255, 'color_green': 105, 'color_blue': 180},
     {'name': 'fear', 'description': 'Tag for expressing fear, apprehension, and concern.', 'color_red': 128, 'color_green': 128, 'color_blue': 128},
     {'name': 'food', 'description': 'Tag for food-related discussions, recipes, and culinary experiences.', 'color_red': 255, 'color_green': 0, 'color_blue': 255},
-    {'name': 'party', 'description': 'Tag for party-related topics, events, celebrations, and gatherings.', 'color_red': 255, 'color_green': 192, 'color_blue': 203}
+    {'name': 'party', 'description': 'Tag for party-related topics, events, celebrations, and gatherings.', 'color_red': 255, 'color_green': 192, 'color_blue': 203},
+    {'name': 'research', 'description': 'Tag for academic or scientific research topics and discussions.', 'color_red': 0, 'color_green': 128, 'color_blue': 0},
+    {'name': 'movie', 'description': 'Tag for discussions related to films, cinema, and movies.', 'color_red': 255, 'color_green': 165, 'color_blue': 0}
 ]
-
-

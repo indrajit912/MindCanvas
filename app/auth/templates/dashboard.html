@@ -94,7 +94,7 @@
                         {% endfor %}
                         {% else %}
                         <div class="alert alert-warning" role="alert">
-                            You have no tags yet. <a href="#" class="alert-link"><i class="bi bi-pencil-fill"></i>
+                            You have no tags yet. <a href="{{ url_for('auth.create_tag', user_id=current_user.id) }}" class="alert-link"><i class="bi bi-pencil-fill"></i>
                                 Create one now!</a>
                         </div>
                         {% endif %}
