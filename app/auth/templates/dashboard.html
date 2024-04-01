@@ -40,7 +40,7 @@
                     <div class="card shadow">
                         <div
                             class="card-header bg-primary text-white d-flex flex-wrap justify-content-between align-items-center">
-                            <h3 class="card-title mb-0 me-md-3">Your Recent Journal Entries</h3>
+                            <h3 class="card-title mb-0 me-md-3">Your Recent Journal Entries <i class="bi bi-journal-text"></i></h3>
                             <a href="{{ url_for('auth.user_journal_entries', user_id=user.id) }}"
                                 class="alert-link ms-md-auto"><i class="bi bi-eye-fill"></i> View all</a>
                         </div>
@@ -65,7 +65,7 @@
             <!-- User Information -->
             <div class="card mb-3 text-bg-warning">
                 <div class="card-header">
-                    <h5 class="card-title">Your Information</h5>
+                    <h5 class="card-title">Your Information <i class="bi bi-person"></i></h5>
                 </div>
                 <div class="card-body">
                     <p class="card-text">Fullname: {{ user.fullname }}</p>
@@ -84,7 +84,7 @@
             <!-- User Tags -->
             <div class="card text-bg-dark mb-3">
                 <div class="card-header">
-                    <h5 class="card-title">Your Tags</h5>
+                    <h5 class="card-title">Your Tags <i class="bi bi-tags"></i></h5>
                 </div>
                 <div class="card-body">
                     <div class="tags">
@@ -108,7 +108,7 @@
             <!-- Memories from This Day -->
             <div class="card text-bg-info">
                 <div class="card-header">
-                    <h5 class="card-title" id="memories">Memories from This Day</h5>
+                    <h5 class="card-title" id="memories">Memories from This Day <i class="bi bi-journal-album"></i></h5>
                 </div>
                 <div class="card-body">
                     {% if onthis_day_journal %}

@@ -294,7 +294,7 @@ def create_tag(user_id):
     user_tags = current_user.tags
 
     if form.validate_on_submit():
-        # Access RGB values from the form
+        # Get the data
         tag_name = Tag.preprocess_tag_name(form.name.data)
         description = form.description.data
         color_red = form.color_red.data
@@ -344,6 +344,34 @@ def create_tag(user_id):
     return render_template('create_tag.html', form=form, user_tags=user_tags)
 
 
+# Route to handle the POST request to delete a Tag
+@auth_bp.route('/delete_tag', methods=['POST'])
+@login_required
+def delete_tag():
+    password = request.form.get('password')
+    tag_id = request.form.get('tag_id')
+
+    if not current_user.check_password(password):
+        # If the password is not correct, then don't delete the entry
+        flash('Incorrect password. Please try again.', 'error')
+    else:
+        # Make DELETE request to the api
+        api_endpoint = f"{current_app.config['HOST']}/api/tags/{tag_id}"
+        response = requests.delete(
+            api_endpoint,
+            headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"}
+        )
+        if response.status_code == 200:
+            logger.info(f"Tag deleted successfully by {current_user.username}!")
+            flash(f"Tag deleted successfully!", "success")
+        else:
+            logger.error(f"An error occurred while deleting the Tag with ID {tag_id}.")
+            flash("An error occurred during Tag deletion. Please try again.", 'error')
+    
+    
+    return redirect(url_for('auth.manage_tags', user_id=current_user.id)) 
+
+    
 # Route to toggle the is_admin value
 @auth_bp.route('/toggle_entry_lock', methods=['POST'])
 @login_required
@@ -458,6 +486,51 @@ def edit_entry():
     
     # If the user is authorized, redirect to the route
     return redirect(url_for('auth.view_entry', entry_id=journal_entry_id))
+
+
+@auth_bp.route('/update_tag', methods=['POST'])
+@login_required
+def update_tag():
+    # Get the tag_id
+    tag_id = request.form.get('tag_id')
+
+    # Get the Tag by ID
+    tag = Tag.query.get_or_404(tag_id)
+
+    # Make sure that the current_user is the creator of this journal entry
+    if not tag.creator_id == current_user.id:
+        abort(403)
+
+    # Get the data
+    tag_name = Tag.preprocess_tag_name(request.form.get('name'))
+    description = request.form.get('description')
+    color_hex = request.form.get('color_hex')
+    color_red, color_green, color_blue = Tag.hex_to_rgb(color_hex)
+
+    tag_data = {
+        "name": tag_name,
+        "description": description,
+        "color_red": color_red,
+        "color_green": color_green,
+        "color_blue": color_blue
+    }
+  
+    # Make a PUT request to the API endpoint
+    api_url = current_app.config['HOST'] + f'/api/tags/{tag_id}'
+    headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
+    response = requests.put(api_url, json=tag_data, headers=headers)
+
+    # Check the response status code and flash messages accordingly
+    if response.status_code == 200:
+        logger.info("Tag updated by `{current_user.username}`.")
+        flash('Tag updated successfully!', 'success')
+        
+    else:
+        logger.error(f"`{current_user.username}` tried to update a Tag but error occurred.")
+        flash('Failed to update the Tag. Please try again later.', 'error')
+    
+    # If the user is authorized, redirect to the route
+    return redirect(url_for('auth.manage_tags', user_id=current_user.id))
 
 
 # Route to handle the POST request to delete a JournalEntry

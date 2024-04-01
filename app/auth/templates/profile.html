@@ -57,15 +57,15 @@
             <div class="row justify-content-between">
               <div class="col-md-4 text-center mb-3 mb-md-0">
                 <p class="mb-1 h5">{{ total_journal_entries }}</p>
-                <p class="small text-muted mb-0">Journal Entries</p>
+                <p class="small text-muted mb-0">Journal Entries <i class="bi bi-journal-text"></i></p>
               </div>
               <div class="col-md-4 text-center mb-3 mb-md-0">
                 <p class="mb-1 h5">{{ total_tags }}</p>
-                <p class="small text-muted mb-0">Tags</p>
+                <p class="small text-muted mb-0">Tags <i class="bi bi-tags"></i></p>
               </div>
               <div class="col-md-4 text-center">
                 <p class="mb-1 h5">{{ total_words_in_journal_entries }}</p>
-                <p class="small text-muted mb-0">Word Count</p>
+                <p class="small text-muted mb-0">Word Count <i class="bi bi-bar-chart"></i></p>
               </div>
             </div>
           </div>
@@ -95,7 +95,8 @@
               {% include '_user_journal_entries.html' %}
               {% else %}
               <div class="alert alert-warning" role="alert">
-                You have no journal entries yet. <a href="{{ url_for('auth.add_entry', user_id=user.id) }}" class="alert-link"><i class="bi bi-pencil-fill"></i> Create
+                You have no journal entries yet. <a href="{{ url_for('auth.add_entry', user_id=user.id) }}"
+                  class="alert-link"><i class="bi bi-pencil-fill"></i> Create
                   one now!</a>
               </div>
               {% endif %}

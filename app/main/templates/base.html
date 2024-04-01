@@ -40,8 +40,16 @@ Created On: Mar 24, 2024
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           {% if current_user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{{ url_for('auth.dashboard') }}"><i
-                class="bi bi-speedometer2"></i> Dashboard</a>
+            <a class="nav-link active" aria-current="page" href="{{ url_for('auth.dashboard') }}"><i class="bi bi-house-door-fill"></i> Dashboard</a>
+          </li>
+          <li>
+            <a class="nav-link active" aria-current="page"
+              href="{{ url_for('auth.user_journal_entries', user_id=current_user.id) }}"><i class="bi bi-journal-text"></i>
+              Entries</a>
+          </li>
+          <li>
+            <a class="nav-link active" aria-current="page"
+              href="{{ url_for('auth.manage_tags', user_id=current_user.id) }}"><i class="bi bi-tags"></i> Tags</a>
           </li>
           {% if current_user.is_admin %}
           <li class="nav-item">

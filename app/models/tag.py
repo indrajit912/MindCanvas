@@ -55,6 +55,28 @@ class Tag(db.Model):
     def color_rgb(self):
         return f'rgb({self.color_red}, {self.color_green}, {self.color_blue})'
     
+    @staticmethod
+    def hex_to_rgb(hex_color):
+        """
+        Convert a hexadecimal color code to RGB values.
+    
+        Args:
+            hex_color (str): The hexadecimal color code in the format '#RRGGBB'.
+    
+        Returns:
+            tuple: A tuple containing the RGB values as integers (red, green, blue).
+        """
+        # Remove '#' if present
+        if hex_color.startswith('#'):
+            hex_color = hex_color[1:]
+    
+        # Convert hexadecimal to RGB
+        red = int(hex_color[0:2], 16)
+        green = int(hex_color[2:4], 16)
+        blue = int(hex_color[4:6], 16)
+    
+        return red, green, blue
+    
     def color_hex(self):
         """
         Returns the hexadecimal color code representation of the RGB color values.
