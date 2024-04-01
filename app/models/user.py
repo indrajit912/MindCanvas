@@ -53,7 +53,6 @@ class User(db.Model, UserMixin):
     date_joined = db.Column(db.DateTime(timezone=True), default=utcnow)
     last_updated = db.Column(db.DateTime(timezone=True), default=utcnow)
     last_seen = db.Column(db.DateTime(timezone=True), default=utcnow)
-    # TODO: Create a column last_seen, rsa keypair
 
     journal_entries = db.relationship('JournalEntry', backref='author', lazy=True, cascade="all, delete-orphan")
     tags = db.relationship('Tag', backref='creator', lazy=True, cascade="all, delete-orphan")
