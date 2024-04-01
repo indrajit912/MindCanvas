@@ -213,6 +213,25 @@ def lock_entries(destination):
         # Handle invalid destination
         return redirect(url_for('auth.dashboard')) 
     
+@auth_bp.route('/users/<int:user_id>/manage_tags')
+@login_required
+def manage_tags(user_id):
+    # Check if the current user's ID matches the provided user_id
+    if current_user.id != user_id:
+        abort(403)  # Forbidden - Current user does not have access to view another user's journal entries
+
+    # Get the current user's tags
+    user_tags = current_user.tags
+
+    # Count the total number of journal entries, tags, and words
+    total_tags = len(user_tags)
+
+    return render_template(
+        'manage_tags.html',
+        user_tags=user_tags,
+        convert_utc_to_ist_str=convert_utc_to_ist_str
+    )
+    
 @auth_bp.route('/users/<int:user_id>/add_entry', methods=['GET', 'POST'])
 @login_required
 def add_entry(user_id):
@@ -260,7 +279,6 @@ def add_entry(user_id):
 
     # Render the add entry form template
     return render_template('add_entry.html', form=form, user_tags=user_tags)
-
 
 
 @auth_bp.route('/users/<int:user_id>/create_tag', methods=['GET', 'POST'])

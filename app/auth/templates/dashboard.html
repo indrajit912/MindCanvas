@@ -100,7 +100,7 @@
                         {% endif %}
                     </div>
                     <br>
-                    <a href="{{ url_for('auth.profile') }}" class="btn-link"><i class="bi bi-gear-fill"></i>
+                    <a href="{{ url_for('auth.manage_tags', user_id=user.id) }}" class="btn-link"><i class="bi bi-gear-fill"></i>
                         Manage your tags.</a>
                 </div>
             </div>

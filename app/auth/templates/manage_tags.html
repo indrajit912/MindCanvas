@@ -1,0 +1,141 @@
+<!-- app/auth/templates/manage_tags.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Manage Tags ({{ current_user.username}}){% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Manage Your Tags</h1>
+    <div class="row">
+        <div class="col-md-8">
+            <h2 class="mb-3">Your Tags</h2>
+            <a href="{{ url_for('auth.create_tag', user_id=current_user.id) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus"></i> Create New Tag</a>
+            <br>
+            <ul class="list-group">
+                {% for tag in user_tags %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+                        <div class="d-flex flex-wrap flex-md-nowrap">
+                            <div class="me-2 mb-2 mb-md-0">
+                                <a href="#" class="icon-link icon-link-hover" data-bs-toggle="modal" data-bs-target="#viewTagModal{{ tag.id }}"><i class="bi bi-clipboard2-data-fill"></i> Description</a>
+                            </div>
+                            <div class="me-2 mb-2 mb-md-0">
+                                <a href="#" class="icon-link icon-link-hover" data-bs-toggle="modal" data-bs-target="#editTagModal{{ tag.id }}"><i class="bi bi-pencil-fill"></i> Edit</a>
+                            </div>
+                            <div class="mb-2 mb-md-0">
+                                <a href="#" class="icon-link icon-link-hover" data-bs-toggle="modal" data-bs-target="#delTagModal{{ tag.id }}"><i class="bi bi-trash-fill"></i> Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- View Tag Modal -->
+                <div class="modal fade" id="viewTagModal{{ tag.id }}" tabindex="-1"
+                    aria-labelledby="viewTagModalLabel{{ tag.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="viewTagModalLabel{{ tag.id }}">Tag Description</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+                                <br>
+                                {{ tag.description }}
+                                <br><br>
+                                <strong>Created on:</strong> <span class="text-muted">{{ convert_utc_to_ist_str(tag.date_created) }}</span>
+                                <br>
+                                <strong>Last updated:</strong> <span class="text-muted">{{ convert_utc_to_ist_str(tag.last_updated) }}</span>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Tag Modal -->
+                <div class="modal fade" id="delTagModal{{ tag.id }}" tabindex="-1"
+                    aria-labelledby="delTagModalLabel{{ tag.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="delTagModalLabel{{ tag.id }}">Want to delete the tag ?</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>This action will delete the Tag with name:
+                                    <br>
+                                    <code>{{ tag.name }}</code>
+                                </p>
+                                <form id="delete-form-{{ tag.id }}" method="post" action="#">
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">Please enter your password to
+                                            confirm.</label>
+                                        <input type="password" class="form-control" id="password" name="password"
+                                            required>
+                                    </div>
+                                    <input type="hidden" name="tag_id" value="{{ tag.id }}">
+                                    <button id="delTagBtn{{ tag.id }}" type="submit"
+                                        class="btn btn-primary btn-sm">Delete</button>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Tag Modal -->
+                <div class="modal fade" id="editTagModal{{ tag.id }}" tabindex="-1"
+                    aria-labelledby="editTagModalLabel{{ tag.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editTagModalLabel{{ tag.id }}">Update Tag Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="edit-form-{{ tag.id }}" method="post" action="#">
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label"><strong>Name</strong></label>
+                                        <input type="name" class="form-control" id="name" name="name"
+                                            value="{{ tag.name }}" required>
+
+                                        <label for="description" class="form-label"><strong>Description</strong></label>
+                                        <textarea class="form-control" id="description" name="description" rows="3"
+                                            required>{{ tag.description }}</textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label"><strong>Color</strong></label>
+                                        <input type="color" class="form-control" id="color" name="color" value="{{ tag.color_hex() }}">
+                                    </div>
+                                    <input type="hidden" id="color_red" name="color_red">
+                                    <input type="hidden" id="color_green" name="color_green">
+                                    <input type="hidden" id="color_blue" name="color_blue">
+                                    <input type="hidden" name="tag_id" value="{{ tag.id }}">
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="editTagBtn{{ tag.id }}" type="submit"
+                                    class="btn btn-primary">Update</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
