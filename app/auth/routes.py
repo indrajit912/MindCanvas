@@ -8,9 +8,10 @@ from flask_login import login_user, login_required, current_user, logout_user
 from sqlalchemy import desc, extract
 
 from app.forms.auth_forms import UserLoginForm, EmailRegistrationForm, UserRegistrationForm
-from app.forms.user_forms import AddEntryForm
+from app.forms.user_forms import AddEntryForm, CreateNewTagForm
 from app.models.user import User
 from app.models.journal_entry import JournalEntry
+from app.models.tag import Tag
 from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
 from scripts.email_message import EmailMessage
@@ -41,6 +42,7 @@ def login():
             # Check the hash
             if user.check_password(form.passwd.data):
                 # Password matched!
+                # TODO: Update the User.last_seen column!
                 login_user(user)
                 session['entries_unlocked'] = False
                 flash("Login successful!", 'success')
@@ -258,6 +260,70 @@ def add_entry(user_id):
 
     # Render the add entry form template
     return render_template('add_entry.html', form=form, user_tags=user_tags)
+
+
+
+@auth_bp.route('/users/<int:user_id>/create_tag', methods=['GET', 'POST'])
+@login_required
+def create_tag(user_id):
+    # Check if the current user is authorized to add an entry for the specified user
+    if current_user.id != user_id:
+        abort(403)  # Forbidden
+
+    form = CreateNewTagForm()
+
+    # Tags those are already created by the current_user
+    user_tags = current_user.tags
+
+    if form.validate_on_submit():
+        # Access RGB values from the form
+        tag_name = Tag.preprocess_tag_name(form.name.data)
+        description = form.description.data
+        color_red = form.color_red.data
+        color_green = form.color_green.data
+        color_blue = form.color_blue.data
+
+        tag_data = {
+            "name": tag_name,
+            "description": description,
+            "color_red": color_red,
+            "color_green": color_green,
+            "color_blue": color_blue,
+            "creator_id": current_user.id
+        }
+
+        if tag_name in [t.name for t in user_tags]:
+            # Redirect
+            form.name.data = tag_name
+            form.description.data = description
+            form.color_red.data = color_red
+            form.color_green.data = color_green
+            form.color_blue.data = color_blue
+
+            flash(f"The name '{tag_name}' is already in your tag list!", 'info')
+            return render_template('create_tag.html', form=form, user_tags=user_tags)
+
+
+        # Make a POST request to the API endpoint
+        api_url = current_app.config['HOST'] + '/api/create/tag'
+        headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
+        response = requests.post(api_url, json=tag_data, headers=headers)
+
+        # Check the response status code and flash messages accordingly
+        if response.status_code == 200:
+            flash(f"Your tag '{tag_name}' has been added successfully!", 'success')
+            logger.info(f"A new Tag, '{tag_name}' is added by `{current_user.username}`.")
+            # If the user is authorized, redirect to the route
+            return redirect(url_for('auth.dashboard'))
+        else:
+            flash('Failed to create the new tag. Please try again later.', 'error')
+            logger.error(f"`{current_user.username}` tried to add a new JournalEntry but error occurred.")
+
+        # Remove the user data
+        form = CreateNewTagForm(formdata=None)
+
+    # Render the add entry form template
+    return render_template('create_tag.html', form=form, user_tags=user_tags)
 
 
 # Route to toggle the is_admin value

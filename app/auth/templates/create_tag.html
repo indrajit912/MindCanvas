@@ -1,0 +1,59 @@
+<!-- app/auth/templates/create_tag.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Create New Tag{% endblock %}
+
+{% block content %}
+{% include 'flash_msgs.html' %}
+<div class="container">
+    <h1 class="my-4">Create New Tag</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <form method="post" id="create-tag-form">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.name.label(class="form-label") }}
+                    {{ form.name(class="form-control", id="tag-name") }} {# Added id attribute #}
+                    <div id="tag-name-error" class="invalid-feedback"></div>
+                </div>
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control") }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Color</label>
+                    <input type="color" class="form-control" id="color" name="color" value="#000000">
+                </div>
+                <input type="hidden" id="color_red" name="color_red">
+                <input type="hidden" id="color_green" name="color_green">
+                <input type="hidden" id="color_blue" name="color_blue">
+                <button type="submit" class="btn btn-primary">Create Tag</button>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <h2 class="mb-3">Your Tags</h2>
+            <ul class="list-group">
+                {% for tag in user_tags %}
+                <li class="list-group-item"><span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('create-tag-form').addEventListener('submit', function(event) {
+        var colorInput = document.getElementById('color');
+        var hexColor = colorInput.value;
+        var red = parseInt(hexColor.substr(1, 2), 16);
+        var green = parseInt(hexColor.substr(3, 2), 16);
+        var blue = parseInt(hexColor.substr(5, 2), 16);
+        
+        document.getElementById('color_red').value = red;
+        document.getElementById('color_green').value = green;
+        document.getElementById('color_blue').value = blue;
+    });
+</script>
+
+{% endblock %}
