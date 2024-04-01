@@ -128,3 +128,22 @@ class UserJournalEntriesResource(Resource):
         journal_entries_json = [journal_entry.json() for journal_entry in user_journal_entries]
 
         return jsonify(journal_entries_json)
+    
+    
+class SearchJournalEntriesResource(Resource):
+    """
+    API Resource to handle requests related to searching journal entries.
+
+    - GET /api/search/users/<int:user_id>/journal_entries/<string:query>
+    """
+    @token_required
+    def get(self, user_id, query):
+        # Query the database for journal entries matching the query
+        user_journal_entries = JournalEntry.query.filter_by(author_id=user_id).filter(
+            JournalEntry.content.contains(query)
+        ).all()
+
+        # Convert the journal entries to JSON format
+        journal_entries_json = [journal_entry.json() for journal_entry in user_journal_entries]
+
+        return {'journal_entries': journal_entries_json}, 200

@@ -57,9 +57,10 @@ def create_app(config_class=get_config()):
     api.add_resource(OnThisDayEntriesResource, '/users/<string:username>/journal_entries')
     api.add_resource(UserTagsResource, '/users/<string:username>/tags')
 
-    from app.api.journal_entries import JournalEntryResource, UserJournalEntriesResource
+    from app.api.journal_entries import JournalEntryResource, UserJournalEntriesResource, SearchJournalEntriesResource
     api.add_resource(JournalEntryResource, '/create/journal_entry', '/journal_entries/<int:journal_entry_id>')
     api.add_resource(UserJournalEntriesResource, '/users/<int:user_id>/journal_entries')
+    api.add_resource(SearchJournalEntriesResource, '/users/<int:user_id>/journal_entries/<string:query>')
 
     from app.api.tag_resources import TagsResource, TagResource
     api.add_resource(TagsResource, '/tags')

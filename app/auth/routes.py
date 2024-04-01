@@ -184,6 +184,8 @@ def unlock_entries(destination):
         return redirect(url_for('auth.profile'))
     elif destination == 'user-all-entries':
         return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
+    elif destination == 'search':
+        return redirect(url_for('auth.search', user_id=current_user.id))
     else:
         # Handle invalid destination
         return redirect(url_for('auth.dashboard')) 
@@ -418,6 +420,8 @@ def toggle_entry_lock():
         return redirect(url_for('auth.profile'))
     elif destination == 'user-all-entries':
         return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
+    elif destination == 'search':
+        return redirect(url_for('auth.search', user_id=current_user.id))
     else:
         # Handle invalid destination
         return redirect(url_for('auth.dashboard')) 
@@ -564,6 +568,8 @@ def delete_entry(destination):
         return redirect(url_for('auth.profile'))
     elif destination == 'user-all-entries':
         return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
+    elif destination == 'search':
+        return redirect(url_for('auth.search', user_id=current_user.id))
     else:
         # Handle invalid destination
         return redirect(url_for('auth.dashboard')) 
@@ -668,3 +674,26 @@ def register_user(token):
 
     return render_template('register_user.html', form=form, user_data=user_data)
 
+
+@auth_bp.route('/search/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def search(user_id):
+
+    search_results = []
+
+    if not current_user.id == user_id:
+        abort(403)
+
+    if request.method == 'POST':
+        query = request.form.get('q')
+        search_results = JournalEntry.query.filter_by(author_id=user_id).filter(
+                JournalEntry.content.contains(query)
+            ).all()
+
+    return render_template(
+        'search.html', 
+        user_id=current_user.id, 
+        search_results=search_results,
+        convert_utc_to_ist_str=convert_utc_to_ist_str,
+        redirect_destination='search'
+    )
