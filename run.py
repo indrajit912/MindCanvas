@@ -5,7 +5,6 @@
 #
 # TODO: Create an option to Download/Upload user's data.
 # TODO: Encrypt user's journal entry before saving to database.
-# TODO: Add a Google search like interface to search JournalEntries.
 """
 This script starts the Flask development server to run the web application.
 

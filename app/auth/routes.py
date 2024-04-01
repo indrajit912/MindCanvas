@@ -5,7 +5,7 @@
 
 from flask import render_template, url_for, flash, redirect, current_app, request, session, abort
 from flask_login import login_user, login_required, current_user, logout_user
-from sqlalchemy import desc, extract
+from sqlalchemy import desc, extract, or_
 
 from app.forms.auth_forms import UserLoginForm, EmailRegistrationForm, UserRegistrationForm
 from app.forms.user_forms import AddEntryForm, CreateNewTagForm
@@ -15,7 +15,7 @@ from app.models.tag import Tag
 from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
 from scripts.email_message import EmailMessage
-from scripts.utils import count_words, convert_utc_to_ist_str, format_years_ago
+from scripts.utils import count_words, convert_utc_to_ist_str, format_years_ago, utcnow
 from config import EmailConfig
 
 import logging
@@ -25,6 +25,20 @@ import requests
 from . import auth_bp
 
 logger = logging.getLogger(__name__)
+
+@auth_bp.before_request
+def update_last_seen():
+    if current_user.is_authenticated:
+        user_id = current_user.id
+        api_url = current_app.config['HOST'] + f'/api/users/{user_id}/update_last_seen'
+        headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
+        
+        try:
+            response = requests.post(api_url, headers=headers)
+            if response.status_code != 200:
+                logger.error(f"POST request to {api_url} failed with status code {response.status_code}")
+        except Exception as e:
+            logger.exception(f"An error occurred while making a POST request to {api_url}: {e}")
 
 
 # Login view (route)
@@ -42,8 +56,8 @@ def login():
             # Check the hash
             if user.check_password(form.passwd.data):
                 # Password matched!
-                # TODO: Update the User.last_seen column!
                 login_user(user)
+
                 session['entries_unlocked'] = False
                 flash("Login successful!", 'success')
                 logger.info(f"User '{user.email}' successfully logged in.")
@@ -678,22 +692,33 @@ def register_user(token):
 @auth_bp.route('/search/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def search(user_id):
-
+    # Initialize empty list for search results
     search_results = []
 
+    # Check if the current user is authorized to access the search functionality
     if not current_user.id == user_id:
         abort(403)
 
+    # Process the search query if the request method is POST
     if request.method == 'POST':
+        # Get the search query from the form
         query = request.form.get('q')
+        
+        # Query the database to find journal entries containing the search query in content, title, or tags
         search_results = JournalEntry.query.filter_by(author_id=user_id).filter(
-                JournalEntry.content.contains(query)
-            ).all()
+            or_(
+                JournalEntry.content.contains(query),
+                JournalEntry.title.contains(query),
+                JournalEntry.tags.any(Tag.name.contains(query))
+            )
+        ).all()
 
+    # Render the search.html template with necessary data
     return render_template(
         'search.html', 
         user_id=current_user.id, 
         search_results=search_results,
         convert_utc_to_ist_str=convert_utc_to_ist_str,
-        redirect_destination='search'
+        redirect_destination='search'  # Additional context for the template
     )
+

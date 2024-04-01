@@ -138,6 +138,24 @@ class UserResource(Resource):
         db.session.commit()
 
         return {'message': 'User deleted successfully'}, 200
+    
+    
+class UpdateLastSeen(Resource):
+    """
+    - POST '/api/users/<int:user_id>/update_last_seen'
+    """
+    @token_required
+    def post(self, user_id):
+        # Retrieve the user from the database using user_id
+        user = User.query.get_or_404(user_id)
+        
+        # Update the last_seen attribute of the user
+        user.last_seen = utcnow()
+        
+        # Commit the changes to the database
+        db.session.commit()
+        
+        return {'message': 'last_seen attribute updated successfully'}, 200
 
 
 class OnThisDayEntriesResource(Resource):
