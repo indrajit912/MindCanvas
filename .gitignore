@@ -1,5 +1,6 @@
 ### Python ###
 mindcanvas.db
+scripts/example_encrypt.py
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -5,7 +5,8 @@
 # 
 from flask_restful import Resource, reqparse
 from flask import request
-from sqlalchemy import extract, func
+from sqlalchemy import extract
+from cryptography.fernet import Fernet
 from app.models.user import User
 from app.models.tag import Tag
 from app.models.journal_entry import JournalEntry
@@ -74,6 +75,10 @@ class UserResource(Resource):
             username=args['username'],
         )
         new_user.set_hashed_password(args['password'])
+
+        # Set private key
+        user_key = Fernet.generate_key()
+        new_user.set_encrypted_private_key(private_key=user_key, password=args['password'])
 
         # Add the user to the database
         db.session.add(new_user)

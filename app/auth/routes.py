@@ -15,7 +15,8 @@ from app.models.tag import Tag
 from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
 from scripts.email_message import EmailMessage
-from scripts.utils import count_words, convert_utc_to_ist_str, format_years_ago, utcnow
+from app.utils.encryption import generate_derived_key_from_passwd, decrypt_user_private_key, encrypt, decrypt
+from scripts.utils import count_words, convert_utc_to_ist_str, format_years_ago
 from config import EmailConfig
 
 import logging
@@ -59,6 +60,14 @@ def login():
                 login_user(user)
 
                 session['entries_unlocked'] = False
+                # Save the User's derived key to the session 
+                derived_key = generate_derived_key_from_passwd(form.passwd.data)
+                user_private_key = decrypt_user_private_key(
+                    encrypted_private_key=current_user.encrypted_private_key,
+                    derived_key=derived_key
+                )
+                session['current_user_private_key'] = user_private_key
+                
                 flash("Login successful!", 'success')
                 logger.info(f"User '{user.email}' successfully logged in.")
 
@@ -102,6 +111,9 @@ def dashboard():
         (extract('year', JournalEntry.date_created) != current_year)
     ).all()
 
+    # Get the current user's private key from session
+    private_key = session['current_user_private_key']
+
 
     return render_template(
         'dashboard.html', 
@@ -110,7 +122,9 @@ def dashboard():
         onthis_day_journal=onthis_day_journal,
         convert_utc_to_ist_str=convert_utc_to_ist_str,
         format_years_ago=format_years_ago,
-        redirect_destination='dashboard'
+        redirect_destination='dashboard',
+        decrypt=decrypt,
+        private_key=private_key
     )
 
 
@@ -135,6 +149,9 @@ def user_journal_entries(user_id):
         author_id=user_id
     ).order_by(JournalEntry.date_created.desc()).all()
 
+    # Get the current user's private key from session
+    private_key = session['current_user_private_key']
+
     return render_template(
         'user_all_entries.html',
         user_journal_entries=user_journal_entries,
@@ -142,7 +159,9 @@ def user_journal_entries(user_id):
         redirect_destination='user-all-entries',
         total_journal_entries=total_journal_entries,
         total_tags=total_tags,
-        total_words_in_journal_entries=total_words_in_journal_entries
+        total_words_in_journal_entries=total_words_in_journal_entries,
+        decrypt=decrypt,
+        private_key=private_key
     )
 
 
@@ -165,6 +184,9 @@ def profile():
         JournalEntry.date_created.desc()
     ).limit(3).all()
 
+    # Get the current user's private key from session
+    private_key = session['current_user_private_key']
+
     
     # Pass the count_words function to the template
     return render_template(
@@ -175,7 +197,9 @@ def profile():
         total_words_in_journal_entries=total_words_in_journal_entries,
         user_journal_entries=user_journal_entries,
         convert_utc_to_ist_str=convert_utc_to_ist_str,
-        redirect_destination='profile'
+        redirect_destination='profile',
+        decrypt=decrypt,
+        private_key=private_key
     )
 
 @auth_bp.route('/unlock-entries/<destination>', methods=['POST'])
@@ -265,10 +289,20 @@ def add_entry(user_id):
         # Split the input string to get a list of tags
         tags_for_the_new_entry = [tag.strip() for tag in form.tags.data.split(',') if tag.strip()]
 
+        # Encrypt the journal_entry title and content
+        # Get the current_user's private key from session
+        user_private_key = session['current_user_private_key']
+
+        # Encrypt the JournalEntry title and content
+        _title = encrypt(data=form.title.data, key=user_private_key)
+        _content = encrypt(data=form.content.data, key=user_private_key)
+
+        print("Entry encrypted!")
+
         # Create a json body for the api request
         entry_json = {
-            "title": form.title.data,
-            "content": form.content.data,
+            "title": _title,
+            "content": _content,
             "author_id": current_user.id,
             "tags": tags_for_the_new_entry,
             "locked": form.locked.data
@@ -446,12 +480,18 @@ def view_entry(entry_id):
     entry = JournalEntry.query.get_or_404(entry_id)
     if entry.author_id != current_user.id:
         abort(404)  # Or handle the case where the entry is not found or doesn't belong to the current user
+
+    # Get the current user's private key from session
+    private_key = session['current_user_private_key']
+
     return render_template(
         'view_entry.html', 
         entry=entry, 
         convert_utc_to_ist_str=convert_utc_to_ist_str,
         redirect_destination='user-all-entries',
-        user_tags=current_user.tags
+        user_tags=current_user.tags,
+        private_key=private_key,
+        decrypt=decrypt
     )
 
 @auth_bp.route('/edit_entry', methods=['POST'])
@@ -479,10 +519,17 @@ def edit_entry():
         # If the checkbox is not checked, set it to False
         entry_locked = False
 
+    # Get the current_user's private_key from session
+    user_private_key = session['current_user_private_key']
+
+    # Encrypt the JournalEntry title and content
+    _title = encrypt(data=entry_title, key=user_private_key)
+    _content = encrypt(data=entry_content, key=user_private_key)
+
     # Make the journal_entry json
     entry_data = {
-        "title": entry_title,
-        "content": entry_content,
+        "title": _title,
+        "content": _content,
         "tags": entry_tags,
         "locked": entry_locked
     }
@@ -498,7 +545,7 @@ def edit_entry():
         flash('Journal entry updated successfully!', 'success')
         
     else:
-        logger.error(f"`{current_user.username}` tried to update journal entry but error occurred.")
+        logger.error(f"`{current_user.username}` tried to update journal entry but error occurred\n{response.content}.")
         flash('Failed to update journal entry. Please try again later.', 'error')
         
     
@@ -526,12 +573,14 @@ def update_tag():
     color_red, color_green, color_blue = Tag.hex_to_rgb(color_hex)
 
     tag_data = {
-        "name": tag_name,
         "description": description,
         "color_red": color_red,
         "color_green": color_green,
         "color_blue": color_blue
     }
+
+    # Check whether the user has changed the tag name
+    tag_data["name"] = None if tag_name == tag.name else tag_name
   
     # Make a PUT request to the API endpoint
     api_url = current_app.config['HOST'] + f'/api/tags/{tag_id}'
@@ -544,7 +593,7 @@ def update_tag():
         flash('Tag updated successfully!', 'success')
         
     else:
-        logger.error(f"`{current_user.username}` tried to update a Tag but error occurred.")
+        logger.error(f"`{current_user.username}` tried to update a Tag but error occurred. Response content: {response.content}")
         flash('Failed to update the Tag. Please try again later.', 'error')
     
     # If the user is authorized, redirect to the route
@@ -570,7 +619,7 @@ def delete_entry(destination):
         )
         if response.status_code == 200:
             logger.info(f"JournalEntry deleted successfully by {current_user.username}!")
-            flash(f"JournalEntry deleted successfully by {current_user.username}!", "success")
+            flash(f"JournalEntry deleted successfully!", "success")
         else:
             logger.error(f"An error occurred while deleting the JournalEntry with ID {journal_entry_id}.")
             flash("An error occurred during JournalEntry deletion. Please try again.", 'error')
@@ -703,15 +752,22 @@ def search(user_id):
     if request.method == 'POST':
         # Get the search query from the form
         query = request.form.get('q')
-        
-        # Query the database to find journal entries containing the search query in content, title, or tags
-        search_results = JournalEntry.query.filter_by(author_id=user_id).filter(
-            or_(
-                JournalEntry.content.contains(query),
-                JournalEntry.title.contains(query),
-                JournalEntry.tags.any(Tag.name.contains(query))
-            )
-        ).all()
+        private_key = session['current_user_private_key']
+
+        search_results = JournalEntry.query.filter_by(author_id=user_id).all()
+
+        # Decrypt titles and contents before filtering
+        for entry in search_results:
+            entry.title = decrypt(entry.title, private_key)
+            entry.content = decrypt(entry.content, private_key)
+
+        # Filter decrypted titles and contents for the search query
+        search_results = [
+            entry 
+            for entry in search_results 
+            if query in entry.title 
+            or query in entry.content
+        ]
 
     # Render the search.html template with necessary data
     return render_template(
@@ -721,4 +777,3 @@ def search(user_id):
         convert_utc_to_ist_str=convert_utc_to_ist_str,
         redirect_destination='search'  # Additional context for the template
     )
-

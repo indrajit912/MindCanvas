@@ -9,14 +9,14 @@
             <a href="#" class="icon-link icon-link-hover text-danger me-2" data-bs-toggle="modal"
                 data-bs-target="#unlockEntryModal{{ entry.id }}"><i class="bi bi-lock-fill"></i></a>
             {% if session.get('entries_unlocked') %}
-            {{ entry.title }}
+            {{ decrypt(entry.title, private_key) }}
             {% else %}
             This entry is Locked!
             {% endif %}
             {% else %}
             <a href="#" class="icon-link icon-link-hover text-success me-2" data-bs-toggle="modal"
                 data-bs-target="#lockEntryModal{{ entry.id }}"><i class="bi bi-unlock-fill"></i></a>
-            {{ entry.title }}
+            {{ decrypt(entry.title, private_key) }}
             {% endif %}
         </h5>
     </div>
@@ -25,7 +25,7 @@
         {% if entry.locked and not session.get('entries_unlocked') %}
         <p class="card-text">This entry is locked. Click on the lock icon to unlock it.</p>
         {% else %}
-        <p class="card-text">{{ entry.content[:100] }}...</p>
+        <p class="card-text">{{ decrypt(entry.content, private_key)[:100] }}...</p>
         {% endif %}
 
         {% if not entry.locked or session.get('entries_unlocked') %}
@@ -72,7 +72,7 @@
             <div class="modal-body">
                 <p>This action will lock the Journal Entry with the title:
                     <br>
-                    <code>{{ entry.title }}</code>
+                    <code>{{ decrypt(entry.title, private_key) }}</code>
                 </p>
                 <form id="lock-entry-form-{{ entry.id }}" method="post"
                     action="{{ url_for('auth.toggle_entry_lock') }}">
@@ -104,7 +104,7 @@
             <div class="modal-body">
                 <p>This action will unlock the Journal Entry with the title:
                     <br>
-                    <code>{{ entry.title }}</code>
+                    <code>{{ decrypt(entry.title, private_key) }}</code>
                 </p>
                 <form id="lock-entry-form-{{ entry.id }}" method="post"
                     action="{{ url_for('auth.toggle_entry_lock') }}">
@@ -136,7 +136,7 @@
             <div class="modal-body">
                 <p>This action will delete the Journal Entry with the title:
                     <br>
-                    <code>{{ entry.title }}</code>
+                    <code>{{ decrypt(entry.title, private_key) }}</code>
                 </p>
                 <form id="delete-form-{{ entry.id }}" method="post"
                     action="{{ url_for('auth.delete_entry', destination=redirect_destination) }}">

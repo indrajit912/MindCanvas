@@ -116,10 +116,10 @@
                         {% for entry in onthis_day_journal %}
                         <a href="#" class="list-group-item list-group-item-action inactive" aria-current="false">
                             <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">{{ entry.title }}</h5>
+                                <h5 class="mb-1">{{ decrypt(entry.title, private_key) }}</h5>
                                 <small>{{ format_years_ago(entry.date_created) }}</small>
                             </div>
-                            <p class="mb-1">{{ entry.content[:50] }}...</p>
+                            <p class="mb-1">{{ decrypt(entry.content, private_key)[:50] }}...</p>
                             <small>Last updated: {{ convert_utc_to_ist_str(entry.last_updated, show_time=False)
                                 }}</small>
                         </a>

@@ -9,7 +9,7 @@
     <div class="row justify-content-center mt-5">
         <div class="col-md-8">
             <form action="{{ url_for('auth.search', user_id=current_user.id) }}" method="POST" class="input-group">
-                <span class="input-group-text mindcanvas-text">MindCanvas</span>
+                <div class="hide-on-mobile"><span class="input-group-text mindcanvas-text">MindCanvas</span></div>
                 <input type="text" name="q" class="form-control" placeholder="Search..." aria-label="Search">
                 <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
             </form>
@@ -148,7 +148,7 @@
     /* Custom styles for the MindCanvas app name */
     .mindcanvas-text {
         font-family: 'Poppins', sans-serif;
-        font-size: 23px;
+        font-size: 20px;
         font-weight: bold;
         color: #007bff;
         /* Blue color, you can adjust as needed */

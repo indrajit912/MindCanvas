@@ -39,8 +39,8 @@ class JournalEntry(db.Model):
         return {
             'id': self.id,
             'uuid': self.uuid,
-            'title': self.title,
-            'content': self.content,
+            'title': self.title.decode() if isinstance(self.title, bytes) else self.title,
+            'content': self.content.decode() if isinstance(self.content, bytes) else self.content,
             'locked': self.locked,
             'date_created': self.format_datetime_to_str(self.date_created),
             'last_updated': self.format_datetime_to_str(self.last_updated),

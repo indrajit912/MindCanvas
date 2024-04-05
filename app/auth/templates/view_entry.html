@@ -5,13 +5,12 @@
 {% block content %}
 {% include 'flash_msgs.html' %}
 <div class="container">
-    <h1 class="my-4">{{ entry.title }}</h1>
+    <h1 class="my-4">{{ decrypt(entry.title, private_key) }}</h1>
     <div class="card">
         <div class="card-body">
             <p class="text-muted">Created: {{ convert_utc_to_ist_str(entry.date_created) }}</p>
-            <!-- <p>{{ entry.content }}</p> -->
             {% autoescape false %}
-            {{ entry.content | replace('\n', "<br />") }}
+            {{ decrypt(entry.content, private_key) | replace('\n', "<br />") }}
             {% endautoescape %}
 
             {% if not entry.locked or session.get('entries_unlocked') %}
@@ -54,7 +53,7 @@
             <div class="modal-body">
                 <p>This action will delete the Journal Entry with the title:
                     <br>
-                    <code>{{ entry.title }}</code>
+                    <code>{{ decrypt(entry.title, private_key) }}</code>
                 </p>
                 <form id="delete-form-{{ entry.id }}" method="post"
                     action="{{ url_for('auth.delete_entry', destination=redirect_destination) }}">
@@ -86,11 +85,11 @@
                 <form id="edit-form-{{ entry.id }}" method="post" action="{{ url_for('auth.edit_entry') }}">
                     <div class="mb-3">
                         <label for="title" class="form-label"><code>Title</code></label>
-                        <input type="title" class="form-control" id="title" name="title" value="{{ entry.title }}"
+                        <input type="title" class="form-control" id="title" name="title" value="{{ decrypt(entry.title, private_key) }}"
                             required>
 
                         <label for="content" class="form-label"><code>Content</code></label>
-                        <textarea class="form-control" id="content" name="content" rows="8" required>{{ entry.content }}
+                        <textarea class="form-control" id="content" name="content" rows="8" required>{{ decrypt(entry.content, private_key) }}
                         </textarea>
 
                         <!-- Checkbox for 'locked' field -->

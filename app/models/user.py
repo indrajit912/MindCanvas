@@ -11,6 +11,7 @@ from flask_login import UserMixin
 import secrets
 import uuid
 from scripts.utils import sha256_hash, utcnow
+from app.utils.encryption import generate_derived_key_from_passwd, encrypt_user_private_key
 from app.models.tag import Tag
 
 
@@ -54,6 +55,9 @@ class User(db.Model, UserMixin):
     last_updated = db.Column(db.DateTime(timezone=True), default=utcnow)
     last_seen = db.Column(db.DateTime(timezone=True), default=utcnow)
 
+    # Add encrypted_private_key column
+    encrypted_private_key = db.Column(db.Text)
+
     journal_entries = db.relationship('JournalEntry', backref='author', lazy=True, cascade="all, delete-orphan")
     tags = db.relationship('Tag', backref='creator', lazy=True, cascade="all, delete-orphan")
 
@@ -74,6 +78,11 @@ class User(db.Model, UserMixin):
         password_with_salt = password + salt
         hashed_password = sha256_hash(password_with_salt)
         self.password_hash = hashed_password
+
+    def set_encrypted_private_key(self, private_key, password):
+        derived_key = generate_derived_key_from_passwd(password)
+        encrypted_private_key = encrypt_user_private_key(private_key, derived_key)
+        self.encrypted_private_key = encrypted_private_key
 
     def check_password(self, password):
         """
@@ -131,7 +140,8 @@ class User(db.Model, UserMixin):
             'is_admin': self.is_admin,
             'date_joined': User.format_datetime_to_str(self.date_joined),
             'last_updated': User.format_datetime_to_str(self.last_updated),
-            'last_seen': User.format_datetime_to_str(self.last_seen)
+            'last_seen': User.format_datetime_to_str(self.last_seen),
+            'encrypted_private_key': self.encrypted_private_key.decode() if isinstance(self.encrypted_private_key, bytes) else self.encrypted_private_key
         }
     
     @staticmethod

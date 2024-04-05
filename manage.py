@@ -9,6 +9,7 @@ import pwinput
 import sys
 import argparse
 import logging
+from cryptography.fernet import Fernet
 from tabulate import tabulate
 from config import EmailConfig
 
@@ -33,6 +34,10 @@ def create_demo_user():
             email="demouser@demo.com"
         )
         demo_user.set_hashed_password("password")
+
+        # Set private key
+        user_key = Fernet.generate_key()
+        demo_user.set_encrypted_private_key(private_key=user_key, password="password")
 
         db.session.add(demo_user)
         db.session.commit()
@@ -204,6 +209,8 @@ def create_indrajit():
                     is_admin=True
                 )
                 indrajit.set_hashed_password(indrajit_passwd)
+                indrajit_key = Fernet.generate_key()
+                indrajit.set_encrypted_private_key(indrajit_key, indrajit_passwd)
 
                 # Add Indrajit to db
                 db.session.add(indrajit)
