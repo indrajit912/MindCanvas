@@ -5,7 +5,7 @@
 
 from flask import render_template, url_for, flash, redirect, current_app, request, session, abort
 from flask_login import login_user, login_required, current_user, logout_user
-from sqlalchemy import desc, extract, or_
+from sqlalchemy import desc, extract
 
 from app.forms.auth_forms import UserLoginForm, EmailRegistrationForm, UserRegistrationForm
 from app.forms.user_forms import AddEntryForm, CreateNewTagForm
@@ -20,6 +20,7 @@ from scripts.utils import count_words, convert_utc_to_ist_str, format_years_ago
 from config import EmailConfig
 
 import logging
+import json
 from datetime import datetime
 import requests
 
@@ -296,8 +297,6 @@ def add_entry(user_id):
         # Encrypt the JournalEntry title and content
         _title = encrypt(data=form.title.data, key=user_private_key)
         _content = encrypt(data=form.content.data, key=user_private_key)
-
-        print("Entry encrypted!")
 
         # Create a json body for the api request
         entry_json = {
@@ -777,3 +776,45 @@ def search(user_id):
         convert_utc_to_ist_str=convert_utc_to_ist_str,
         redirect_destination='search'  # Additional context for the template
     )
+
+# TODO: Create a route for export data
+
+@auth_bp.route('/import_data', methods=['GET', 'POST'])
+@login_required
+def import_data():
+    if request.method == 'POST':
+        try:
+            json_file = request.files['jsonFile']
+
+            if json_file.filename == '':
+                return render_template('import_data.html', message='No file selected.')
+
+            if json_file and json_file.filename.endswith('.json'):
+                # Load JSON data from the file
+                data = json_file.read().decode('utf-8')
+                json_data = json.loads(data)
+
+                # Include private key and current_user id in JSON payload
+                json_data['private_key'] = session.get('current_user_private_key')
+                json_data['user_id'] = current_user.id
+
+                # Make a POST request to the API endpoint with the JSON data
+                api_user_post_url = current_app.config['HOST'] + '/api/mindcanvas/data/import'
+                
+                response = requests.post(
+                    api_user_post_url, 
+                    json=json_data
+                )
+
+                if response.status_code == 200:
+                    return render_template('import_data.html', message='Data imported successfully.')
+                else:
+                    return render_template('import_data.html', message=f'Failed to import data. Please try again later.\n{response.content}')
+
+            else:
+                return render_template('import_data.html', message='Invalid file format. Please select a JSON file.')
+
+        except Exception as e:
+            return render_template('import_data.html', message=f'Error: {str(e)}')
+
+    return render_template('import_data.html')

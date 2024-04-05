@@ -119,7 +119,7 @@ class User(db.Model, UserMixin):
             str: Reset password token.
         """
         auth_serializer = URLSafeTimedSerializer(
-            secret_key=current_app.config['SECRET_KEY'], salt=current_app.config['SECURITY_PASSWORD_SALT']
+            secret_key=current_app.config['SECRET_KEY'], salt=b"reset_password"
         )
         token = auth_serializer.dumps({'id': self.id})
         return token
@@ -140,8 +140,7 @@ class User(db.Model, UserMixin):
             'is_admin': self.is_admin,
             'date_joined': User.format_datetime_to_str(self.date_joined),
             'last_updated': User.format_datetime_to_str(self.last_updated),
-            'last_seen': User.format_datetime_to_str(self.last_seen),
-            'encrypted_private_key': self.encrypted_private_key.decode() if isinstance(self.encrypted_private_key, bytes) else self.encrypted_private_key
+            'last_seen': User.format_datetime_to_str(self.last_seen)
         }
     
     @staticmethod
@@ -170,7 +169,7 @@ class User(db.Model, UserMixin):
             User or None: User object if token is valid, None otherwise.
         """
         auth_serializer = URLSafeTimedSerializer(
-            secret_key=current_app.config['SECRET_KEY'], salt=current_app.config['SECURITY_PASSWORD_SALT']
+            secret_key=current_app.config['SECRET_KEY'], salt=b"verify_reset_password_token"
         )
 
         try:
