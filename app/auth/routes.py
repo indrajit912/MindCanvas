@@ -818,6 +818,12 @@ def export_data():
         with open(file_path, 'w') as file:
             json.dump(data, file, indent=4)
 
+        # flash message
+        flash(
+            "A JSON file containing all your MindCanvas data has been downloaded in an unencrypted format. Please ensure to keep it safe. This file can be used to import all of your data back into MindCanvas at any time.",
+            'success'
+        )
+        
         # Prepare file for download
         return send_file(file_path, as_attachment=True)
 

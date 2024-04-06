@@ -95,7 +95,7 @@
                     </a>
                   </div>
                   <div class="col">
-                    <form id="exportForm" action="{{ url_for('auth.export_data') }}" method="post">
+                    <form id="exportForm" action="{{ url_for('auth.export_data') }}" method="post" onsubmit="reloadAfterDownload()">
                       <button type="submit" class="btn btn-primary btn-sm btn-block">
                         <i class="bi bi-download"></i> Export Data
                       </button>
@@ -134,5 +134,13 @@
     </div>
 
   </div>
+
+  <script>
+    function reloadAfterDownload() {
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000); // Adjust the timeout as needed
+    }
+    </script>
 
   {% endblock %}
