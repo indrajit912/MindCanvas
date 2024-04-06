@@ -30,6 +30,7 @@ class Config:
     FLASK_APP_NAME = 'MindCanvas'
 
     BASE_DIR = Path(__name__).parent.absolute()
+    APP_DATA_DIR = BASE_DIR / "app_data"
     LOG_FILE = BASE_DIR / f'{FLASK_APP_NAME.lower()}.log'
     
     PORT = os.environ.get("PORT") or 8080

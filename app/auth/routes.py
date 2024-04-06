@@ -3,7 +3,7 @@
 # Created On: Mar 24, 2024
 #
 
-from flask import render_template, url_for, flash, redirect, current_app, request, session, abort
+from flask import render_template, url_for, flash, redirect, current_app, request, session, abort, jsonify, send_file
 from flask_login import login_user, login_required, current_user, logout_user
 from sqlalchemy import desc, extract
 
@@ -777,7 +777,53 @@ def search(user_id):
         redirect_destination='search'  # Additional context for the template
     )
 
-# TODO: Create a route for export data
+# A route for export data
+@auth_bp.route('/export_data', methods=['POST'])
+@login_required
+def export_data():
+    try:
+        # Get the private_key and user_id
+        json_data = {
+            "user_id": current_user.id,
+            "private_key": session.get('current_user_private_key')
+        }
+
+        # Make a GET request to the API endpoint
+        api_url = current_app.config['HOST'] + '/api/mindcanvas/export'  # Replace with your actual API URL
+        response = requests.get(
+            api_url,
+            json=json_data
+        )
+
+        # Check if request was successful
+        if response.status_code != 200:
+            print(response.content)
+            return jsonify({'message': 'Failed to fetch data from API'}), 500
+
+        # Convert API response to JSON
+        data = response.json()
+
+        # Generate file name with current datetime
+        current_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        file_name = f"mindcanvas_{current_user.username}_data_{current_datetime}.json"
+
+        # If the app_data dir is not created create it 
+        app_data_dir = current_app.config['APP_DATA_DIR']
+        # Create the directory if it doesn't exist
+        app_data_dir.mkdir(parents=True, exist_ok=True)
+
+        file_path = app_data_dir / f'{file_name}'
+
+        # Create a JSON file
+        with open(file_path, 'w') as file:
+            json.dump(data, file, indent=4)
+
+        # Prepare file for download
+        return send_file(file_path, as_attachment=True)
+
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
+
 
 @auth_bp.route('/import_data', methods=['GET', 'POST'])
 @login_required

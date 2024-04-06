@@ -4,7 +4,7 @@
 # Created On: Apr 01, 2024
 # 
 
-from flask import request, session
+from flask import request
 from flask_restful import Resource
 from app.models.tag import Tag
 from app.models.journal_entry import JournalEntry
@@ -12,14 +12,12 @@ from app.models.user import User
 from app.utils.encryption import decrypt, encrypt
 from scripts.utils import convert_str_to_datetime_utc
 from app.extensions import db
-from flask_login import current_user
 
-class UserDataResource(Resource):
+class ExportDataResource(Resource):
     """
     - GET /api/mindcanvas/export
     """ 
-    def _get_decrypted_entry(self, entry:JournalEntry):
-        key = session['current_user_private_key']
+    def _get_decrypted_entry(self, entry:JournalEntry, key):
         decrypted_title = decrypt(entry.title, key)
         decrypted_content = decrypt(entry.content, key)
 
@@ -36,15 +34,17 @@ class UserDataResource(Resource):
         }
     
     def get(self):
-        # Check if user is authenticated
-        if not current_user.is_authenticated:
-            return {'message': 'User is not authenticated'}, 401
+        # Get the request json data
+        data = request.get_json()
+        user_private_key = data['private_key']
+        user_id = data['user_id']
+        user = User.query.get(user_id)
 
         # Retrieve user's data
         user_data = {
-            'user': current_user.json(),
-            'journal_entries': [self._get_decrypted_entry(entry) for entry in current_user.journal_entries],
-            'tags': [tag.json() for tag in current_user.tags]
+            'user': user.json(),
+            'journal_entries': [self._get_decrypted_entry(entry, user_private_key) for entry in user.journal_entries],
+            'tags': [tag.json() for tag in user.tags]
         }
 
         return user_data
