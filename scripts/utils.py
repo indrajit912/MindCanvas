@@ -70,6 +70,28 @@ def convert_utc_to_ist_str(dt, show_time: bool = True, weekday: bool = True):
     return ist_format
 
 
+def convert_str_to_datetime_utc(date_str):
+    """
+    Convert a string representation of a date and time in UTC format to a datetime object with timezone information.
+
+    Args:
+        date_str (str): A string representing the date and time in the format "Fri, 05 Apr 2024 16:05:08 UTC".
+
+    Returns:
+        datetime.datetime: A datetime object representing the input date and time with timezone information set to UTC.
+    """
+    # Define the format of the input string
+    date_format = '%a, %d %b %Y %H:%M:%S %Z'
+
+    # Parse the string into a datetime object
+    dt = datetime.strptime(date_str, date_format)
+
+    # Set the timezone to UTC
+    dt_utc = dt.replace(tzinfo=timezone.utc)
+
+    return dt_utc
+
+
 def format_years_ago(date):
     """
     Format the given date into a human-readable string indicating how many years ago it occurred.

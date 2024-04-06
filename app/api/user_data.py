@@ -10,10 +10,14 @@ from app.models.tag import Tag
 from app.models.journal_entry import JournalEntry
 from app.models.user import User
 from app.utils.encryption import decrypt, encrypt
+from scripts.utils import convert_str_to_datetime_utc
 from app.extensions import db
 from flask_login import current_user
 
 class UserDataResource(Resource):
+    """
+    - GET /api/mindcanvas/export
+    """ 
     def _get_decrypted_entry(self, entry:JournalEntry):
         key = session['current_user_private_key']
         decrypted_title = decrypt(entry.title, key)
@@ -48,7 +52,7 @@ class UserDataResource(Resource):
 
 class ImportDataResource(Resource):
     """
-    - POST /api/mindcanvas/data/import
+    - POST /api/mindcanvas/import
         json_body should have `private_key` and `user_id` included
     """
     def post(self):
@@ -71,6 +75,7 @@ class ImportDataResource(Resource):
                 # Encrypt the JournalEntry title and content
                 _title = encrypt(entry_data['title'], user_private_key)
                 _content = encrypt(entry_data['content'], user_private_key)
+                _date_created = convert_str_to_datetime_utc(entry_data['date_created'])
 
 
                 # Create JournalEntry object
@@ -78,6 +83,7 @@ class ImportDataResource(Resource):
                     title=_title,
                     content=_content,
                     locked=entry_data['locked'],
+                    date_created=_date_created,
                     author=user  # Associate with the current user
                 )
 
@@ -94,7 +100,10 @@ class ImportDataResource(Resource):
                             # Create new tag if not exists
                             tag = Tag(
                                 name=tag_data['name'],
-                                creator=user  # Associate with the current user
+                                color_red=tag_data['color_red'],
+                                color_green=tag_data['color_green'],
+                                color_blue=tag_data['color_blue'],
+                                creator_id=user.id  # Associate with the current user
                             )
                         journal_entry.tags.append(tag)
 
@@ -107,7 +116,10 @@ class ImportDataResource(Resource):
                     # Create new tag if not exists
                     tag = Tag(
                         name=tag_data['name'],
-                        creator=user  # Associate with the current user
+                        color_red=tag_data['color_red'],
+                        color_green=tag_data['color_green'],
+                        color_blue=tag_data['color_blue'],
+                        creator_id=user.id  # Associate with the current user
                     )
                     db.session.add(tag)
 

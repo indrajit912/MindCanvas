@@ -799,7 +799,7 @@ def import_data():
                 json_data['user_id'] = current_user.id
 
                 # Make a POST request to the API endpoint with the JSON data
-                api_user_post_url = current_app.config['HOST'] + '/api/mindcanvas/data/import'
+                api_user_post_url = current_app.config['HOST'] + '/api/mindcanvas/import'
                 
                 response = requests.post(
                     api_user_post_url, 

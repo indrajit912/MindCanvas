@@ -68,8 +68,8 @@ def create_app(config_class=get_config()):
     api.add_resource(TagResource, '/create/tag', '/tags/<int:tag_id>')
 
     from app.api.user_data import UserDataResource, ImportDataResource
-    api.add_resource(UserDataResource, '/mindcanvas/data/export')
-    api.add_resource(ImportDataResource, '/mindcanvas/data/import')
+    api.add_resource(UserDataResource, '/mindcanvas/export')
+    api.add_resource(ImportDataResource, '/mindcanvas/import')
 
     # Register blueprints
     from app.main import main_bp
