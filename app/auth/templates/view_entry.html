@@ -85,7 +85,7 @@
                 <form id="edit-form-{{ entry.id }}" method="post" action="{{ url_for('auth.edit_entry') }}">
                     <div class="mb-3">
                         <label for="title" class="form-label"><code>Title</code></label>
-                        <input type="title" class="form-control" id="title" name="title" value="{{ decrypt(entry.title, private_key) }}"
+                        <input type="text" class="form-control" id="title" name="title" value="{{ decrypt(entry.title, private_key) }}"
                             required>
 
                         <label for="content" class="form-label"><code>Content</code></label>

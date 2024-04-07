@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        address {
+            margin-bottom: 20px;
+            font-style: normal;
+        }
+
+        @media screen and (max-width: 600px) {
+            .container {
+                max-width: 90%;
+                margin: 20px auto;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Email Verification</h1>
+        <p>This is an email verification link for the MindCanvas journalling app.</p>
+        <p>Please click on the following link to verify your email address:</p>
+        <p><a href="{{ verification_link }}" target="_blank">{{ verification_link }}</a></p>
+        <p><em>Note: This link will be valid for 24 hours.</em></p>
+        <p>If you didn't request this verification, you can ignore this email.</p>
+        <p>Regards,<br>Indrajit Ghosh</p>
+        <address>
+            Senior Research Fellow, SMU<br>
+            Indian Statistical Institute Bangalore<br>
+            8th Mile Mysore Road, Bengaluru 560059
+        </address>
+    </div>
+</body>
+</html>

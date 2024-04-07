@@ -44,9 +44,11 @@
             <div class="ms-4 mt-5 d-flex flex-column align-items-center">
               <img src="{{ current_user.avatar(200) }}" alt="User Avatar" class="img-fluid img-thumbnail mt-4 mb-2"
                 style="width: 150px;">
-              <a href="#" class="btn btn-outline-light mt-3" data-mdb-ripple-color="dark">
+              <a data-bs-toggle="modal" data-bs-target="#editProfileModal" class="btn btn-outline-light mt-3"
+                data-mdb-ripple-color="dark">
                 <i class="bi bi-pencil"></i> Edit Profile
               </a>
+
             </div>
             <div class="ms-3 mt-3 text-center">
               <h5>{{ current_user.fullname }}</h5>
@@ -73,13 +75,17 @@
             <div class="mb-5">
               <p class="lead fw-normal mb-1">About</p>
               <div class="p-4" style="background-color: #f8f9fa;">
-                <p class="fst-italic mb-1">Email: {{ current_user.email }}</p>
+                <p class="fst-italic mb-1">Email: {{ current_user.email }} 
+                    {% if not current_user.email_verified %}
+                        <span class="text-danger">(Please <a href="{{ url_for('auth.send_verification_email') }}">click here</a> verify your email address)</span>
+                    {% endif %}
+                </p>
                 <p class="fst-italic mb-1">Username: {{ current_user.username }}</p>
                 <p class="fst-italic mb-1">Date Joined: {{ current_user.date_joined.strftime("%B %d, %Y") }}</p>
                 {% if current_user.is_admin %}
-                <p class="fst-italic mb-1"><code>You are an admin!</code></p>
+                    <p class="fst-italic mb-1"><code>You are an admin!</code></p>
                 {% endif %}
-              </div>
+            </div>
 
               <br>
 
@@ -95,7 +101,8 @@
                     </a>
                   </div>
                   <div class="col">
-                    <form id="exportForm" action="{{ url_for('auth.export_data') }}" method="post" onsubmit="reloadAfterDownload()">
+                    <form id="exportForm" action="{{ url_for('auth.export_data') }}" method="post"
+                      onsubmit="reloadAfterDownload()">
                       <button type="submit" class="btn btn-primary btn-sm btn-block">
                         <i class="bi bi-download"></i> Export Data
                       </button>
@@ -135,12 +142,55 @@
 
   </div>
 
+  <!-- editProfileModal start -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel"
+aria-hidden="true">
+<div class="modal-dialog modal-lg">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="editProfileModalLabel">Update Your Details</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <p>Please edit the fields you want to change. Leave the fields you don't want to change as they are.</p>
+      <form id="edit-profile" method="post" action="{{ url_for('auth.update_profile') }}">
+        <div class="mb-3">
+          <label for="fullname" class="form-label"><code>Fullname</code></label>
+          <input type="text" class="form-control" id="fullname" name="fullname"
+            placeholder="Keep the same or enter new fullname" value="{{ current_user.fullname }}" required>
+
+          <label for="username" class="form-label"><code>Username</code></label>
+          <input type="text" class="form-control" id="username" name="username"
+            placeholder="Keep the same or enter new username" value="{{ current_user.username }}" required>
+
+          <label for="email" class="form-label"><code>Email</code></label>
+          <input type="email" class="form-control" id="email" name="email"
+            placeholder="Keep the same or enter new email" value="{{ current_user.email }}" required>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Please enter your password to confirm.</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+          <input type="hidden" name="user_id" value="{{ current_user.id }}">
+          <button id="updateProfileBtn" type="submit" class="btn btn-primary btn-sm">Update</button>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    </div>
+  </div>
+</div>
+</div>
+<!-- End of modal -->
+
+
+
   <script>
     function reloadAfterDownload() {
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000); // Adjust the timeout as needed
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000); // Adjust the timeout as needed
     }
-    </script>
+  </script>
 
   {% endblock %}

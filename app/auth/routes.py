@@ -729,6 +729,9 @@ def register_user(token):
             user_json = response.json()
             logger.info(f"A new user registered with the username `{user_json['username']}`.")
             flash("You have successfully registered! You may now log in using these credentials.", 'success')
+
+            # TODO: Send an email to the user with the password reset token
+
             return redirect(url_for('auth.login'))
         else:
             logger.error("Failed to register the user.")
@@ -870,3 +873,131 @@ def import_data():
             return render_template('import_data.html', message=f'Error: {str(e)}')
 
     return render_template('import_data.html')
+
+
+@auth_bp.route('/update_profile', methods=['POST'])
+@login_required
+def update_profile():
+
+    # Get the user data
+    _fullname = request.form.get('fullname')
+    _username = request.form.get('username')
+    _email = request.form.get('email')
+    _password = request.form.get('password')
+    _user_id = request.form.get('user_id')
+
+    # Get the user
+    user = User.query.get_or_404(_user_id)
+
+    if user.check_password(_password):
+        # Correct password provided
+        json_body = {}
+
+        # Check whether the `_email` is different! If different then send email
+        # to verify email.
+        if user.email != _email:
+            # Check if email is already taken
+            existing_user = User.query.filter_by(email=_email).first()
+            if existing_user:
+                # Email is already taken
+                flash('Email is already taken. Please choose a different email.', 'error')
+                return redirect(url_for('auth.profile'))
+
+
+            # Add the email to the request body
+            json_body['email'] = _email
+
+            # TODO: Email the `email verification link`
+
+        if user.username != _username:
+            # Check if username is already taken
+            existing_user2 = User.query.filter_by(email=_username).first()
+            if existing_user2:
+                # Email is already taken
+                flash('Username is already taken. Please choose a different username.', 'error')
+                return redirect(url_for('auth.profile'))
+            
+            # Add the username to the request body
+            json_body['username'] = _username
+
+        # Add the fullname to the request body
+        json_body['fullname'] = _fullname
+
+        # TODO: Make a PUT request to the API
+
+
+        print(json_body)
+
+    else:
+        flash("Wrong password!", 'error')
+
+    return redirect(url_for('auth.profile'))
+
+
+@auth_bp.route('/send_verification_email', methods=['GET'])
+@login_required
+def send_verification_email():
+    if not current_user.email_verified:
+        # Generate verification token
+        token = current_user.generate_email_verification_token()
+
+        # Construct verification link
+        verification_link = url_for('auth.verify_email', token=token, _external=True)
+
+        _email_html_text = render_template(
+            'emails/email_verification.html',
+            verification_link=verification_link
+        )
+
+        msg = EmailMessage(
+            sender_email_id=EmailConfig.INDRAJITS_BOT_EMAIL_ID,
+            to=current_user.email,
+            subject=f"{current_app.config['FLASK_APP_NAME']}: Email verification!",
+            email_html_text=_email_html_text
+        )
+
+        try:
+            msg.send(
+                sender_email_password=EmailConfig.INDRAJITS_BOT_EMAIL_PASSWD,
+                server_info=EmailConfig.GMAIL_SERVER,
+                print_success_status=False
+            )
+
+            flash('Email verification link sent to your email address. Please check and follow the link.', 'info')
+            logger.info(f"Email verification link sent over email to '{current_user.email}'.")
+            
+            return redirect(url_for('auth.profile'))
+            
+        except Exception as e:
+            # TODO: Handle email sending error better
+            flash('An error occurred while attempting to send the email verification link through email. Try again!', 'danger')
+            logger.error(f"Error occurred while attempting to send the email verification link through email.\nERROR: {e}")
+            return redirect(url_for('auth.profile'))
+    
+    return redirect(url_for('auth.profile'))
+
+
+@auth_bp.route('/verify_email/<token>', methods=['GET'])
+def verify_email(token):
+    user = User.verify_email_verification_token(token)
+    if user:
+        # Make a PUT request to the API
+        api_endpoint = current_app.config['HOST'] + f'/api/users/{user.id}'
+        headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
+        response = requests.put(
+            api_endpoint,
+            json={"email_verified": True},
+            headers=headers
+        )
+
+        if response.status_code == 200:
+            flash('Your email has been successfully verified!', 'success')
+            logger.info(f"Email verified successfully: '{user.username}'")
+        else:
+            flash("Email cannot be verified due to some error. Try again later!", 'error')
+            logger.error(f"Error occurred while verifying email address.\nERROR: {response.content}")
+
+    else:
+        flash('Invalid or expired verification link. Please try again.', 'error')
+
+    return redirect(url_for('auth.login'))

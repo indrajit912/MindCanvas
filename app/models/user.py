@@ -54,6 +54,7 @@ class User(db.Model, UserMixin):
     date_joined = db.Column(db.DateTime(timezone=True), default=utcnow)
     last_updated = db.Column(db.DateTime(timezone=True), default=utcnow)
     last_seen = db.Column(db.DateTime(timezone=True), default=utcnow)
+    email_verified = db.Column(db.Boolean, default=False)
 
     # Add encrypted_private_key column
     encrypted_private_key = db.Column(db.Text)
@@ -140,7 +141,8 @@ class User(db.Model, UserMixin):
             'is_admin': self.is_admin,
             'date_joined': User.format_datetime_to_str(self.date_joined),
             'last_updated': User.format_datetime_to_str(self.last_updated),
-            'last_seen': User.format_datetime_to_str(self.last_seen)
+            'last_seen': User.format_datetime_to_str(self.last_seen),
+            'email_verified': self.email_verified
         }
     
     @staticmethod
@@ -183,4 +185,40 @@ class User(db.Model, UserMixin):
             return None  # Invalid token structure
         
         return User.query.get(user_id)
+    
+    def generate_email_verification_token(self):
+        """
+        Generate email verification token.
+
+        Returns:
+            str: Email verification token.
+        """
+        serializer = URLSafeTimedSerializer(
+            secret_key=current_app.config['SECRET_KEY'], salt=b"email_verification"
+        )
+        return serializer.dumps({'user_id': self.id, 'email_verified': self.email_verified})
+    
+    @staticmethod
+    def verify_email_verification_token(token):
+        """
+        Verify email verification token.
+
+        Args:
+            token (str): Email verification token.
+
+        Returns:
+            User or None: User object if token is valid, None otherwise.
+        """
+        serializer = URLSafeTimedSerializer(
+            secret_key=current_app.config['SECRET_KEY'], salt=b"email_verification"
+        )
+        try:
+            data = serializer.loads(token, max_age=3600 * 24)  # Token expires after 1 day
+            user_id = data.get('user_id')
+            email_verified = data.get('email_verified')
+            if user_id is not None and email_verified is False:
+                return User.query.get(user_id)
+        except:
+            pass
+        return None
     

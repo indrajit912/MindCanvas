@@ -95,6 +95,7 @@ class UserResource(Resource):
         parser.add_argument('username', type=str)
         parser.add_argument('password', type=str)
         parser.add_argument('is_admin', type=bool)
+        parser.add_argument('email_verified', type=bool)
 
         args = parser.parse_args()
 
@@ -122,8 +123,10 @@ class UserResource(Resource):
             user.username = args.get('username')
         if args.get('is_admin') is not None:
             user.is_admin = args.get('is_admin')
+        if args.get('email_verified') is not None:
+            user.email_verified = args.get('email_verified')
         if args.get('password'):
-            user.set_hashed_password(args.get('password'))
+            return {"message": "Password cannot be updated through this api."}, 400
 
         # Change last updated info
         user.last_updated = utcnow()
