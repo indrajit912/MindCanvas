@@ -730,7 +730,8 @@ def register_user(token):
             logger.info(f"A new user registered with the username `{user_json['username']}`.")
             flash("You have successfully registered! You may now log in using these credentials.", 'success')
 
-            # TODO: Send an email to the user with the password reset token
+            # TODO: Generate a password reset token
+            # TODO: Send an welcome email to the user with the password reset token!
 
             return redirect(url_for('auth.login'))
         else:
