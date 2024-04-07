@@ -112,18 +112,6 @@ class User(db.Model, UserMixin):
         email_hash = sha256_hash(self.email.lower())
         return f"https://gravatar.com/avatar/{email_hash}?d=identicon&s={size}"
     
-    def get_reset_password_token(self):
-        """
-        Generate a reset password token for the user.
-
-        Returns:
-            str: Reset password token.
-        """
-        auth_serializer = URLSafeTimedSerializer(
-            secret_key=current_app.config['SECRET_KEY'], salt=b"reset_password"
-        )
-        token = auth_serializer.dumps({'id': self.id})
-        return token
     
     def json(self):
         """
@@ -158,33 +146,6 @@ class User(db.Model, UserMixin):
         """
         return dt.strftime('%a, %d %b %Y %H:%M:%S UTC')
 
-    
-    @staticmethod
-    def verify_reset_password_token(token):
-        """
-        Verify the reset password token.
-
-        Args:
-            token (str): Reset password token.
-
-        Returns:
-            User or None: User object if token is valid, None otherwise.
-        """
-        auth_serializer = URLSafeTimedSerializer(
-            secret_key=current_app.config['SECRET_KEY'], salt=b"verify_reset_password_token"
-        )
-
-        try:
-            data = auth_serializer.loads(token, max_age=3600)
-        except Exception as e:
-            return None  # Invalid token
-        
-        user_id = data.get('id')
-
-        if user_id is None:
-            return None  # Invalid token structure
-        
-        return User.query.get(user_id)
     
     def generate_email_verification_token(self):
         """

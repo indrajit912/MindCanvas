@@ -895,6 +895,7 @@ def update_profile():
 
         # Check whether the `_email` is different! If different then send email
         # to verify email.
+        _send_email_verification = False
         if user.email != _email:
             # Check if email is already taken
             existing_user = User.query.filter_by(email=_email).first()
@@ -903,12 +904,11 @@ def update_profile():
                 flash('Email is already taken. Please choose a different email.', 'error')
                 return redirect(url_for('auth.profile'))
 
-
             # Add the email to the request body
             json_body['email'] = _email
 
-            # TODO: Email the `email verification link`
-
+            _send_email_verification = True
+        
         if user.username != _username:
             # Check if username is already taken
             existing_user2 = User.query.filter_by(email=_username).first()
@@ -923,11 +923,28 @@ def update_profile():
         # Add the fullname to the request body
         json_body['fullname'] = _fullname
 
-        # TODO: Make a PUT request to the API
+        # Make a PUT request to the API
+        api_endpoint = current_app.config['HOST'] + f'/api/users/{user.id}'
+        headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
+        response = requests.put(
+            api_endpoint,
+            json=json_body,
+            headers=headers
+        )
 
+        if response.status_code == 200:
+            msg = (
+                f"Your profile has been updated successfully. Please verify your new email address by visiting your profile."
+                if _send_email_verification
+                else
+                "Your profile has been updated successfully."
+            )
+            flash(msg, 'success')
+            logger.info(f"Profile updated successfully: {user.username}.")
 
-        print(json_body)
-
+        else:
+            flash(f"Error occurred while updating the profile. Try again later!", 'error')
+            logger.error(f"An error occurred while editing user profile: {user.username}.\nERROR: {response.content}")
     else:
         flash("Wrong password!", 'error')
 

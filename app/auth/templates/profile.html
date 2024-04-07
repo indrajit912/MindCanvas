@@ -77,7 +77,7 @@
               <div class="p-4" style="background-color: #f8f9fa;">
                 <p class="fst-italic mb-1">Email: {{ current_user.email }} 
                     {% if not current_user.email_verified %}
-                        <span class="text-danger">(Please <a href="{{ url_for('auth.send_verification_email') }}">click here</a> verify your email address)</span>
+                        <span class="text-danger">(Please <a href="{{ url_for('auth.send_verification_email') }}">click here</a> to verify your email address)</span>
                     {% endif %}
                 </p>
                 <p class="fst-italic mb-1">Username: {{ current_user.username }}</p>
