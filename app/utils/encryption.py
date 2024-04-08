@@ -3,6 +3,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.fernet import Fernet
 import base64
+import hashlib
 
 def generate_derived_key_from_passwd(password):
     """
@@ -28,6 +29,22 @@ def generate_derived_key_from_passwd(password):
     )
     key = kdf.derive(password)
     return key
+
+# Function to hash the derived key using SHA256
+def hash_derived_key(derived_key):
+    """
+    Hash the derived key using SHA256.
+
+    Args:
+        derived_key (bytes): The derived key to be hashed.
+
+    Returns:
+        str: The hashed value of the derived key.
+    """
+    hasher = hashlib.sha256()
+    hasher.update(derived_key)
+    hashed_value = hasher.hexdigest()
+    return hashed_value
 
 def encrypt_user_private_key(user_private_key, derived_key):
     """

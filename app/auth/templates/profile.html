@@ -50,6 +50,7 @@
               </a>
 
             </div>
+
             <div class="ms-3 mt-3 text-center">
               <h5>{{ current_user.fullname }}</h5>
               <p></p>
@@ -71,28 +72,29 @@
               </div>
             </div>
           </div>
+
           <div class="card-body p-4 text-black">
             <div class="mb-5">
               <p class="lead fw-normal mb-1">About</p>
               <div class="p-4" style="background-color: #f8f9fa;">
-                <p class="fst-italic mb-1">Email: {{ current_user.email }} 
-                    {% if not current_user.email_verified %}
-                        <span class="text-danger">(Please <a href="{{ url_for('auth.send_verification_email') }}">click here</a> to verify your email address)</span>
-                    {% endif %}
+                <p class="fst-italic mb-1">Email: {{ current_user.email }}
+                  {% if not current_user.email_verified %}
+                  <span class="text-danger">(Please <a href="{{ url_for('auth.send_verification_email') }}">click
+                      here</a> to verify your email address)</span>
+                  {% endif %}
                 </p>
                 <p class="fst-italic mb-1">Username: {{ current_user.username }}</p>
                 <p class="fst-italic mb-1">Date Joined: {{ current_user.date_joined.strftime("%B %d, %Y") }}</p>
                 {% if current_user.is_admin %}
-                    <p class="fst-italic mb-1"><code>You are an admin!</code></p>
+                <p class="fst-italic mb-1"><code>You are an admin!</code></p>
                 {% endif %}
-            </div>
+              </div>
 
               <br>
 
               <!-- Import and Export Data Links -->
               <p class="lead fw-normal mb-1">Data Management</p>
               <div class="p-4" style="background-color: #f8f9fa;">
-                <p class="card-text">Manage your data with these options:</p>
 
                 <div class="row">
                   <div class="col">
@@ -111,6 +113,22 @@
                 </div>
 
               </div>
+
+              <br>
+
+              <!-- Change your password! -->
+              <p class="lead fw-normal mb-1">Password Management</p>
+              <div class="p-4" style="background-color: #f8f9fa;">
+                <a data-bs-toggle="modal" data-bs-target="#changePasswdModal"
+                  class="btn btn-warning btn-sm mb-2 mb-md-0">
+                  <i class="bi bi-key"></i> Change Password
+                </a>
+
+                <a href="#" class="btn btn-info btn-sm mt-2 mt-md-0">
+                  <i class="bi bi-emoji-smile"></i> Get Password Reset Token
+                </a>
+              </div>
+
 
               <br>
 
@@ -133,6 +151,50 @@
                 {% endif %}
               </div>
 
+              <!-- editProfileModal start -->
+              <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="editProfileModalLabel">Update Your Details</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Please edit the fields you want to change. Leave the fields you don't want to change as they
+                        are.</p>
+                      <form id="edit-profile" method="post" action="{{ url_for('auth.update_profile') }}">
+                        <div class="mb-3">
+                          <label for="fullname" class="form-label"><code>Fullname</code></label>
+                          <input type="text" class="form-control" id="fullname" name="fullname"
+                            placeholder="Keep the same or enter new fullname" value="{{ current_user.fullname }}"
+                            required>
+
+                          <label for="username" class="form-label"><code>Username</code></label>
+                          <input type="text" class="form-control" id="username" name="username"
+                            placeholder="Keep the same or enter new username" value="{{ current_user.username }}"
+                            required>
+
+                          <label for="email" class="form-label"><code>Email</code></label>
+                          <input type="email" class="form-control" id="email" name="email"
+                            placeholder="Keep the same or enter new email" value="{{ current_user.email }}" required>
+
+                          <div class="mb-3">
+                            <label for="password" class="form-label">Please enter your password to confirm.</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                          </div>
+                          <input type="hidden" name="user_id" value="{{ current_user.id }}">
+                          <button id="updateProfileBtn" type="submit" class="btn btn-primary btn-sm">Update</button>
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- End of modal -->
+
 
             </div>
           </div>
@@ -142,47 +204,50 @@
 
   </div>
 
-  <!-- editProfileModal start -->
-<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel"
-aria-hidden="true">
-<div class="modal-dialog modal-lg">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h5 class="modal-title" id="editProfileModalLabel">Update Your Details</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-    </div>
-    <div class="modal-body">
-      <p>Please edit the fields you want to change. Leave the fields you don't want to change as they are.</p>
-      <form id="edit-profile" method="post" action="{{ url_for('auth.update_profile') }}">
-        <div class="mb-3">
-          <label for="fullname" class="form-label"><code>Fullname</code></label>
-          <input type="text" class="form-control" id="fullname" name="fullname"
-            placeholder="Keep the same or enter new fullname" value="{{ current_user.fullname }}" required>
-
-          <label for="username" class="form-label"><code>Username</code></label>
-          <input type="text" class="form-control" id="username" name="username"
-            placeholder="Keep the same or enter new username" value="{{ current_user.username }}" required>
-
-          <label for="email" class="form-label"><code>Email</code></label>
-          <input type="email" class="form-control" id="email" name="email"
-            placeholder="Keep the same or enter new email" value="{{ current_user.email }}" required>
-
-          <div class="mb-3">
-            <label for="password" class="form-label">Please enter your password to confirm.</label>
-            <input type="password" class="form-control" id="password" name="password" required>
+  <!-- changePasswd modal start -->
+  <div class="modal fade" id="changePasswdModal" tabindex="-1" aria-labelledby="changePasswdModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="changePasswdModalLabel">Change your password</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Information about strong encryption and password importance -->
+          <div class="alert alert-info" role="alert">
+            <strong>Important:</strong> Your journal entries are securely encrypted using a strong encryption algorithm.
+            Changing your password will generate a new encryption key. Make sure to remember your new password. Losing
+            it
+            will make it impossible to decrypt your journal entries.
           </div>
-          <input type="hidden" name="user_id" value="{{ current_user.id }}">
-          <button id="updateProfileBtn" type="submit" class="btn btn-primary btn-sm">Update</button>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+          <!-- Change password form -->
+          <form id="change-passwd" method="post" action="{{ url_for('auth.change_password') }}">
+            <div class="mb-3">
+              <label for="new_passwd" class="form-label"><code>New Password</code></label>
+              <input type="password" class="form-control" id="new_passwd" name="new_passwd"
+                placeholder="Enter your new password here. Keep it strong!" value="" required>
+
+              <label for="confirm_passwd" class="form-label"><code>Confirm the new password</code></label>
+              <input type="password" class="form-control" id="confirm_passwd" name="confirm_passwd"
+                placeholder="Re-enter the new password ..." value="" required>
+
+              <div class="mb-3">
+                <label for="old_passwd" class="form-label">Please enter your old password to confirm.</label>
+                <input type="password" class="form-control" id="old_passwd" name="old_passwd" required>
+              </div>
+              <input type="hidden" name="user_id" value="{{ current_user.id }}">
+              <button id="changePasswdBtn" type="submit" class="btn btn-primary btn-sm">Change</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
     </div>
   </div>
-</div>
-</div>
-<!-- End of modal -->
-
+  <!-- End of changePasswd modal -->
 
 
   <script>

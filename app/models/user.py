@@ -11,7 +11,7 @@ from flask_login import UserMixin
 import secrets
 import uuid
 from scripts.utils import sha256_hash, utcnow
-from app.utils.encryption import generate_derived_key_from_passwd, encrypt_user_private_key
+from app.utils.encryption import generate_derived_key_from_passwd, encrypt_user_private_key, hash_derived_key
 from app.models.tag import Tag
 
 
@@ -59,6 +59,11 @@ class User(db.Model, UserMixin):
     # Add encrypted_private_key column
     encrypted_private_key = db.Column(db.Text)
 
+    # Derived key hash value. This key is derived from the user's password.
+    # This will be used during password reset with a token.
+    derived_key_hash = db.Column(db.String(128), nullable=False)
+
+
     journal_entries = db.relationship('JournalEntry', backref='author', lazy=True, cascade="all, delete-orphan")
     tags = db.relationship('Tag', backref='creator', lazy=True, cascade="all, delete-orphan")
 
@@ -82,6 +87,9 @@ class User(db.Model, UserMixin):
 
     def set_encrypted_private_key(self, private_key, password):
         derived_key = generate_derived_key_from_passwd(password)
+        # Set the hash value of derived_key
+        self.derived_key_hash = hash_derived_key(derived_key)
+
         encrypted_private_key = encrypt_user_private_key(private_key, derived_key)
         self.encrypted_private_key = encrypted_private_key
 

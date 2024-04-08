@@ -18,6 +18,7 @@ from scripts.email_message import EmailMessage
 from app.utils.encryption import generate_derived_key_from_passwd, decrypt_user_private_key, encrypt, decrypt
 from scripts.utils import count_words, convert_utc_to_ist_str, format_years_ago
 from config import EmailConfig
+from app.extensions import db
 
 import logging
 import json
@@ -1019,3 +1020,46 @@ def verify_email(token):
         flash('Invalid or expired verification link. Please try again.', 'error')
 
     return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/change_password', methods=['POST'])
+@login_required
+def change_password():
+    user_id = request.form.get('user_id')
+    old_passwd = request.form.get('old_passwd')
+
+    if current_user.id != int(user_id):
+        abort(403)
+
+    user = User.query.get_or_404(user_id)
+    if user.check_password(old_passwd):
+        new_passwd = request.form.get('new_passwd')
+        confirm_passwd = request.form.get('confirm_passwd')
+
+        if new_passwd != confirm_passwd:
+            flash("Passwords didn't match. Try again!", 'error')
+            return redirect(url_for('auth.profile'))
+        
+        # Get user's private key from the session
+        user_private_key = session['current_user_private_key']
+
+        # Set the new password hash using the method `User.set_hashed_password(new_passwd)`
+        user.set_hashed_password(new_passwd)
+
+        # Set user's encrypted private key with new_passwd using the method 
+        # User.set_encrypted_private_key(private_key=user_private_key, password=new_passwd)
+        user.set_encrypted_private_key(
+            private_key = user_private_key,
+            password = new_passwd
+        )
+
+        # Commit the changes to the db
+        db.session.commit()
+        
+        flash("Password changed successfully.", 'success')
+        logger.info(f"PASSWORD_CHANGE: The user '{user.username}' changed their password.")
+
+    else:
+        flash("Wrong old password!", 'error')
+
+    return redirect(url_for('auth.profile'))
