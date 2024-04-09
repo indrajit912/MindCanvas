@@ -174,10 +174,13 @@ def profile():
     journal_entries = current_user.journal_entries
     tags = current_user.tags
 
+    # Get the current user's private key from session
+    private_key = session['current_user_private_key']
+
     # Count the total number of journal entries, tags, and words
     total_journal_entries = len(journal_entries)
     total_tags = len(tags)
-    total_words_in_journal_entries = sum(count_words(entry.content) for entry in journal_entries)
+    total_words_in_journal_entries = sum(count_words(decrypt(entry.content, private_key)) for entry in journal_entries)
 
     # Query the database for the last five journal entries of the current user
     user_journal_entries = JournalEntry.query.filter_by(
@@ -185,9 +188,6 @@ def profile():
     ).order_by(
         JournalEntry.date_created.desc()
     ).limit(3).all()
-
-    # Get the current user's private key from session
-    private_key = session['current_user_private_key']
 
     
     # Pass the count_words function to the template
@@ -1043,22 +1043,56 @@ def change_password():
         # Get user's private key from the session
         user_private_key = session['current_user_private_key']
 
-        # Set the new password hash using the method `User.set_hashed_password(new_passwd)`
-        user.set_hashed_password(new_passwd)
-
-        # Set user's encrypted private key with new_passwd using the method 
-        # User.set_encrypted_private_key(private_key=user_private_key, password=new_passwd)
-        user.set_encrypted_private_key(
-            private_key = user_private_key,
-            password = new_passwd
+        # Make POST request to the API
+        api_endpoint = current_app.config['HOST'] + f'/api/users/{user.id}/change_password'
+        headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
+        response = requests.post(
+            api_endpoint,
+            json={
+                "new_password": new_passwd,
+                "private_key": user_private_key
+            },
+            headers=headers
         )
 
-        # Commit the changes to the db
-        db.session.commit()
-        
-        flash("Password changed successfully.", 'success')
-        logger.info(f"PASSWORD_CHANGE: The user '{user.username}' changed their password.")
+        if response.status_code == 200:
+            flash("Password changed successfully.", 'success')
+            logger.info(f"PASSWORD_CHANGE: The user '{user.username}' changed their password.")
 
+            # Derive the password reset key
+            passwd_reset_key = generate_derived_key_from_passwd(new_passwd)
+
+            # Send email to the user with the new password_reset_key.
+            _email_html_text = render_template(
+                'emails/change_passwd_email.html',
+                passwd_reset_key=passwd_reset_key.hex(), # To reverse this use bytes.fromhex(password_reset_key_hex)
+                username=user.fullname
+            )
+
+            msg = EmailMessage(
+                sender_email_id=EmailConfig.INDRAJITS_BOT_EMAIL_ID,
+                to=current_user.email,
+                subject=f"{current_app.config['FLASK_APP_NAME']}: Password Change Notification!",
+                email_html_text=_email_html_text
+            )
+
+            try:
+                msg.send(
+                    sender_email_password=EmailConfig.INDRAJITS_BOT_EMAIL_PASSWD,
+                    server_info=EmailConfig.GMAIL_SERVER,
+                    print_success_status=False
+                )
+
+                flash('An email containing a password reset key has been dispatched to your email address.', 'info')
+                logger.info(f"EMAIL_SENT: A password change notification with password reset key has been emailed to '{current_user.email}'.")
+
+            except Exception as e:
+                # TODO: Handle email sending error better
+                flash('An error occurred while attempting to send the password reset key through email. Try again!', 'danger')
+                logger.error(f"Error occurred while attempting to send the password change notification along with password reset key through email.\nERROR: {e}")
+        else:
+            flash("Error occurred while changing the password.", 'error')
+            logger.error(f"API_ERROR: couldn't change the user password due to err during api call.\n{response.content}")
     else:
         flash("Wrong old password!", 'error')
 

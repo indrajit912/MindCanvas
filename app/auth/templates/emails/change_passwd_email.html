@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Change Notification</title>
+    <style>
+        /* Responsive Styles */
+        @media screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+                padding: 10px;
+            }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        p {
+            text-align: justify;
+            margin-bottom: 20px;
+        }
+        code {
+            padding: 4px 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            cursor: pointer; /* Add cursor pointer */
+            user-select: all; /* Add user-select all */
+        }
+        .address {
+            font-family: 'Courier New', Courier, monospace;
+            margin-top: 20px;
+            color: #555;
+            text-align: left;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>MindCanvas Password Change Notification</h2>
+        <p>Dear {{ username }},</p>
+
+        <p>Your password has been changed successfully. As a reminder, MindCanvas uses strong encryption to protect your journal entries. Your journal key is encrypted with a strong algorithm, ensuring that your data remains secure. Remember that without your password, it's mathematically impossible to retrieve your journal entries, guaranteeing your privacy.</p>
+
+        <p>Please keep your password safe and never share it with anyone. Also, here is your password reset key, which you can use if you ever forget your password:</p>
+        <p style="text-align: center;">
+            <code onclick="copyToClipboard(this)" style="cursor: pointer;">
+                {{ passwd_reset_key }}
+            </code>
+        </p>
+
+        <p>Make sure to store this key securely, as it's equivalent to your password.</p>
+
+        <p class="address">Best Regards, <br>Indrajit Ghosh, <br>Senior Research Fellow, <br>Stat-Math Unit, <br>Indian Statistical Institute Bangalore, <br>Bangalore, India</p>
+    </div>
+
+</body>
+
+</html>

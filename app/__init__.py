@@ -51,14 +51,17 @@ def create_app(config_class=get_config()):
     api = Api(app, prefix='/api')
     
     # Register api resources
-    from app.api.users import UsersResource, UserResource, OnThisDayEntriesResource, UserTagsResource, UpdateLastSeen
+    from app.api.users import UsersResource, UserResource, OnThisDayEntriesResource, UserTagsResource, \
+        UpdateLastSeen, ChangeUserPassword
     api.add_resource(UsersResource, '/users', '/users/<string:username>')
     api.add_resource(UserResource, '/create/user', '/users/<int:user_id>')
     api.add_resource(OnThisDayEntriesResource, '/users/<string:username>/journal_entries')
     api.add_resource(UserTagsResource, '/users/<string:username>/tags')
     api.add_resource(UpdateLastSeen, '/users/<int:user_id>/update_last_seen')
+    api.add_resource(ChangeUserPassword, '/users/<int:user_id>/change_password')
 
-    from app.api.journal_entries import JournalEntryResource, UserJournalEntriesResource, SearchJournalEntriesResource
+    from app.api.journal_entries import JournalEntryResource, UserJournalEntriesResource, \
+        SearchJournalEntriesResource
     api.add_resource(JournalEntryResource, '/create/journal_entry', '/journal_entries/<int:journal_entry_id>')
     api.add_resource(UserJournalEntriesResource, '/users/<int:user_id>/journal_entries')
     api.add_resource(SearchJournalEntriesResource, '/users/<int:user_id>/journal_entries/<string:query>')

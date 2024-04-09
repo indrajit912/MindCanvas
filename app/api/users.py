@@ -146,6 +146,39 @@ class UserResource(Resource):
         db.session.commit()
 
         return {'message': 'User deleted successfully'}, 200
+
+
+class ChangeUserPassword(Resource):
+    """
+    - POST '/api/users/<int:user_id>/change_password'
+        body {"new_password": "KD84djkf@dkf", "private_key": "dsklfkiDKKFO93234jkdlf"}
+    """
+    @token_required
+    def post(self, user_id):
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('new_password', type=str, required=True, help='Give a new password')
+        parser.add_argument('private_key', type=str, required=True, help='User private key is required')
+
+        args = parser.parse_args()
+
+        # Retrieve the user from the database using user_id
+        user = User.query.get_or_404(user_id)
+        
+        # Set the new password hash using the method `User.set_hashed_password(new_passwd)`
+        user.set_hashed_password(args.get('new_password'))
+
+        # Set user's encrypted private key with new_passwd using the method 
+        # User.set_encrypted_private_key(private_key=user_private_key, password=new_passwd)
+        user.set_encrypted_private_key(
+            private_key = args.get('private_key'),
+            password = args.get('new_password')
+        )
+        
+        # Commit the changes to the database
+        db.session.commit()
+        
+        return {'message': 'Password changed successfully.'}, 200
     
     
 class UpdateLastSeen(Resource):

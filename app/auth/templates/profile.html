@@ -123,10 +123,6 @@
                   class="btn btn-warning btn-sm mb-2 mb-md-0">
                   <i class="bi bi-key"></i> Change Password
                 </a>
-
-                <a href="#" class="btn btn-info btn-sm mt-2 mt-md-0">
-                  <i class="bi bi-emoji-smile"></i> Get Password Reset Token
-                </a>
               </div>
 
 
@@ -238,7 +234,11 @@
                 <input type="password" class="form-control" id="old_passwd" name="old_passwd" required>
               </div>
               <input type="hidden" name="user_id" value="{{ current_user.id }}">
-              <button id="changePasswdBtn" type="submit" class="btn btn-primary btn-sm">Change</button>
+              <button type="submit" class="btn btn-primary btn-sm" onclick="toggleSpinner()">
+                Change
+                <span id="changePasswdSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+              </button>
+
           </form>
         </div>
         <div class="modal-footer">
@@ -255,6 +255,12 @@
       setTimeout(() => {
         window.location.reload();
       }, 1000); // Adjust the timeout as needed
+    }
+
+    // Function to toggle the spinner
+    function toggleSpinner() {
+      var spinner = document.getElementById('changePasswdSpinner');
+      spinner.classList.toggle('d-none');
     }
   </script>
 
