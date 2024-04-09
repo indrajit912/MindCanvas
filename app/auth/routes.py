@@ -141,18 +141,18 @@ def user_journal_entries(user_id):
     journal_entries = current_user.journal_entries
     tags = current_user.tags
 
+    # Get the current user's private key from session
+    private_key = session['current_user_private_key']
+
     # Count the total number of journal entries, tags, and words
     total_journal_entries = len(journal_entries)
     total_tags = len(tags)
-    total_words_in_journal_entries = sum(count_words(entry.content) for entry in journal_entries)
+    total_words_in_journal_entries = sum(count_words(decrypt(entry.content, private_key)) for entry in journal_entries)
 
     # Query all JournalEntry objects associated with the specified user_id
     user_journal_entries = JournalEntry.query.filter_by(
         author_id=user_id
     ).order_by(JournalEntry.date_created.desc()).all()
-
-    # Get the current user's private key from session
-    private_key = session['current_user_private_key']
 
     return render_template(
         'user_all_entries.html',
@@ -731,8 +731,37 @@ def register_user(token):
             logger.info(f"A new user registered with the username `{user_json['username']}`.")
             flash("You have successfully registered! You may now log in using these credentials.", 'success')
 
-            # TODO: Generate a password reset token
-            # TODO: Send an welcome email to the user with the password reset token!
+            # Derive the password reset key
+            passwd_reset_key = generate_derived_key_from_passwd(new_user_data['password'])
+
+            # Send welcome email to the user with the new password_reset_key.
+            _email_html_text = render_template(
+                'emails/welcome_email.html',
+                passwd_reset_key=passwd_reset_key.hex(), # To reverse this use bytes.fromhex(password_reset_key_hex)
+                username=new_user_data['fullname']
+            )
+
+            msg = EmailMessage(
+                sender_email_id=EmailConfig.INDRAJITS_BOT_EMAIL_ID,
+                to=new_user_data['email'],
+                subject="Welcome to MindCanvas!",
+                email_html_text=_email_html_text
+            )
+
+            try:
+                msg.send(
+                    sender_email_password=EmailConfig.INDRAJITS_BOT_EMAIL_PASSWD,
+                    server_info=EmailConfig.GMAIL_SERVER,
+                    print_success_status=False
+                )
+
+                flash('A welcome email containing a password reset key has been dispatched to your email address.', 'info')
+                logger.info(f"EMAIL_SENT: Welcome email with password reset key has been emailed to 'new_user_data['fullname']'.")
+
+            except Exception as e:
+                # TODO: Handle email sending error better
+                flash('An error occurred while attempting to send the welcome email. Try again!', 'danger')
+                logger.error(f"Error occurred while attempting to send welcome email along with password reset key through email.\nERROR: {e}")
 
             return redirect(url_for('auth.login'))
         else:

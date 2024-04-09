@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to MindCanvas!</title>
+    <style>
+        /* Responsive Styles */
+        @media screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+                padding: 10px;
+            }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        p {
+            text-align: justify;
+            margin-bottom: 20px;
+        }
+        code {
+            padding: 4px 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .address {
+            font-family: 'Courier New', Courier, monospace;
+            margin-top: 20px;
+            color: #555;
+            text-align: left;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Welcome to MindCanvas!</h2>
+        <p>Dear {{ username }},</p>
+
+        <p>Congratulations on successfully registering for MindCanvas! You've taken the first step towards a more organized and insightful journaling experience.</p>
+
+        <p>MindCanvas is designed to be your personal space for capturing thoughts, ideas, and reflections. But it's more than just a journaling app—it's a secure vault for your thoughts. We take your privacy seriously, which is why all your journal entries are encrypted using a strong encryption algorithm.</p>
+
+        <p>Your password is the ultimate key to unlock your entries, ensuring that only you have access to your thoughts and reflections. We never store your password in our database. Your password is hashed using a strong hashing algorithm (<a href="https://en.wikipedia.org/wiki/SHA-256" target="_blank">SHA256</a>). Therefore, it is crucial to keep it secure.</p>
+
+        <p>If you ever forget your password, don't worry! We've included a password reset key below. Keep it safe, as it is equivalent to your password. In case you lose your password, you can use this key to retrieve access to your account. Simply go to the "Forgot Password" link on the MindCanvas website and use this key to reset your password.</p>
+        <p style="text-align: center;"><code>{{ passwd_reset_key }}</code></p>
+
+        <p>Without your password or the reset key, it is mathematically impossible to access your journal entries. So, ensure you store them securely.</p>
+
+        <p>Happy journaling!</p>
+
+        <p class="address">Cheers, <br>Indrajit Ghosh, <br>Senior Research Fellow, <br>Stat-Math Unit, <br>Indian Statistical Institute Bangalore, <br>Bangalore, India</p>
+
+        <p>For any assistance, feel free to reach out to Indrajit.</p>
+    </div>
+
+</body>
+
+</html>

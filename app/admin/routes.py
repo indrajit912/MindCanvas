@@ -39,7 +39,7 @@ def delete_user():
     user_id = request.form['user_id']  # Assuming user_id is sent as form data
 
     # Make DELETE request to the api
-    api_endpoint = f"{current_app.config['HOST']}/api/user/{user_id}"
+    api_endpoint = f"{current_app.config['HOST']}/api/users/{user_id}"
     response = requests.delete(
         api_endpoint,
         headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"}
@@ -48,6 +48,6 @@ def delete_user():
         logger.info(f"A user has been deleted by the administrator: `{current_user.username}`")
         flash("User deleted successfully!", "success")
     else:
-        logger.error(f"An error occurred while deleting the user with ID {user_id}. Admin: `{current_user.username}`.")
+        logger.error(f"An error occurred while deleting the user with ID {user_id}. Admin: `{current_user.username}`.\nERROR: {response.content}")
         flash("An error occurred during user deletion. Please try again.", 'error')
     return redirect(url_for('admin.home'))
