@@ -57,20 +57,21 @@
     <div class="container">
         <h2>MindCanvas Password Change Notification</h2>
         <p>Dear {{ username }},</p>
-
+    
         <p>Your password has been changed successfully. As a reminder, MindCanvas uses strong encryption to protect your journal entries. Your journal key is encrypted with a strong algorithm, ensuring that your data remains secure. Remember that without your password, it's mathematically impossible to retrieve your journal entries, guaranteeing your privacy.</p>
-
+    
         <p>Please keep your password safe and never share it with anyone. Also, here is your password reset key, which you can use if you ever forget your password:</p>
         <p style="text-align: center;">
-            <code onclick="copyToClipboard(this)" style="cursor: pointer;">
+            <code style="cursor: pointer;">
                 {{ passwd_reset_key }}
             </code>
         </p>
-
-        <p>Make sure to store this key securely, as it's equivalent to your password.</p>
-
+    
+        <p>Make sure to store this key securely, as it's equivalent to your password. Additionally, you may want to consider deleting any older password reset keys to avoid confusion and only store this one.</p>
+    
         <p class="address">Best Regards, <br>Indrajit Ghosh, <br>Senior Research Fellow, <br>Stat-Math Unit, <br>Indian Statistical Institute Bangalore, <br>Bangalore, India</p>
     </div>
+    
 
 </body>
 

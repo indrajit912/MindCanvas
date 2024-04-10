@@ -18,12 +18,12 @@ from scripts.email_message import EmailMessage
 from app.utils.encryption import generate_derived_key_from_passwd, decrypt_user_private_key, encrypt, decrypt
 from scripts.utils import count_words, convert_utc_to_ist_str, format_years_ago
 from config import EmailConfig
-from app.extensions import db
 
 import logging
 import json
 from datetime import datetime
 import requests
+from cryptography.fernet import InvalidToken 
 
 from . import auth_bp
 
@@ -1126,3 +1126,96 @@ def change_password():
         flash("Wrong old password!", 'error')
 
     return redirect(url_for('auth.profile'))
+
+@auth_bp.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+
+    if request.method == 'POST':
+        username_email = request.form.get('username_email')
+        passwd_reset_key = request.form.get('passwd_reset_key')
+        new_passwd = request.form.get('new_passwd')
+        confirm_passwd = request.form.get('confirm_passwd')
+
+        # Get the user
+        user = User.query.filter((User.username == username_email) | (User.email == username_email)).first()
+        
+        if user:
+            
+            if not new_passwd == confirm_passwd:
+                flash("Passwords don't match. Try again!", 'error')
+                return render_template('forgot_password.html')
+            
+            try:
+                # Get user's encrypted_private_key
+                user_encrypted_private_key = user.encrypted_private_key
+
+                # Make the derived key from the passwd_reset_key
+                user_derived_key = bytes.fromhex(passwd_reset_key)
+
+                # Decrypt user's encrypted private key
+                user_private_key = decrypt_user_private_key(
+                    user_encrypted_private_key,
+                    user_derived_key
+                )
+
+                # Make POST request to the API
+                api_endpoint = current_app.config['HOST'] + f'/api/users/{user.id}/change_password'
+                headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
+                response = requests.post(
+                    api_endpoint,
+                    json={
+                        "new_password": new_passwd,
+                        "private_key": user_private_key
+                    },
+                    headers=headers
+                )
+
+                if response.status_code == 200:
+                    flash("Your password has been successfully changed. You can now log in using your new password.", 'success')
+                    logger.info(f"PASSWORD_CHANGE: The user '{user.username}' changed their password.")
+
+                    # Derive the password reset key
+                    passwd_reset_key = generate_derived_key_from_passwd(new_passwd)
+
+                    # Send email to the user with the new password_reset_key.
+                    _email_html_text = render_template(
+                        'emails/change_passwd_email.html',
+                        passwd_reset_key=passwd_reset_key.hex(),
+                        username=user.fullname
+                    )
+
+                    msg = EmailMessage(
+                        sender_email_id=EmailConfig.INDRAJITS_BOT_EMAIL_ID,
+                        to=user.email,
+                        subject=f"{current_app.config['FLASK_APP_NAME']}: Password Reset Successful!",
+                        email_html_text=_email_html_text
+                    )
+
+                    try:
+                        msg.send(
+                            sender_email_password=EmailConfig.INDRAJITS_BOT_EMAIL_PASSWD,
+                            server_info=EmailConfig.GMAIL_SERVER,
+                            print_success_status=False
+                        )
+
+                        flash('An email containing a password reset key has been dispatched to your email address.', 'info')
+                        logger.info(f"EMAIL_SENT: A password reset notification with password reset key has been emailed to '{user.email}'.")
+                        return redirect(url_for('auth.login'))
+                    
+                    except Exception as e:
+                        # TODO: Handle email sending error better
+                        flash('An error occurred while attempting to send the password reset key through email. Try again!', 'danger')
+                        logger.error(f"Error occurred while attempting to send the password change notification along with password reset key through email.\nERROR: {e}")
+
+            except ValueError:
+                flash("Invalid password reset key. Please enter a valid key.", 'error')
+            except InvalidToken:
+                flash("Invalid token. Please check your password reset key and try again.", "error")
+            except Exception as e:
+                flash(f"An error occurred: {str(e)}", 'error')
+                logger.error(f"An error occurred while resetting the user's password.\n{e}")
+                
+        else:
+            flash(f"Sorry, we couldn't find any user with the username or email '{username_email}'.", 'error')
+
+    return render_template('forgot_password.html')
