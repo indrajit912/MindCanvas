@@ -41,7 +41,13 @@
             <!-- Trigger for delete entry -->
             <a href="#" class="icon-link icon-link-hover text-danger me-2" data-bs-toggle="modal"
                 data-bs-target="#delEntryModal{{ entry.id }}"><i class="bi bi-trash3"></i> Delete</a>
-
+            
+            {% if entry.favourite %}
+            <!-- TODO: complete the code! -->
+                <a href="#" class="icon-link icon-link-hover text-secondary me-2"><i class="bi bi-heart-fill"></i></a>
+            {% else %}
+                <a href="#" class="icon-link icon-link-hover text-secondary me-2"><i class="bi bi-heart"></i></a>
+            {% endif %}
         </div>
         {% endif %}
     </div>

@@ -137,17 +137,16 @@ def user_journal_entries(user_id):
     if current_user.id != user_id:
         abort(403)  # Forbidden - Current user does not have access to view another user's journal entries
 
-    # Get the current user's journal entries and tags
-    journal_entries = current_user.journal_entries
-    tags = current_user.tags
-
     # Get the current user's private key from session
     private_key = session['current_user_private_key']
 
+    # Get the current user's journal entries and tags
+    user_portfolio = current_user.portfolio(private_key)
+
     # Count the total number of journal entries, tags, and words
-    total_journal_entries = len(journal_entries)
-    total_tags = len(tags)
-    total_words_in_journal_entries = sum(count_words(decrypt(entry.content, private_key)) for entry in journal_entries)
+    total_journal_entries = user_portfolio['total_journal_entries']
+    total_tags = user_portfolio['total_tags']
+    total_words_in_journal_entries = user_portfolio['total_words']
 
     # Query all JournalEntry objects associated with the specified user_id
     user_journal_entries = JournalEntry.query.filter_by(
@@ -170,17 +169,17 @@ def user_journal_entries(user_id):
 @auth_bp.route('/profile')
 @login_required
 def profile():
-    # Get the current user's journal entries and tags
-    journal_entries = current_user.journal_entries
-    tags = current_user.tags
 
     # Get the current user's private key from session
     private_key = session['current_user_private_key']
 
+    # Get the current user's portfolio
+    user_portfolio = current_user.portfolio(private_key)
+
     # Count the total number of journal entries, tags, and words
-    total_journal_entries = len(journal_entries)
-    total_tags = len(tags)
-    total_words_in_journal_entries = sum(count_words(decrypt(entry.content, private_key)) for entry in journal_entries)
+    total_journal_entries = user_portfolio['total_journal_entries']
+    total_tags = user_portfolio['total_tags']
+    total_words_in_journal_entries = user_portfolio['total_words']
 
     # Query the database for the last five journal entries of the current user
     user_journal_entries = JournalEntry.query.filter_by(

@@ -22,6 +22,7 @@ class JournalEntry(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     locked = db.Column(db.Boolean, default=False)
+    favourite = db.Column(db.Boolean, default=False)
     date_created = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
     last_updated = db.Column(db.DateTime(timezone=True), default=utcnow)
 
@@ -42,6 +43,7 @@ class JournalEntry(db.Model):
             'title': self.title.decode() if isinstance(self.title, bytes) else self.title,
             'content': self.content.decode() if isinstance(self.content, bytes) else self.content,
             'locked': self.locked,
+            'favourite': self.favourite,
             'date_created': self.format_datetime_to_str(self.date_created),
             'last_updated': self.format_datetime_to_str(self.last_updated),
             'author_id': self.author_id,

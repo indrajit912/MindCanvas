@@ -36,6 +36,7 @@ class JournalEntryResource(Resource):
         parser.add_argument('author_id', type=int, required=True, help='Author ID is required')
         parser.add_argument('tags', type=str, action='append', required=False, help='List of tag names')
         parser.add_argument('locked', type=bool, required=False, help='Is this entry locked? (T/F)')
+        parser.add_argument('favourite', type=bool, required=False, help='Is this a favourite entry? (T/F)')
 
         args = parser.parse_args()
 
@@ -44,7 +45,8 @@ class JournalEntryResource(Resource):
             title=args['title'],
             content=args['content'],
             author_id=args['author_id'],
-            locked=args.get('locked', False)  # Set locked attribute, defaulting to False if not provided
+            locked=args.get('locked', False),
+            favourite=args.get('favourite', False)  # Set locked attribute, defaulting to False if not provided
         )
 
         # Add the new_journal_entry to the session
@@ -80,6 +82,7 @@ class JournalEntryResource(Resource):
         parser.add_argument('content', type=str)
         parser.add_argument('user_id', type=int)
         parser.add_argument('locked', type=bool)
+        parser.add_argument('favourite', type=bool)
 
         args = parser.parse_args()
 
@@ -95,6 +98,8 @@ class JournalEntryResource(Resource):
             journal_entry.author_id = args['author_id']
         if args.get('locked') is not None:
             journal_entry.locked = args.get('locked')
+        if args.get('favourite') is not None:
+            journal_entry.favourite = args.get('favourite')
 
         journal_entry.last_updated = utcnow()
 

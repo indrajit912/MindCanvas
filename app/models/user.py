@@ -11,8 +11,8 @@ from flask_login import UserMixin
 import secrets
 import uuid
 from scripts.utils import sha256_hash, utcnow
-from app.utils.encryption import generate_derived_key_from_passwd, encrypt_user_private_key, hash_derived_key
-from app.models.tag import Tag
+from app.utils.encryption import generate_derived_key_from_passwd, encrypt_user_private_key, hash_derived_key, decrypt
+from scripts.utils import count_words
 
 
 class User(db.Model, UserMixin):
@@ -140,6 +140,22 @@ class User(db.Model, UserMixin):
             'last_seen': User.format_datetime_to_str(self.last_seen),
             'email_verified': self.email_verified
         }
+    
+    def portfolio(self, private_key):
+        """
+        Returns a list [total_journal_entries, total_tags, total_words_in_journal_entries]
+        for a User
+        """
+        total_journal_entries = len(self.journal_entries)
+        total_tags = len(self.tags)
+        total_words = sum(count_words(decrypt(entry.content, private_key)) for entry in self.journal_entries)
+
+        return {
+            "total_journal_entries": total_journal_entries,
+            "total_tags": total_tags,
+            "total_words": total_words
+        }
+        
     
     @staticmethod
     def format_datetime_to_str(dt):
