@@ -34,9 +34,10 @@
         {% if not entry.locked or session.get('entries_unlocked') %}
         <div class="tags mt-2">
             {% for tag in entry.tags %}
-            <a href="{{ url_for('auth.get_journal_entries_by_tag', user_id=current_user.id, tag_id=tag.id) }}" style="text-decoration: none;">
+            <a href="{{ url_for('auth.get_journal_entries_by_tag', user_id=current_user.id, tag_id=tag.id) }}"
+                style="text-decoration: none;">
                 <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
-            </a>            
+            </a>
             {% endfor %}
         </div>
 
@@ -188,35 +189,43 @@
 </div>
 
 {% endfor %}
+<!-- Responsive Pagination -->
+<div class="pagination-responsive">
+    <!-- Pagination links -->
+    <nav aria-label="user-all-entries">
+        <ul class="pagination pagination-sm justify-content-center">
 
-<!-- Pagination links -->
-<nav aria-label="user-all-entries">
-    <ul class="pagination">
-
-    {% if pagination['has_prev'] %}
-        <li class="page-item"><a class="page-link" href="{{ url_for('auth.user_journal_entries', user_id=current_user.id, page=pagination['prev_num']) }}">Previous</a></li>
-    {% endif %}
-    
-    {% for page_num in pagination['iter_pages'] %}
-        {% if page_num %}
-            {% if page_num != pagination['page'] %}
-            <li class="page-item"><a class="page-link" href="{{ url_for('auth.user_journal_entries', user_id=current_user.id, page=page_num) }}">{{ page_num }}</a></li>
-            {% else %}
-            <li class="page-item"><a class="page-link">{{ page_num }}</a></li>
+            {% if pagination['has_prev'] %}
+            <li class="page-item"><a class="page-link"
+                    href="{{ url_for('auth.user_journal_entries', user_id=current_user.id, page=pagination['prev_num']) }}"><i class="bi bi-skip-backward-fill"></i></a>
+            </li>
             {% endif %}
-        {% else %}
+
+            {% for page_num in pagination['iter_pages'] %}
+            {% if page_num %}
+            {% if page_num != pagination['page'] %}
+            <li class="page-item"><a class="page-link"
+                    href="{{ url_for('auth.user_journal_entries', user_id=current_user.id, page=page_num) }}">{{ page_num
+                    }}</a></li>
+            {% else %}
+            <li class="page-item active"><a class="page-link">{{ page_num }}</a></li>
+            {% endif %}
+            {% else %}
             ...
-        {% endif %}
-    {% endfor %}
-    
-    {% if pagination['has_next'] %}
-    <li class="page-item"><a class="page-link" href="{{ url_for('auth.user_journal_entries', user_id=current_user.id, page=pagination['next_num']) }}">Next</a></li>
-    {% endif %}
+            {% endif %}
+            {% endfor %}
 
-    </ul>
+            {% if pagination['has_next'] %}
+            <li class="page-item"><a class="page-link"
+                    href="{{ url_for('auth.user_journal_entries', user_id=current_user.id, page=pagination['next_num']) }}"><i class="bi bi-skip-forward-fill"></i></a>
+            </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+</div>
 
 
-</nav>
 
 
 <!-- Unlock Modal -->
