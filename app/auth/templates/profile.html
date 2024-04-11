@@ -144,7 +144,7 @@
 
               <div class="row g-2">
                 {% if user_journal_entries %}
-                {% include '_user_journal_entries.html' %}
+                {% include '_preview_journal_entries.html' %}
                 {% else %}
                 <div class="alert alert-warning" role="alert">
                   You have no journal entries yet. <a href="{{ url_for('auth.add_entry', user_id=user.id) }}"

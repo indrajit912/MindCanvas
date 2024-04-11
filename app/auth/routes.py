@@ -20,6 +20,7 @@ from scripts.utils import count_words, convert_utc_to_ist_str, format_years_ago
 from config import EmailConfig
 
 import logging
+from math import ceil
 import json
 from datetime import datetime
 import requests
@@ -104,6 +105,10 @@ def login():
 @login_required
 def dashboard():
     user = current_user
+
+    # Get the page number from the request or default to the first page
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
     
     # Last 10 journal Entries
     user_journal_entries = JournalEntry.query.filter_by(
@@ -111,6 +116,14 @@ def dashboard():
     ).order_by(
         desc(JournalEntry.last_updated)
     ).limit(3).all()
+
+    # Paginate the entries manually
+    total_entries = len(user_journal_entries)
+    total_pages = ceil(total_entries / per_page)
+    start_index = (page - 1) * per_page
+    end_index = min(start_index + per_page, total_entries)
+    paginated_entries = user_journal_entries[start_index:end_index]
+
 
     # Get today's date in MM-DD format
     today_date = datetime.now().strftime('%m-%d')
@@ -136,7 +149,8 @@ def dashboard():
     return render_template(
         'dashboard.html', 
         user=user,
-        user_journal_entries = user_journal_entries,
+        pagination={},
+        user_journal_entries=paginated_entries,
         onthis_day_journal=onthis_day_journal,
         convert_utc_to_ist_str=convert_utc_to_ist_str,
         format_years_ago=format_years_ago,
@@ -159,6 +173,10 @@ def user_journal_entries(user_id):
     # Get the current user's journal entries and tags
     user_portfolio = current_user.portfolio(private_key)
 
+    # Get the page number from the request or default to the first page
+    page = request.args.get('page', 1, type=int)
+    per_page = 30
+
     # Count the total number of journal entries, tags, and words
     total_journal_entries = user_portfolio['total_journal_entries']
     total_tags = user_portfolio['total_tags']
@@ -169,9 +187,24 @@ def user_journal_entries(user_id):
         author_id=user_id
     ).order_by(JournalEntry.date_created.desc()).all()
 
+    # Paginate the entries manually
+    total_entries = len(user_journal_entries)
+    total_pages = ceil(total_entries / per_page)
+    start_index = (page - 1) * per_page
+    end_index = min(start_index + per_page, total_entries)
+    paginated_entries = user_journal_entries[start_index:end_index]
+
     return render_template(
         'user_all_entries.html',
-        user_journal_entries=user_journal_entries,
+        pagination={
+            'has_prev': page > 1,
+            'has_next': page < total_pages,
+            'prev_num': page - 1 if page > 1 else None,
+            'next_num': page + 1 if page < total_pages else None,
+            'iter_pages': range(1, total_pages + 1),
+            'page': page
+        },
+        user_journal_entries=paginated_entries,
         convert_utc_to_ist_str=convert_utc_to_ist_str,
         redirect_destination='user-all-entries',
         total_journal_entries=total_journal_entries,
@@ -221,12 +254,23 @@ def profile():
     total_tags = user_portfolio['total_tags']
     total_words_in_journal_entries = user_portfolio['total_words']
 
+    # Get the page number from the request or default to the first page
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
     # Query the database for the last five journal entries of the current user
     user_journal_entries = JournalEntry.query.filter_by(
         author_id=current_user.id
     ).order_by(
         JournalEntry.date_created.desc()
     ).limit(3).all()
+
+    # Paginate the entries manually
+    total_entries = len(user_journal_entries)
+    total_pages = ceil(total_entries / per_page)
+    start_index = (page - 1) * per_page
+    end_index = min(start_index + per_page, total_entries)
+    paginated_entries = user_journal_entries[start_index:end_index]
 
     
     # Pass the count_words function to the template
@@ -236,7 +280,8 @@ def profile():
         total_journal_entries=total_journal_entries, 
         total_tags=total_tags, 
         total_words_in_journal_entries=total_words_in_journal_entries,
-        user_journal_entries=user_journal_entries,
+        pagination={},
+        user_journal_entries=paginated_entries,
         convert_utc_to_ist_str=convert_utc_to_ist_str,
         redirect_destination='profile',
         decrypt=decrypt,
@@ -809,42 +854,68 @@ def register_user(token):
 @auth_bp.route('/search/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def search(user_id):
-    # Initialize empty list for search results
-    search_results = []
-    query = "Search ..."
-    private_key = None
-
     # Check if the current user is authorized to access the search functionality
     if not current_user.id == user_id:
         abort(403)
+
+    # Initialize variables
+    search_results = []
+    query = "Search ..."
+    private_key = None
+    page = 1
+    per_page = 30
 
     # Process the search query if the request method is POST
     if request.method == 'POST':
         # Get the search query from the form
         query = request.form.get('q')
-        private_key = session['current_user_private_key']
+        private_key = session.get('current_user_private_key')
 
-        search_results = JournalEntry.query.filter_by(author_id=user_id).all()
+        # Query all JournalEntry objects associated with the specified user_id
+        user_entries = JournalEntry.query.filter_by(author_id=user_id)
 
-        # Filter decrypted titles and contents for the search query
+        # Filter entries for the search query
         search_results = [
-            entry 
-            for entry in search_results 
+            entry
+            for entry in user_entries
             if query.lower() in decrypt(entry.title, private_key).lower()
             or query.lower() in decrypt(entry.content, private_key).lower()
         ]
 
-    # Render the search.html template with necessary data
+        # Manually paginate the search results
+        total_entries = len(search_results)
+        total_pages = ceil(total_entries / per_page)
+        page = request.args.get('page', 1, type=int)
+        start_index = (page - 1) * per_page
+        end_index = min(start_index + per_page, total_entries)
+        paginated_entries = search_results[start_index:end_index]
+
+        return render_template(
+            'search.html',
+            user_id=current_user.id,
+            pagination={
+                'has_prev': page > 1,
+                'has_next': page < total_pages,
+                'prev_num': page - 1 if page > 1 else None,
+                'next_num': page + 1 if page < total_pages else None,
+                'iter_pages': range(1, total_pages + 1),
+                'page': page
+            },
+            user_journal_entries=paginated_entries,
+            query=query,
+            decrypt=decrypt,
+            private_key=private_key,
+            convert_utc_to_ist_str=convert_utc_to_ist_str,
+            redirect_destination='search',
+            total_entries=total_entries
+        )
+
     return render_template(
-        'search.html', 
-        user_id=current_user.id, 
-        user_journal_entries=search_results,
-        query= query,
-        decrypt=decrypt,
-        private_key=private_key,
-        convert_utc_to_ist_str=convert_utc_to_ist_str,
-        redirect_destination='search'
+        'search.html',
+        user_id=current_user.id,
+        query=query
     )
+
 
 # A route for export data
 @auth_bp.route('/export_data', methods=['POST'])

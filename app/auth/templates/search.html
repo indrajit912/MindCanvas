@@ -17,11 +17,17 @@
         </div>
     </div>
 
+    {% if total_entries %}
+    <div class="total-results">
+        Total results: {{ total_entries }}
+    </div>
+    {% endif %}
+
     <br>
 
     {% if user_journal_entries %}
     <div class="card-body">
-        {% include '_user_journal_entries.html' %}
+        {% include '_preview_journal_entries.html' %}
     </div>
     {% else %}
     <!-- Display a message if search results are empty -->
@@ -39,10 +45,15 @@
         font-family: 'Poppins', sans-serif;
         font-size: 20px;
         font-weight: bold;
-        color: #007bff;
-        /* Blue color, you can adjust as needed */
-        letter-spacing: 1px;
-        /* Add letter spacing for better readability */
+        color: #007bff; /* Blue color, you can adjust as needed */
+        letter-spacing: 1px; /* Add letter spacing for better readability */
+    }
+    
+    /* Style for the total results */
+    .total-results {
+        font-size: 18px;
+        color: #555;
+        margin-bottom: 10px;
     }
 </style>
 
