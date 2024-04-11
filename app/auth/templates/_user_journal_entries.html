@@ -18,7 +18,7 @@
             <a href="#" class="icon-link icon-link-hover text-success me-2" data-bs-toggle="modal"
                 data-bs-target="#lockEntryModal{{ entry.id }}"><i class="bi bi-unlock-fill"></i></a>
 
-            {{ decrypt(entry.title, private_key) }}
+            {{ decrypt(entry.title, private_key)[:60] }}...
 
             {% endif %}
         </h5>
@@ -34,7 +34,9 @@
         {% if not entry.locked or session.get('entries_unlocked') %}
         <div class="tags mt-2">
             {% for tag in entry.tags %}
-            <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+            <a href="{{ url_for('auth.get_journal_entries_by_tag', user_id=current_user.id, tag_id=tag.id) }}" style="text-decoration: none;">
+                <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+            </a>            
             {% endfor %}
         </div>
 

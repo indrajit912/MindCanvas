@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Journals By Tag ({{ current_user.username }}){% endblock %}
+
+{% block content %}
+
+<div class="container mt-3">
+
+    <div class="col-sm-4 mb-3 mb-sm-0">
+        <div class="card">
+            <div class="card-body">
+                <div>
+                </div>
+                <h5 class="card-title">
+                    <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+                </h5>
+                <p class="card-text">{{ tag.description }}</p>
+                <a href="{{ url_for('auth.manage_tags', user_id=current_user.id) }}"
+                    class="icon-link icon-link-hover text-secondary me-2">
+                    <i class="bi bi-tags"></i> Manage Tags
+                </a>
+                <a href="#" onclick="history.back();" class="icon-link icon-link-hover text-secondary me-2">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <br>
+
+    <div class="row justify-content-center">
+        {% if user_journal_entries %}
+        <div class="card-body">
+            {% include '_user_journal_entries.html' %}
+        </div>
+        {% else %}
+        <div class="alert alert-warning" role="alert">
+            You have no Journal Entries associated with the tag. <a
+                href="{{ url_for('auth.user_journal_entries', user_id=current_user.id) }}" class="alert-link"><i
+                    class="bi bi-eye-fill"></i> View all your entries here!</a>
+        </div>
+        {% endif %}
+        {% endblock %}
+    </div>
+</div>

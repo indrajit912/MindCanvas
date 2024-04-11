@@ -1,91 +1,66 @@
-<!-- app/admin/templates/admin/admin.html -->
 {% extends 'base.html' %}
 
 {% block title %}Admin Page{% endblock %}
 
 {% block content %}
-
+<div class="container">
+    <h1 class="display-4">Admin Dashboard</h1>
     {% include 'flash_msgs.html' %}
 
-    <h1 class="heading">Welcome admin!</h1>
-
-    <!-- <h2>All Users</h2> -->
     <div class="accordion" id="accordionPanelsStayOpenExample">
         {% for user in users %}
         <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne{{ user.id }}" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne{{ user.id }}">
-            <strong># {{ users|length - loop.index + 1 }}. {{ user.fullname }}</strong> 
-            </button>
-          </h2>
-
-          <div id="panelsStayOpen-collapseOne{{ user.id }}" class="accordion-collapse collapse">
-            <div class="accordion-body">
-                <p class="card-text">
-                    <strong>Username:</strong> <code>{{ user.username }}</code>
-                    <br>
-                    <strong>Email:</strong> <code>{{ user.email }}</code>
-                    <br>
-                    <strong>Admin:</strong> <code>{{ user.is_admin }}</code>
-                    <br>
-                    <strong>Email verified:</strong> <code>{{ user.email_verified }}</code>
-                    <br>
-                    <strong>Date Joined:</strong> <code>{{ convert_utc_to_ist_str(user.date_joined) }}</code>
-                    <br>
-                    <strong>Last Seen:</strong> <code>{{ convert_utc_to_ist_str(user.last_seen) }}</code>
-                </p>
-
-
-                <!-- Start of Delete user btn logic -->
-
-                {% if user.id == current_user.id or user.email == indrajit %}
-                <button type="button" class="btn btn-danger btn-sm" disabled>Delete User</button>
-                {% else %}
-
-                    <button type="button" class="btn btn-danger me-md-2 btn-sm" data-bs-toggle="modal" data-bs-target="#userDelBtn{{ user.id }}">
-                      Delete User
-                    </button>
-                
-                    <!-- Delete Modal -->
-                    <div class="modal fade" id="userDelBtn{{ user.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="userDelBtnLabel{{ user.id }}" aria-hidden="true">
-                        <div class="modal-dialog">
-                          <div class="modal-content">
-                        
-                            <div class="modal-header">
-                              <h1 class="modal-title fs-5" id="userDelBtnLabel{{ user.id }}">Delete '{{ user.fullname }}' ?</h1>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h2 class="accordion-header" id="heading{{ user.id }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse{{ user.id }}" aria-expanded="false" aria-controls="collapse{{ user.id }}">
+                    {{ user.fullname }}
+                </button>
+            </h2>
+            <div id="collapse{{ user.id }}" class="accordion-collapse collapse"
+                aria-labelledby="heading{{ user.id }}" data-bs-parent="#accordionPanelsStayOpenExample">
+                <div class="accordion-body">
+                    <ul class="list-group">
+                        <li class="list-group-item"><strong>Username:</strong> {{ user.username }}</li>
+                        <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+                        <li class="list-group-item"><strong>Number of Journals Created:</strong> {{ user.journal_entries|length }}</li>
+                        <li class="list-group-item"><strong>Number of Tags Created:</strong> {{ user.tags|length }}</li>
+                        <li class="list-group-item"><strong>Admin:</strong> {% if user.is_admin %} Yes {% else %} No {% endif %}</li>
+                        <li class="list-group-item"><strong>Email Verified:</strong> {% if user.email_verified %} Yes {% else %} No {% endif %}</li>
+                        <li class="list-group-item"><strong>Date Joined:</strong> {{ convert_utc_to_ist_str(user.date_joined) }}</li>
+                        <li class="list-group-item"><strong>Last Seen:</strong> {{ convert_utc_to_ist_str(user.last_seen) }}</li>
+                        <!-- Add more user attributes here -->
+                    </ul>
+                    <hr>
+                    <!-- Delete User Button -->
+                    {% if user.id != current_user.id and user.email != 'indrajit' %}
+                    <form method="post" action="{{ url_for('admin.delete_user') }}">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ user.id }}">
+                            Delete User
+                        </button>
+                        <div class="modal fade" id="deleteUserModal{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel{{ user.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteUserModalLabel{{ user.id }}">Delete User</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure you want to delete user {{ user.fullname }}?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </div>
+                                </div>
                             </div>
-                        
-                            <div class="modal-body">
-                              Ensure that you are certain about deleting the user before proceeding.
-                            </div>
-                        
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                              
-                              <form method="post" action="{{ url_for('admin.delete_user') }}">
-                                <input type="hidden" name="user_id" value="{{ user.id }}">
-                                <button type="submit" class="btn btn-danger btn-sm">Delete User</button>
-                              </form> 
-
-                            </div>
-                        
-                          </div>
                         </div>
-                    </div>
-                
-                {% endif %}
-                
-                <!-- End of Delete user btn logic -->
-
-                <br><br>
-                <p class="card-text"><small class="text-body-secondary">Last updated: {{ convert_utc_to_ist_str(user.last_updated) }}</small></p>
-
+                    </form>
+                    {% endif %}
+                </div>
             </div>
-          </div>
         </div>
         {% endfor %}
-
     </div>
-
+</div>
 {% endblock %}

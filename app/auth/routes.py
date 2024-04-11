@@ -810,6 +810,7 @@ def register_user(token):
 def search(user_id):
     # Initialize empty list for search results
     search_results = []
+    query = "Search ..."
 
     # Check if the current user is authorized to access the search functionality
     if not current_user.id == user_id:
@@ -841,6 +842,7 @@ def search(user_id):
         'search.html', 
         user_id=current_user.id, 
         search_results=search_results,
+        query= query,
         convert_utc_to_ist_str=convert_utc_to_ist_str,
         redirect_destination='search'  # Additional context for the template
     )
@@ -1253,3 +1255,33 @@ def forgot_password():
             flash(f"Sorry, we couldn't find any user with the username or email '{username_email}'.", 'error')
 
     return render_template('forgot_password.html')
+
+
+from flask import flash
+
+@auth_bp.route('/user/<int:user_id>/journal_entries/tag/<int:tag_id>', methods=['GET'])
+@login_required
+def get_journal_entries_by_tag(user_id, tag_id):
+    # Find the user by user_id
+    user = User.query.get_or_404(user_id)
+
+    # Ensure the tag belongs to the user
+    tag = Tag.query.filter_by(id=tag_id, creator_id=user_id).first()
+    if not tag:
+        abort(404)
+
+    # Query journal entries associated with the tag for the user
+    journal_entries = JournalEntry.query.join(JournalEntry.tags).filter_by(id=tag_id, creator_id=user_id).all()
+
+    # Get user's private key
+    private_key = session['current_user_private_key']
+
+    return render_template(
+        'journal_entries_by_tag.html', 
+        user=user, 
+        tag=tag, 
+        user_journal_entries=journal_entries,
+        decrypt=decrypt,
+        private_key=private_key,
+        convert_utc_to_ist_str=convert_utc_to_ist_str
+    )

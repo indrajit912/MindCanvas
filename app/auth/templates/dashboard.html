@@ -90,7 +90,9 @@
                     <div class="tags">
                         {% if user.tags %}
                         {% for tag in user.tags %}
-                        <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+                        <a href="{{ url_for('auth.get_journal_entries_by_tag', user_id=current_user.id, tag_id=tag.id) }}" style="text-decoration: none;">
+                            <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+                        </a> 
                         {% endfor %}
                         {% else %}
                         <div class="alert alert-warning" role="alert">

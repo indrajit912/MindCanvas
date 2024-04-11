@@ -3,8 +3,6 @@
 # Author: Indrajit Ghosh
 # Created on: Mar 24, 2024
 #
-# TODO: Create an option to Download/Upload user's data.
-# TODO: Encrypt user's journal entry before saving to database.
 """
 This script starts the Flask development server to run the web application.
 
@@ -38,7 +36,6 @@ Note: Flask Migration
 """
 
 from app import create_app
-from flask import session, g
 
 app = create_app()
 

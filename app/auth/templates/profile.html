@@ -77,12 +77,19 @@
             <div class="mb-5">
               <p class="lead fw-normal mb-1">About</p>
               <div class="p-4" style="background-color: #f8f9fa;">
-                <p class="fst-italic mb-1">Email: {{ current_user.email }}
+                <p class="fst-italic mb-1">
+                  Email: {{ current_user.email }}
                   {% if not current_user.email_verified %}
-                  <span class="text-danger">(Please <a href="{{ url_for('auth.send_verification_email') }}">click
-                      here</a> to verify your email address)</span>
+                      <span class="text-danger">
+                          (Please 
+                          <a href="{{ url_for('auth.send_verification_email') }}" onclick="showSpinner()">
+                              click here
+                              <i id="spinner" class="spinner-border spinner-border-sm d-none"></i>
+                          </a> 
+                          to verify your email address)
+                      </span>
                   {% endif %}
-                </p>
+              </p>
                 <p class="fst-italic mb-1">Username: {{ current_user.username }}</p>
                 <p class="fst-italic mb-1">Date Joined: {{ current_user.date_joined.strftime("%B %d, %Y") }}</p>
                 {% if current_user.is_admin %}
@@ -263,5 +270,11 @@
       spinner.classList.toggle('d-none');
     }
   </script>
+
+<script>
+  function showSpinner() {
+      document.getElementById('spinner').classList.remove('d-none');
+  }
+</script>
 
   {% endblock %}
