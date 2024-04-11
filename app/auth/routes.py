@@ -29,6 +29,22 @@ from . import auth_bp
 
 logger = logging.getLogger(__name__)
 
+def redirect_to_destination(destination):
+    # Redirect to the specified destination
+    if destination == 'dashboard':
+        return redirect(url_for('auth.dashboard'))
+    elif destination == 'profile':
+        return redirect(url_for('auth.profile'))
+    elif destination == 'user-all-entries':
+        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
+    elif destination == 'search':
+        return redirect(url_for('auth.search', user_id=current_user.id))
+    elif destination == 'favourites':
+        return redirect(url_for('auth.favourites', user_id=current_user.id))
+    else:
+        # Handle invalid destination
+        return redirect(url_for('auth.dashboard')) 
+
 @auth_bp.before_request
 def update_last_seen():
     if current_user.is_authenticated:
@@ -240,18 +256,7 @@ def unlock_entries(destination):
     else:
         flash('Incorrect password. Please try again.', 'error')
 
-    # Redirect to the specified destination
-    if destination == 'dashboard':
-        return redirect(url_for('auth.dashboard'))
-    elif destination == 'profile':
-        return redirect(url_for('auth.profile'))
-    elif destination == 'user-all-entries':
-        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
-    elif destination == 'search':
-        return redirect(url_for('auth.search', user_id=current_user.id))
-    else:
-        # Handle invalid destination
-        return redirect(url_for('auth.dashboard')) 
+    return redirect_to_destination(destination)
 
 
 @auth_bp.route('/lock-entries/<destination>', methods=['POST'])
@@ -267,16 +272,7 @@ def lock_entries(destination):
     else:
         flash('Incorrect password. Please try again.', 'error')
 
-    # Redirect to the specified destination
-    if destination == 'dashboard':
-        return redirect(url_for('auth.dashboard'))
-    elif destination == 'profile':
-        return redirect(url_for('auth.profile'))
-    elif destination == 'user-all-entries':
-        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
-    else:
-        # Handle invalid destination
-        return redirect(url_for('auth.dashboard')) 
+    return redirect_to_destination(destination)
     
 @auth_bp.route('/users/<int:user_id>/manage_tags')
 @login_required
@@ -484,18 +480,7 @@ def toggle_entry_lock():
     else:
         flash('Incorrect password. Please try again.', 'error')
 
-    # Redirect to the specified destination
-    if destination == 'dashboard':
-        return redirect(url_for('auth.dashboard'))
-    elif destination == 'profile':
-        return redirect(url_for('auth.profile'))
-    elif destination == 'user-all-entries':
-        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
-    elif destination == 'search':
-        return redirect(url_for('auth.search', user_id=current_user.id))
-    else:
-        # Handle invalid destination
-        return redirect(url_for('auth.dashboard'))
+    return redirect_to_destination(destination)
     
 
 # Route to toggle the is_admin value
@@ -531,21 +516,7 @@ def toggle_entry_favourite():
         logger.error(f"Failed to update journal entry favourite status. Status code: {response.status_code}\n{response.text}")
         flash(f"API_ERROR: Failed to update journal entry favourite status. Status code: {response.status_code}", 'error')
 
-
-    # Redirect to the specified destination
-    if destination == 'dashboard':
-        return redirect(url_for('auth.dashboard'))
-    elif destination == 'profile':
-        return redirect(url_for('auth.profile'))
-    elif destination == 'user-all-entries':
-        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
-    elif destination == 'search':
-        return redirect(url_for('auth.search', user_id=current_user.id))
-    elif destination == 'favourites':
-        return redirect(url_for('auth.favourites', user_id=current_user.id))
-    else:
-        # Handle invalid destination
-        return redirect(url_for('auth.dashboard'))
+    return redirect_to_destination(destination)
 
 @auth_bp.route('/view_entry/<int:entry_id>', methods=['GET'])
 @login_required
@@ -698,18 +669,7 @@ def delete_entry(destination):
             logger.error(f"An error occurred while deleting the JournalEntry with ID {journal_entry_id}.")
             flash("An error occurred during JournalEntry deletion. Please try again.", 'error')
     
-    # Redirect to the specified destination
-    if destination == 'dashboard':
-        return redirect(url_for('auth.dashboard'))
-    elif destination == 'profile':
-        return redirect(url_for('auth.profile'))
-    elif destination == 'user-all-entries':
-        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
-    elif destination == 'search':
-        return redirect(url_for('auth.search', user_id=current_user.id))
-    else:
-        # Handle invalid destination
-        return redirect(url_for('auth.dashboard')) 
+    return redirect_to_destination(destination)
 
 
 @auth_bp.route('/logout', methods=['GET', 'POST'])

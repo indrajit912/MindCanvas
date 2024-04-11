@@ -27,6 +27,7 @@ class ExportDataResource(Resource):
             'title': decrypted_title,
             'content': decrypted_content,
             'locked': entry.locked,
+            'favourite': entry.favourite,
             'date_created': JournalEntry.format_datetime_to_str(entry.date_created),
             'last_updated': JournalEntry.format_datetime_to_str(entry.last_updated),
             'author_id': entry.author_id,
@@ -83,6 +84,7 @@ class ImportDataResource(Resource):
                     title=_title,
                     content=_content,
                     locked=entry_data['locked'],
+                    favourite=entry_data['favourite'],
                     date_created=_date_created,
                     author=user  # Associate with the current user
                 )
