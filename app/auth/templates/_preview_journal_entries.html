@@ -190,25 +190,34 @@
 {% endfor %}
 
 <!-- Pagination links -->
-{% if pagination['has_prev'] %}
-    <a href="{{ url_for('auth.user_journal_entries', user_id=current_user.id, page=pagination['prev_num']) }}">Previous</a>
-{% endif %}
+<nav aria-label="user-all-entries">
+    <ul class="pagination">
 
-{% for page_num in pagination['iter_pages'] %}
-    {% if page_num %}
-        {% if page_num != pagination['page'] %}
-            <a href="{{ url_for('auth.user_journal_entries', user_id=current_user.id, page=page_num) }}">{{ page_num }}</a>
-        {% else %}
-            <strong>{{ page_num }}</strong>
-        {% endif %}
-    {% else %}
-        ...
+    {% if pagination['has_prev'] %}
+        <li class="page-item"><a class="page-link" href="{{ url_for('auth.user_journal_entries', user_id=current_user.id, page=pagination['prev_num']) }}">Previous</a></li>
     {% endif %}
-{% endfor %}
+    
+    {% for page_num in pagination['iter_pages'] %}
+        {% if page_num %}
+            {% if page_num != pagination['page'] %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('auth.user_journal_entries', user_id=current_user.id, page=page_num) }}">{{ page_num }}</a></li>
+            {% else %}
+            <li class="page-item"><a class="page-link">{{ page_num }}</a></li>
+            {% endif %}
+        {% else %}
+            ...
+        {% endif %}
+    {% endfor %}
+    
+    {% if pagination['has_next'] %}
+    <li class="page-item"><a class="page-link" href="{{ url_for('auth.user_journal_entries', user_id=current_user.id, page=pagination['next_num']) }}">Next</a></li>
+    {% endif %}
 
-{% if pagination['has_next'] %}
-    <a href="{{ url_for('auth.user_journal_entries', user_id=current_user.id, page=pagination['next_num']) }}">Next</a>
-{% endif %}
+    </ul>
+
+
+</nav>
+
 
 <!-- Unlock Modal -->
 <div class="modal fade" id="unlockModal" tabindex="-1" aria-labelledby="unlockModalLabel" aria-hidden="true">
