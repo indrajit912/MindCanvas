@@ -8,20 +8,27 @@ from flask.cli import FlaskGroup
 import pwinput
 import sys
 import argparse
+import json
 import logging
+from pathlib import Path
 from cryptography.fernet import Fernet
 from tabulate import tabulate
+from datetime import datetime, timezone
 from config import EmailConfig
 
 from app.extensions import db
 from app import create_app
 from app.models.user import User
 from app.models.tag import Tag
+from app.models.journal_entry import JournalEntry
+from app.utils.encryption import encrypt
 from scripts.app_defaults import default_tags
 
 cli = FlaskGroup(create_app=create_app)
 logger = logging.getLogger(__name__)
 bullet_unicode = '\u2022'
+
+old_mindcanvas_file = Path(__file__).parent.resolve() / "app_data" / "mindcanvas_data.json"
 
 def create_demo_user():
     """
@@ -169,6 +176,40 @@ def _create_indrajit_tags():
         db.session.add(tag)
 
 
+def _create_indrajit_mindcanvas_old_entries(file_path, private_key):
+    """
+    This creates JournalEntries for indrajit from MindCanvas-Old data
+
+    file_path: `json`
+    """
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+        entries = data['entries']
+
+        # Get the user with email=EmailConfig.INDRAJIT912
+        indrajit_user = User.query.filter_by(email=EmailConfig.INDRAJIT912_GMAIL).first()
+        if not indrajit_user:
+            print("Indrajit's user account not found!")
+            return
+        
+        for entry_data in entries:
+            # Convert the datetime_utc string to a timezone-aware datetime object
+            datetime_utc = datetime.fromisoformat(entry_data['datetime_utc'])
+            datetime_utc = datetime_utc.replace(tzinfo=timezone.utc)
+            
+            # Create a JournalEntry object
+            entry = JournalEntry(
+                title=encrypt(entry_data['title'], private_key),
+                content=encrypt(entry_data['text'], private_key),
+                date_created=datetime_utc,
+                last_updated=datetime_utc,
+                author_id=indrajit_user.id
+            )
+            
+            # Add the entry to the session
+            db.session.add(entry)
+
+
 @cli.command("create-indrajit")
 def create_indrajit():
     """Creates the admin Indrajit Ghosh and his associated details."""
@@ -217,8 +258,14 @@ def create_indrajit():
                 print("Admin Indrajit created successfully!")
                 logger.info("Admin Indrajit created successfully!")
 
-                # TODO: Create all default tags of Indrajit
+                # Create all default tags of Indrajit
                 _create_indrajit_tags()
+
+                # Create old entries if the old data path exists
+                if old_mindcanvas_file.exists():
+                    _create_indrajit_mindcanvas_old_entries(file_path=old_mindcanvas_file, private_key=indrajit_key)
+                    print("Indrajit's old journal entries created successfully!")
+                    logger.info("Indrajit's old journal entries created successfully!")
 
                 print("Indrajit's default tags created successfully!")
                 logger.info("Indrajit's default tags created successfully!")
