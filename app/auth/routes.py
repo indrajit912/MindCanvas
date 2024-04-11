@@ -166,6 +166,30 @@ def user_journal_entries(user_id):
     )
 
 
+@auth_bp.route('/favourites/<int:user_id>', methods=['GET'])
+@login_required
+def favourites(user_id):
+    if user_id != current_user.id:
+        abort(404)
+
+    # Get the current user's private key from session
+    private_key = session['current_user_private_key']
+
+    favourite_journal_entries = JournalEntry.query.filter(
+        (JournalEntry.author_id == current_user.id) &
+        (JournalEntry.favourite == True)
+    ).all()
+
+
+    return render_template(
+        'favourites.html', 
+        user_journal_entries=favourite_journal_entries,
+        convert_utc_to_ist_str=convert_utc_to_ist_str,
+        redirect_destination='favourites',
+        private_key=private_key,
+        decrypt=decrypt
+    )
+
 @auth_bp.route('/profile')
 @login_required
 def profile():
@@ -471,14 +495,64 @@ def toggle_entry_lock():
         return redirect(url_for('auth.search', user_id=current_user.id))
     else:
         # Handle invalid destination
-        return redirect(url_for('auth.dashboard')) 
+        return redirect(url_for('auth.dashboard'))
+    
+
+# Route to toggle the is_admin value
+@auth_bp.route('/toggle_entry_favourite', methods=['POST'])
+@login_required
+def toggle_entry_favourite():
+    # Get the password and `journal_entry_id` from the form
+    journal_entry_id  = request.form.get('journal_entry_id')
+    destination = request.form.get('destination')
+
+    # Get the JournalEntry by ID
+    journal_entry = JournalEntry.query.get_or_404(journal_entry_id)
+
+    # Make sure that the current_user is the author of this journal entry
+    if not journal_entry.author_id == current_user.id:
+        abort(403)
+
+    # Toggle the favourite attribute of the journal_entry
+    payload = {"favourite": not journal_entry.favourite}
+
+    # Make PUT request to the endpoint 
+    api_endpoint = f"{current_app.config['HOST']}/api/journal_entries/{journal_entry_id}"
+    response = requests.put(
+        api_endpoint,
+        headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"},
+        json=payload
+    )
+        
+    if response.status_code == 200:
+        logger.info(f"`{current_user.username}` changed the `favourite` status of one of their JournalEntry.")
+        flash("The 'favourite' status of the JournalEntry has been updated!", 'success')
+    else:
+        logger.error(f"Failed to update journal entry favourite status. Status code: {response.status_code}\n{response.text}")
+        flash(f"API_ERROR: Failed to update journal entry favourite status. Status code: {response.status_code}", 'error')
+
+
+    # Redirect to the specified destination
+    if destination == 'dashboard':
+        return redirect(url_for('auth.dashboard'))
+    elif destination == 'profile':
+        return redirect(url_for('auth.profile'))
+    elif destination == 'user-all-entries':
+        return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
+    elif destination == 'search':
+        return redirect(url_for('auth.search', user_id=current_user.id))
+    elif destination == 'favourites':
+        return redirect(url_for('auth.favourites', user_id=current_user.id))
+    else:
+        # Handle invalid destination
+        return redirect(url_for('auth.dashboard'))
 
 @auth_bp.route('/view_entry/<int:entry_id>', methods=['GET'])
 @login_required
 def view_entry(entry_id):
     entry = JournalEntry.query.get_or_404(entry_id)
     if entry.author_id != current_user.id:
-        abort(404)  # Or handle the case where the entry is not found or doesn't belong to the current user
+        abort(404)
 
     # Get the current user's private key from session
     private_key = session['current_user_private_key']
@@ -492,6 +566,7 @@ def view_entry(entry_id):
         private_key=private_key,
         decrypt=decrypt
     )
+
 
 @auth_bp.route('/edit_entry', methods=['POST'])
 @login_required

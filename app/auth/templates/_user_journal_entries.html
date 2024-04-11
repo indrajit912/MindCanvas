@@ -1,7 +1,7 @@
 <!-- app/auth/templates/_user_journal_entries.html -->
 
 {% for entry in user_journal_entries %}
-<div class="card border-secotext-secondary mb-3">
+<div class="card border-secotext-secondary mb-3" id="entry-card-{{ entry.id }}">
 
     <div class="card-header text-secondary">
         <h5 class="card-title mb-0">
@@ -14,9 +14,12 @@
             This entry is Locked!
             {% endif %}
             {% else %}
+            <!-- Lock icon for `locked` attribute -->
             <a href="#" class="icon-link icon-link-hover text-success me-2" data-bs-toggle="modal"
                 data-bs-target="#lockEntryModal{{ entry.id }}"><i class="bi bi-unlock-fill"></i></a>
+
             {{ decrypt(entry.title, private_key) }}
+
             {% endif %}
         </h5>
     </div>
@@ -36,19 +39,40 @@
         </div>
 
         <div class="mt-3">
-            <a href="{{ url_for('auth.view_entry', entry_id=entry.id) }}" class="icon-link icon-link-hover text-secondary me-2"><i class="bi bi-eye-fill"></i> View</a>
-            
+            <a href="{{ url_for('auth.view_entry', entry_id=entry.id) }}"
+                class="icon-link icon-link-hover text-secondary me-2">
+                <i class="bi bi-eye-fill"></i> View
+            </a>
+
             <!-- Trigger for delete entry -->
             <a href="#" class="icon-link icon-link-hover text-danger me-2" data-bs-toggle="modal"
-                data-bs-target="#delEntryModal{{ entry.id }}"><i class="bi bi-trash3"></i> Delete</a>
-            
+                data-bs-target="#delEntryModal{{ entry.id }}">
+                <i class="bi bi-trash3"></i> Delete
+            </a>
+
+            <!-- Heart icon for favorite -->
             {% if entry.favourite %}
-            <!-- TODO: complete the code! -->
-                <a href="#" class="icon-link icon-link-hover text-secondary me-2"><i class="bi bi-heart-fill"></i></a>
+            <form id="favoriteForm{{ entry.id }}" action="{{ url_for('auth.toggle_entry_favourite') }}" method="post"
+                class="d-inline">
+                <input type="hidden" name="journal_entry_id" value="{{ entry.id }}">
+                <input type="hidden" name="destination" value="{{ redirect_destination }}">
+                <button type="button" class="btn btn-link text-secondary" onclick="submitForm('{{ entry.id }}')">
+                    <i class="bi bi-heart-fill"></i>
+                </button>
+            </form>
             {% else %}
-                <a href="#" class="icon-link icon-link-hover text-secondary me-2"><i class="bi bi-heart"></i></a>
+            <form id="favoriteForm{{ entry.id }}" action="{{ url_for('auth.toggle_entry_favourite') }}" method="post"
+                class="d-inline">
+                <input type="hidden" name="journal_entry_id" value="{{ entry.id }}">
+                <input type="hidden" name="destination" value="{{ redirect_destination }}">
+                <button type="button" class="btn btn-link text-secondary" onclick="submitForm('{{ entry.id }}')">
+                    <i class="bi bi-heart"></i>
+                </button>
+            </form>
             {% endif %}
+            <!-- End of favourite icon -->
         </div>
+
         {% endif %}
     </div>
 
@@ -220,3 +244,10 @@
         font-size: 0.85rem;
     }
 </style>
+
+<script>
+    function submitForm(entryId) {
+        var form = document.getElementById("favoriteForm" + entryId);
+        form.submit();
+    }
+</script>
