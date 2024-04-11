@@ -55,6 +55,7 @@ class UserResource(Resource):
         parser.add_argument('email', type=str, required=True, help='Email is required')
         parser.add_argument('username', type=str, required=True, help='Username is required')
         parser.add_argument('password', type=str, required=True, help='Password is required')
+        parser.add_argument('email_verified', type=bool, required=False)
         
         args = parser.parse_args()
 
@@ -79,6 +80,9 @@ class UserResource(Resource):
         # Set private key
         user_key = Fernet.generate_key()
         new_user.set_encrypted_private_key(private_key=user_key, password=args['password'])
+
+        if args.get('email_verified') is not None:
+            new_user.email_verified = args.get('email_verified')
 
         # Add the user to the database
         db.session.add(new_user)

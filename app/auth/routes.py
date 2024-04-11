@@ -748,7 +748,8 @@ def register_user(token):
             'fullname': user_data['fullname'],
             'email': user_data['email'],
             'username': form.username.data,
-            'password': form.passwd.data
+            'password': form.passwd.data,
+            'email_verified': True
         }
 
         # Send POST request to the API
@@ -811,6 +812,7 @@ def search(user_id):
     # Initialize empty list for search results
     search_results = []
     query = "Search ..."
+    private_key = None
 
     # Check if the current user is authorized to access the search functionality
     if not current_user.id == user_id:
@@ -824,27 +826,24 @@ def search(user_id):
 
         search_results = JournalEntry.query.filter_by(author_id=user_id).all()
 
-        # Decrypt titles and contents before filtering
-        for entry in search_results:
-            entry.title = decrypt(entry.title, private_key)
-            entry.content = decrypt(entry.content, private_key)
-
         # Filter decrypted titles and contents for the search query
         search_results = [
             entry 
             for entry in search_results 
-            if query in entry.title 
-            or query in entry.content
+            if query.lower() in decrypt(entry.title, private_key).lower()
+            or query.lower() in decrypt(entry.content, private_key).lower()
         ]
 
     # Render the search.html template with necessary data
     return render_template(
         'search.html', 
         user_id=current_user.id, 
-        search_results=search_results,
+        user_journal_entries=search_results,
         query= query,
+        decrypt=decrypt,
+        private_key=private_key,
         convert_utc_to_ist_str=convert_utc_to_ist_str,
-        redirect_destination='search'  # Additional context for the template
+        redirect_destination='search'
     )
 
 # A route for export data
