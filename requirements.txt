@@ -12,3 +12,4 @@ email-validator
 requests
 tabulate
 pwinput
+cryptography
