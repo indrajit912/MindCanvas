@@ -12,4 +12,5 @@ email-validator
 requests
 tabulate
 pwinput
+python-dotenv
 cryptography
