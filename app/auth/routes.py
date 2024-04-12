@@ -211,7 +211,8 @@ def user_journal_entries(user_id):
         total_tags=total_tags,
         total_words_in_journal_entries=total_words_in_journal_entries,
         decrypt=decrypt,
-        private_key=private_key
+        private_key=private_key,
+        route_url='auth.user_journal_entries'
     )
 
 
@@ -851,7 +852,7 @@ def register_user(token):
     return render_template('register_user.html', form=form, user_data=user_data)
 
 
-@auth_bp.route('/search/<int:user_id>', methods=['GET', 'POST'])
+@auth_bp.route('/search/<int:user_id>', methods=['GET'])
 @login_required
 def search(user_id):
     # Check if the current user is authorized to access the search functionality
@@ -859,20 +860,18 @@ def search(user_id):
         abort(403)
 
     # Initialize variables
-    search_results = []
     query = "Search ..."
-    private_key = None
-    page = 1
-    per_page = 30
+    private_key = session.get('current_user_private_key')
 
-    # Process the search query if the request method is POST
-    if request.method == 'POST':
-        # Get the search query from the form
-        query = request.form.get('q')
-        private_key = session.get('current_user_private_key')
+    # Get the search query from the URL parameters
+    query = request.args.get('q', query)
 
+    # Filter entries for the search query
+    if query:
         # Query all JournalEntry objects associated with the specified user_id
-        user_entries = JournalEntry.query.filter_by(author_id=user_id)
+        user_entries = JournalEntry.query.filter_by(author_id=user_id).order_by(
+        desc(JournalEntry.date_created)
+    )
 
         # Filter entries for the search query
         search_results = [
@@ -882,39 +881,36 @@ def search(user_id):
             or query.lower() in decrypt(entry.content, private_key).lower()
         ]
 
-        # Manually paginate the search results
-        total_entries = len(search_results)
-        total_pages = ceil(total_entries / per_page)
-        page = request.args.get('page', 1, type=int)
-        start_index = (page - 1) * per_page
-        end_index = min(start_index + per_page, total_entries)
-        paginated_entries = search_results[start_index:end_index]
-
-        return render_template(
-            'search.html',
-            user_id=current_user.id,
-            pagination={
-                'has_prev': page > 1,
-                'has_next': page < total_pages,
-                'prev_num': page - 1 if page > 1 else None,
-                'next_num': page + 1 if page < total_pages else None,
-                'iter_pages': range(1, total_pages + 1),
-                'page': page
-            },
-            user_journal_entries=paginated_entries,
-            query=query,
-            decrypt=decrypt,
-            private_key=private_key,
-            convert_utc_to_ist_str=convert_utc_to_ist_str,
-            redirect_destination='search',
-            total_entries=total_entries
-        )
+    # Paginate the search results
+    page = request.args.get('page', 1, type=int)
+    total_entries = len(search_results)
+    per_page = 30
+    total_pages = ceil(total_entries / per_page)
+    start_index = (page - 1) * per_page
+    end_index = min(start_index + per_page, total_entries)
+    paginated_entries = search_results[start_index:end_index]
 
     return render_template(
         'search.html',
         user_id=current_user.id,
-        query=query
+        pagination={
+            'has_prev': page > 1,
+            'has_next': page < total_pages,
+            'prev_num': page - 1 if page > 1 else None,
+            'next_num': page + 1 if page < total_pages else None,
+            'iter_pages': range(1, total_pages + 1),
+            'page': page
+        },
+        user_journal_entries=paginated_entries,
+        query=query,
+        decrypt=decrypt,
+        private_key=private_key,
+        convert_utc_to_ist_str=convert_utc_to_ist_str,
+        redirect_destination='search',
+        route_url='auth.search',
+        total_entries=total_entries
     )
+
 
 
 # A route for export data
