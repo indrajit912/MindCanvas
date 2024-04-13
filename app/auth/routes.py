@@ -1331,6 +1331,10 @@ def get_journal_entries_by_tag(user_id, tag_id):
     # Find the user by user_id
     user = User.query.get_or_404(user_id)
 
+    # Get the page number from the request or default to the first page
+    page = request.args.get('page', 1, type=int)
+    per_page = 30
+
     # Ensure the tag belongs to the user
     tag = Tag.query.filter_by(id=tag_id, creator_id=user_id).first()
     if not tag:
@@ -1342,11 +1346,26 @@ def get_journal_entries_by_tag(user_id, tag_id):
     # Get user's private key
     private_key = session['current_user_private_key']
 
+    # Paginate the entries manually
+    total_entries = len(journal_entries)
+    total_pages = ceil(total_entries / per_page)
+    start_index = (page - 1) * per_page
+    end_index = min(start_index + per_page, total_entries)
+    paginated_entries = journal_entries[start_index:end_index]
+
     return render_template(
         'journal_entries_by_tag.html', 
+        pagination={
+            'has_prev': page > 1,
+            'has_next': page < total_pages,
+            'prev_num': page - 1 if page > 1 else None,
+            'next_num': page + 1 if page < total_pages else None,
+            'iter_pages': range(1, total_pages + 1),
+            'page': page
+        },
+        user_journal_entries=paginated_entries,
         user=user, 
-        tag=tag, 
-        user_journal_entries=journal_entries,
+        tag=tag,
         decrypt=decrypt,
         private_key=private_key,
         convert_utc_to_ist_str=convert_utc_to_ist_str
