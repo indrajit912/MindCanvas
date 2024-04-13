@@ -925,7 +925,7 @@ def export_data():
         }
 
         # Make a GET request to the API endpoint
-        api_url = current_app.config['HOST'] + '/api/mindcanvas/export'  # Replace with your actual API URL
+        api_url = current_app.config['HOST'] + '/api/mindcanvas/export'
         response = requests.get(
             api_url,
             json=json_data
