@@ -14,4 +14,3 @@ tabulate
 pwinput
 python-dotenv
 cryptography
-mysql-connector-python

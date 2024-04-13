@@ -16,7 +16,7 @@ from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
 from scripts.email_message import EmailMessage
 from app.utils.encryption import generate_derived_key_from_passwd, decrypt_user_private_key, encrypt, decrypt
-from scripts.utils import count_words, convert_utc_to_ist_str, format_years_ago
+from scripts.utils import convert_utc_to_ist_str, format_years_ago
 from config import EmailConfig
 
 import logging
@@ -24,7 +24,7 @@ from math import ceil
 import json
 from datetime import datetime
 import requests
-from cryptography.fernet import InvalidToken 
+from cryptography.fernet import InvalidToken
 
 from . import auth_bp
 
