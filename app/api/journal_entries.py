@@ -83,6 +83,7 @@ class JournalEntryResource(Resource):
         parser.add_argument('user_id', type=int)
         parser.add_argument('locked', type=bool)
         parser.add_argument('favourite', type=bool)
+        parser.add_argument('tags', type=str, action='append')
 
         args = parser.parse_args()
 
@@ -100,6 +101,25 @@ class JournalEntryResource(Resource):
             journal_entry.locked = args.get('locked')
         if args.get('favourite') is not None:
             journal_entry.favourite = args.get('favourite')
+
+        # Add tags to the journal entry
+        _tags_to_add = []
+        if args.get('tags'):
+            for tag_name in args['tags']:
+                tag = Tag.query.filter_by(name=tag_name).first()
+                if not tag:
+                    # If tag does not exist, create a new tag
+                    tag = Tag(
+                        name=tag_name, 
+                        creator_id=args['author_id'],
+                        color_red=128,
+                        color_green=128,
+                        color_blue=128
+                    )
+                    db.session.add(tag)
+                _tags_to_add.append(tag)
+
+            journal_entry.tags = _tags_to_add
 
         journal_entry.last_updated = utcnow()
 
