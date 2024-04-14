@@ -1408,7 +1408,9 @@ def get_journal_entries_by_tag(user_id, tag_id):
         abort(404)
 
     # Query journal entries associated with the tag for the user
-    journal_entries = JournalEntry.query.join(JournalEntry.tags).filter_by(id=tag_id, creator_id=user_id).all()
+    journal_entries = JournalEntry.query.join(JournalEntry.tags).filter_by(id=tag_id, creator_id=user_id).order_by(
+        desc(JournalEntry.date_created)
+    ).all()
 
     # Get user's private key
     private_key = session['current_user_private_key']
