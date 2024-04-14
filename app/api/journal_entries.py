@@ -110,7 +110,7 @@ class JournalEntryResource(Resource):
                 if not tag:
                     # If tag does not exist, create a new tag
                     tag = Tag(
-                        name=tag_name, 
+                        name=tag_name,
                         creator_id=args['author_id'],
                         color_red=128,
                         color_green=128,

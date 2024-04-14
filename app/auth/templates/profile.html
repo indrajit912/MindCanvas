@@ -110,10 +110,10 @@
                     </a>
                   </div>
                   <div class="col">
-                    <form id="exportForm" action="{{ url_for('auth.export_data') }}" method="post"
-                      onsubmit="reloadAfterDownload()">
-                      <button type="submit" class="btn btn-primary btn-sm btn-block">
+                    <form id="exportForm" action="{{ url_for('auth.export_data') }}" method="post">
+                      <button type="submit" class="btn btn-primary btn-sm btn-block" id="export-data-btn">
                         <i class="bi bi-download"></i> Export Data
+                        <span id="export-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                       </button>
                     </form>
                   </div>
@@ -275,6 +275,23 @@
   function showSpinner() {
       document.getElementById('spinner').classList.remove('d-none');
   }
+</script>
+
+<script>
+  function toggleSpinner() {
+    var spinner = document.getElementById('export-spinner');
+    spinner.classList.toggle('d-none');
+  }
+
+  document.getElementById('export-data-btn').addEventListener('click', function () {
+    // Show spinner before making the request
+    toggleSpinner();
+
+    setTimeout(function () {
+      toggleSpinner();
+    }, 5000); // Adjust the delay as needed
+  });
+
 </script>
 
   {% endblock %}

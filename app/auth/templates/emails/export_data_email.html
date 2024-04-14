@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindCanvas Data Export</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        p {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .signature {
+            font-style: italic;
+            margin-top: 30px;
+            text-align: left;
+            color: #888;
+            font-size: 14px;
+        }
+        .divider {
+            border-bottom: 1px solid #ddd;
+            margin: 20px 0;
+        }
+        address {
+            margin-bottom: 20px;
+            font-style: normal;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>MindCanvas Data Export</h2>
+        <p>Dear {{ username }},</p>
+        
+        <p>Greetings from MindCanvas!</p>
+        <p>All your journal entries that you created in MindCanvas are attached in a <strong>.json</strong> file in this email. Kindly save this file securely because this file contains all your data in an unencrypted format. You can use this file to import your data back to MindCanvas anytime.</p>
+        <p>Good day.</p>
+        <div class="divider"></div>
+
+        <div class="signature">
+            <p>Best regards,</p>
+            <address>
+                Senior Research Fellow, SMU<br>
+                Indian Statistical Institute Bangalore<br>
+                8th Mile Mysore Road, Bengaluru 560059
+            </address>
+        </div>
+    </div>
+</body>
+</html>

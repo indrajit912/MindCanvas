@@ -20,6 +20,7 @@ from scripts.utils import convert_utc_to_ist_str, format_years_ago
 from config import EmailConfig
 
 import logging
+import os
 from math import ceil
 import json
 from datetime import datetime
@@ -373,7 +374,7 @@ def add_entry(user_id):
     if form.validate_on_submit():
 
         # Split the input string to get a list of tags
-        tags_for_the_new_entry = [tag.strip() for tag in form.tags.data.split(',') if tag.strip()]
+        tags_for_the_new_entry = [Tag.preprocess_tag_name(tag.strip()) for tag in form.tags.data.split(',') if tag.strip()]
 
         # Encrypt the journal_entry title and content
         # Get the current_user's private key from session
@@ -619,7 +620,7 @@ def edit_entry():
 
     entry_title:str = request.form['title']
     entry_content:str = request.form['content']
-    entry_tags:list =  [tag.strip() for tag in request.form['tags'].split(',') if tag.strip()]
+    entry_tags:list =  [Tag.preprocess_tag_name(tag.strip()) for tag in request.form['tags'].split(',') if tag.strip()]
     # Check if the locked field is present in the form data
     entry_locked = request.form.get('locked')
     if entry_locked:
@@ -856,7 +857,7 @@ def register_user(token):
                 )
 
                 flash('A welcome email containing a password reset key has been dispatched to your email address.', 'info')
-                logger.info(f"EMAIL_SENT: Welcome email with password reset key has been emailed to 'new_user_data['fullname']'.")
+                logger.info(f"EMAIL_SENT: Welcome email with password reset key has been emailed to '{new_user_data['fullname']}'.")
 
             except Exception as e:
                 # TODO: Handle email sending error better
@@ -931,8 +932,6 @@ def search(user_id):
     )
 
 
-
-# A route for export data
 @auth_bp.route('/export_data', methods=['POST'])
 @login_required
 def export_data():
@@ -973,16 +972,65 @@ def export_data():
         with open(file_path, 'w') as file:
             json.dump(data, file, indent=4)
 
-        # flash message
-        flash(
-            "A JSON file containing all your MindCanvas data has been downloaded in an unencrypted format. Please ensure to keep it safe. This file can be used to import all of your data back into MindCanvas at any time.",
-            'success'
-        )
+        # Check file size
+        file_size = os.path.getsize(file_path)
+
+        # If file size is less than 24 MB, send via email
+        if file_size < 24 * 1024 * 1024:  # Convert MB to bytes
+            _email_html_text = render_template(
+                'emails/export_data_email.html',
+                username=current_user.fullname
+            )
+
+            msg = EmailMessage(
+                sender_email_id=EmailConfig.INDRAJITS_BOT_EMAIL_ID,
+                to=current_user.email,
+                subject="Your MindCanvas data!",
+                email_html_text=_email_html_text,
+                attachments=[file_path]  # Use list for multiple attachments
+            )
+
+            try:
+                msg.send(
+                    sender_email_password=EmailConfig.INDRAJITS_BOT_EMAIL_PASSWD,
+                    server_info=EmailConfig.GMAIL_SERVER,
+                    print_success_status=False
+                )
+
+                flash(f"An email containing '{file_name}' has been dispatched to your email address. Kindly save that file securely.", 'info')
+                logger.info(f"EMAIL_SENT: Email with mindcanvas data has been emailed to '{current_user.fullname}'.")
+
+                # Remove the user data after sending or downloading
+                os.remove(file_path)
+
+                # Redirect to the Profile page
+                return redirect(url_for('auth.profile'))
+    
+            except Exception as e:
+                # Handle email sending error
+                flash('An error occurred while attempting to email MindCanvas data. Try again!', 'danger')
+                logger.error(f"Error occurred while attempting to email MindCanvas data.\nERROR: {e}")
+
+
+        else:
+            # Send the file for download
+            _res = send_file(
+                file_path,
+                as_attachment=True,
+                mimetype='application/json',
+                download_name=file_name
+            )
+
+            # Remove the user data after sending or downloading
+            os.remove(file_path)
+
+            return _res
         
-        # Prepare file for download
-        return send_file(file_path, as_attachment=True)
+        return redirect(url_for('auth.profile'))
+
 
     except Exception as e:
+        # Error handling
         return jsonify({'message': str(e)}), 500
 
 
