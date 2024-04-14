@@ -9,7 +9,7 @@ MindCanvas is a Flask-based journaling app designed to securely document users' 
 3. **Tagging System**: Users can organize their entries with tags for easy retrieval.
 4. **Search Functionality**: Users can search their journal entries by keywords or tags.
 5. **Data Portability**: Users can export/import all their data for backup or migration.
-6. **LaTeX Support**: Write mathematical equations using LaTeX typesetting.
+6. **LaTeX Support**: Write mathematical equations using LaTeX typesetting directly into your Journal Entries.
 7. **Demo Account**: A demo account (username: demo, password: password) allows users to explore the app before creating their own accounts.
 
 ## Installation
@@ -23,7 +23,7 @@ git clone https://github.com/indrajit912/MindCanvas.git
 2. Create a virtualenv
 ```bash
 virtualenv env
-source env/bin/actiave
+source env/bin/activate
 ```
 
 3. Install dependencies:
