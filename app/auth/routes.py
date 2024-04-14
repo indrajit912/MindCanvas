@@ -225,15 +225,34 @@ def favourites(user_id):
     # Get the current user's private key from session
     private_key = session['current_user_private_key']
 
+    # Get the page number from the request or default to the first page
+    page = request.args.get('page', 1, type=int)
+    per_page = 30
+
     favourite_journal_entries = JournalEntry.query.filter(
         (JournalEntry.author_id == current_user.id) &
         (JournalEntry.favourite == True)
     ).all()
 
+    # Paginate the entries manually
+    total_entries = len(favourite_journal_entries)
+    total_pages = ceil(total_entries / per_page)
+    start_index = (page - 1) * per_page
+    end_index = min(start_index + per_page, total_entries)
+    paginated_entries = favourite_journal_entries[start_index:end_index]
+
 
     return render_template(
         'favourites.html', 
-        user_journal_entries=favourite_journal_entries,
+        pagination={
+            'has_prev': page > 1,
+            'has_next': page < total_pages,
+            'prev_num': page - 1 if page > 1 else None,
+            'next_num': page + 1 if page < total_pages else None,
+            'iter_pages': range(1, total_pages + 1),
+            'page': page
+        },
+        user_journal_entries=paginated_entries,
         convert_utc_to_ist_str=convert_utc_to_ist_str,
         redirect_destination='favourites',
         private_key=private_key,

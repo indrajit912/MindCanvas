@@ -17,7 +17,10 @@
             <div class="tags mt-4 mb-3">
                 <div class="tags mt-2">
                     {% for tag in entry.tags %}
-                    <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+                    <a href="{{ url_for('auth.get_journal_entries_by_tag', user_id=current_user.id, tag_id=tag.id) }}"
+                        style="text-decoration: none;">
+                        <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+                    </a>
                     {% endfor %}
                 </div>
             </div>
@@ -85,8 +88,8 @@
                 <form id="edit-form-{{ entry.id }}" method="post" action="{{ url_for('auth.edit_entry') }}">
                     <div class="mb-3">
                         <label for="title" class="form-label"><code>Title</code></label>
-                        <input type="text" class="form-control" id="title" name="title" value="{{ decrypt(entry.title, private_key) }}"
-                            required>
+                        <input type="text" class="form-control" id="title" name="title"
+                            value="{{ decrypt(entry.title, private_key) }}" required>
 
                         <label for="content" class="form-label"><code>Content</code></label>
                         <textarea class="form-control" id="content" name="content" rows="8" required>{{ decrypt(entry.content, private_key) }}
