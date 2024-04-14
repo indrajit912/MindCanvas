@@ -24,7 +24,7 @@
 
                     <!-- Dropdown menu for user_tags -->
                     <div class="col-auto">
-                        <select id="usertagsDropdown" class="form-control" multiple onchange="updateUserTags()">
+                        <select id="usertagsDropdown" class="form-select" size="10" multiple onchange="updateUserTags()">
                             <option value="" selected disabled>Select your tags</option>
                             {% for tag in user_tags %}
                                 <option value="{{ tag.name }}" data-color="{{ tag.color_hex() }}">
@@ -36,7 +36,7 @@
                 </div>
                 <div class="mb-3 form-check">
                     {{ form.locked(class="form-check-input") }}
-                    <label class="form-check-label" for="locked">Locked</label>
+                    <label class="form-check-label" for="locked">Locked (Check if you want to Lock the entry)</label>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
