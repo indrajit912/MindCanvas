@@ -19,20 +19,11 @@
                     {{ form.content(class="form-control", required=true, rows=9, placeholder="Write the content here. E.g., Today I did something amazing...") }}
                 </div>
                 <div class="mb-3">
-                    {{ form.tags(class="form-control", placeholder="Tags (separate with commas)")}}
-                    
-
-                    <!-- Dropdown menu for user_tags -->
-                    <div class="col-auto">
-                        <select id="usertagsDropdown" class="form-select" size="10" multiple onchange="updateUserTags()">
-                            <option value="" selected disabled>Select your tags</option>
-                            {% for tag in user_tags %}
-                                <option value="{{ tag.name }}" data-color="{{ tag.color_hex() }}">
-                                    {{ tag.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                    {{ form.tags(class="form-control", id="tags", placeholder="Tags (separate with commas)")}}
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#tagModal">
+                        <i class="bi bi-tags"></i> Select Tags
+                    </button>
                 </div>
                 <div class="mb-3 form-check">
                     {{ form.locked(class="form-check-input") }}
@@ -48,6 +39,49 @@
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="tagModal" tabindex="-1" aria-labelledby="tagModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tagModalLabel">Select from your saved Tags</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Dropdown menu for user_tags -->
+                <select id="usertagsDropdown" class="form-select" size="10" multiple onchange="updateUserTags()">
+                    
+                    {% for tag in user_tags %}
+                        <option value="{{ tag.name }}" data-color="{{ tag.color_hex() }}">
+                            {{ tag.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="addSelectedTags()">Add Tags</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function addSelectedTags() {
+        var selectedTags = $('#usertagsDropdown').val();
+        var tagsField = $('#tags');
+        var currentTags = tagsField.val().split(',').map(tag => tag.trim());
+        selectedTags.forEach(tag => {
+            if (!currentTags.includes(tag)) {
+                currentTags.push(tag);
+            }
+        });
+        tagsField.val(currentTags.join(', '));
+        $('#tagModal').modal('hide');
+    }
+</script>
+
 
 <script>
     function updateUserTags() {
@@ -67,18 +101,6 @@
             }
         }
     }
-</script>
-
-
-<script>
-    $(document).ready(function() {
-        $('#usertagsDropdown').select2({
-            templateResult: function(option) {
-                if (!option.id) { return option.text; }
-                return $('<span><span class="badge badge-sm mr-1" style="background-color:' + $(option.element).data('color') + '">' + option.text + '</span></span>');
-            }
-        });
-    });
 </script>
 
 
