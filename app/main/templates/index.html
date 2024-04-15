@@ -18,7 +18,11 @@ Created On: Mar 24, 2024
                 <h1 class="display-4">Welcome to MindCanvas!</h1>
                 <p>Your Personal Journaling Platform</p>
                 <p>Start documenting your thoughts, ideas, and experiences in your own private journal. Explore your thoughts and feelings, and keep your memories alive.</p>
-                <a href="#" class="btn btn-primary btn-lg">Get Started</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('auth.dashboard') }}" class="btn btn-primary btn-lg">Get Started</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">Get Started</a>
+                {% endif %}
             </div>
         </div>
 

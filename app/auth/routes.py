@@ -652,7 +652,7 @@ def edit_entry():
 
     # Check the response status code and flash messages accordingly
     if response.status_code == 200:
-        logger.info("JournalEntry updated by `{current_user.username}`.")
+        logger.info(f"JournalEntry updated by `{current_user.username}`.")
         flash('Journal entry updated successfully!', 'success')
         
     else:

@@ -80,7 +80,6 @@ class JournalEntryResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('title', type=str)
         parser.add_argument('content', type=str)
-        parser.add_argument('user_id', type=int)
         parser.add_argument('locked', type=bool)
         parser.add_argument('favourite', type=bool)
         parser.add_argument('tags', type=str, action='append')
@@ -95,8 +94,6 @@ class JournalEntryResource(Resource):
             journal_entry.title = args['title']
         if args.get('content'):
             journal_entry.content = args['content']
-        if args.get('author_id'):
-            journal_entry.author_id = args['author_id']
         if args.get('locked') is not None:
             journal_entry.locked = args.get('locked')
         if args.get('favourite') is not None:
@@ -111,7 +108,7 @@ class JournalEntryResource(Resource):
                     # If tag does not exist, create a new tag
                     tag = Tag(
                         name=tag_name,
-                        creator_id=args['author_id'],
+                        creator_id=journal_entry.author_id,
                         color_red=128,
                         color_green=128,
                         color_blue=128
