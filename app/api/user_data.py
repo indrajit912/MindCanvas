@@ -77,6 +77,7 @@ class ImportDataResource(Resource):
                 _title = encrypt(entry_data['title'], user_private_key)
                 _content = encrypt(entry_data['content'], user_private_key)
                 _date_created = convert_str_to_datetime_utc(entry_data['date_created'])
+                _last_updated = convert_str_to_datetime_utc(entry_data['last_updated'])
 
 
                 # Create JournalEntry object
@@ -86,6 +87,7 @@ class ImportDataResource(Resource):
                     locked=entry_data['locked'],
                     favourite=entry_data['favourite'],
                     date_created=_date_created,
+                    last_updated=_last_updated,
                     author=user  # Associate with the current user
                 )
 
