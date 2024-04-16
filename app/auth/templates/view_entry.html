@@ -92,8 +92,7 @@
                             value="{{ decrypt(entry.title, private_key) }}" required>
 
                         <label for="content" class="form-label"><code>Content</code></label>
-                        <textarea class="form-control" id="content" name="content" rows="8" required>{{ decrypt(entry.content, private_key) }}
-                        </textarea>
+                        <textarea class="form-control" id="content" name="content" rows="8" required>{{ decrypt(entry.content, private_key) }}</textarea>
 
                         <!-- Checkbox for 'locked' field -->
                         <div class="form-check mt-3">

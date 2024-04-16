@@ -233,7 +233,7 @@ def favourites(user_id):
     favourite_journal_entries = JournalEntry.query.filter(
         (JournalEntry.author_id == current_user.id) &
         (JournalEntry.favourite == True)
-    ).all()
+    ).order_by(JournalEntry.date_created.desc()).all()
 
     # Paginate the entries manually
     total_entries = len(favourite_journal_entries)
