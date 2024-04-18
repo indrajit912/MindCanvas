@@ -8,10 +8,10 @@ from sqlalchemy import desc
 
 from app.models.user import User
 from app.utils.decorators import admin_required
+from app.utils.user_utils import delete_user_from_db
 from scripts.utils import convert_utc_to_ist_str
 
 import logging
-import requests
 
 from . import admin_bp
 
@@ -38,16 +38,12 @@ def home():
 def delete_user():
     user_id = request.form['user_id']  # Assuming user_id is sent as form data
 
-    # Make DELETE request to the api
-    api_endpoint = f"{current_app.config['HOST']}/api/users/{user_id}"
-    response = requests.delete(
-        api_endpoint,
-        headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"}
-    )
-    if response.status_code == 200:
+    # Delete the user!
+    status_code, message = delete_user_from_db(user_id=user_id)
+    if status_code == 200:
         logger.info(f"A user has been deleted by the administrator: `{current_user.username}`")
         flash("User deleted successfully!", "success")
     else:
-        logger.error(f"An error occurred while deleting the user with ID {user_id}. Admin: `{current_user.username}`.\nERROR: {response.content}")
+        logger.error(f"An error occurred while deleting the user with ID {user_id}. Admin: `{current_user.username}`.\nERROR: {message['message']}")
         flash("An error occurred during user deletion. Please try again.", 'error')
     return redirect(url_for('admin.home'))

@@ -1,6 +1,7 @@
 # app/auth/routes.py
 # Author: Indrajit Ghosh
 # Created On: Mar 24, 2024
+# Modified On: Apr 18, 2024
 #
 
 from flask import render_template, url_for, flash, redirect, current_app, request, session, abort, jsonify, send_file
@@ -12,6 +13,10 @@ from app.forms.user_forms import AddEntryForm, CreateNewTagForm
 from app.models.user import User
 from app.models.journal_entry import JournalEntry
 from app.models.tag import Tag
+from app.utils.user_utils import update_user_last_seen, create_new_user, export_user_data,\
+      import_user_data, update_user, change_user_password
+from app.utils.journal_utils import create_journal_entry, update_existing_journal_entry, delete_journal_entry
+from app.utils.tag_utils import create_user_tag, delete_existing_tag, update_existing_tag
 from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
 from scripts.email_message import EmailMessage
@@ -24,7 +29,6 @@ import os
 from math import ceil
 import json
 from datetime import datetime
-import requests
 from cryptography.fernet import InvalidToken
 
 from . import auth_bp
@@ -51,15 +55,10 @@ def redirect_to_destination(destination):
 def update_last_seen():
     if current_user.is_authenticated:
         user_id = current_user.id
-        api_url = current_app.config['HOST'] + f'/api/users/{user_id}/update_last_seen'
-        headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
-        
-        try:
-            response = requests.post(api_url, headers=headers)
-            if response.status_code != 200:
-                logger.error(f"POST request to {api_url} failed with status code {response.status_code}")
-        except Exception as e:
-            logger.exception(f"An error occurred while making a POST request to {api_url}: {e}")
+        status_code, response_data = update_user_last_seen(user_id)
+
+        if status_code != 200:
+            logger.error(f"Updating last seen failed for '{current_user.username}'")
 
 
 # Login view (route)
@@ -384,7 +383,7 @@ def add_entry(user_id):
         _title = encrypt(data=form.title.data, key=user_private_key)
         _content = encrypt(data=form.content.data, key=user_private_key)
 
-        # Create a json body for the api request
+        # Create a json body for the new entry
         entry_json = {
             "title": _title,
             "content": _content,
@@ -393,20 +392,18 @@ def add_entry(user_id):
             "locked": form.locked.data
         }
 
-        # Make a POST request to the API endpoint
-        api_url = current_app.config['HOST'] + '/api/create/journal_entry'
-        headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
-        response = requests.post(api_url, json=entry_json, headers=headers)
+        # Create the entry!
+        status_code, message = create_journal_entry(**entry_json)
 
         # Check the response status code and flash messages accordingly
-        if response.status_code == 200:
+        if status_code == 201:
             flash('Journal entry added successfully!', 'success')
             logger.info(f"A new JournalEntry added by `{current_user.username}`.")
             # If the user is authorized, redirect to the route
             return redirect(url_for('auth.user_journal_entries', user_id=current_user.id))
         else:
             flash('Failed to add journal entry. Please try again later.', 'error')
-            logger.error(f"`{current_user.username}` tried to add a new JournalEntry but error occurred.")
+            logger.error(f"`{current_user.username}` tried to add a new JournalEntry but error occurred.\nError Message: {message}")
 
 
         # Remove the user data
@@ -457,20 +454,24 @@ def create_tag(user_id):
             return render_template('create_tag.html', form=form, user_tags=user_tags)
 
 
-        # Make a POST request to the API endpoint
-        api_url = current_app.config['HOST'] + '/api/create/tag'
-        headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
-        response = requests.post(api_url, json=tag_data, headers=headers)
+        # Create the tag
+        status_code, message = create_user_tag(**tag_data)
 
         # Check the response status code and flash messages accordingly
-        if response.status_code == 200:
+        if status_code == 201:
             flash(f"Your tag '{tag_name}' has been added successfully!", 'success')
             logger.info(f"A new Tag, '{tag_name}' is added by `{current_user.username}`.")
-            # If the user is authorized, redirect to the route
-            return redirect(url_for('auth.dashboard'))
+            
+            # Redirect to manage_tags
+            return redirect(url_for('auth.manage_tags', user_id=current_user.id))
+        elif status_code == 400:
+            flash(f"A tag with name '{tag_name}' already exists!", 'info')
+
+            # Redirect to manage_tags
+            return redirect(url_for('auth.manage_tags', user_id=current_user.id))
         else:
             flash('Failed to create the new tag. Please try again later.', 'error')
-            logger.error(f"`{current_user.username}` tried to add a new JournalEntry but error occurred.")
+            logger.error(f"`{current_user.username}` tried to add a new JournalEntry but error occurred.\nError: {message}")
 
         # Remove the user data
         form = CreateNewTagForm(formdata=None)
@@ -490,17 +491,13 @@ def delete_tag():
         # If the password is not correct, then don't delete the entry
         flash('Incorrect password. Please try again.', 'error')
     else:
-        # Make DELETE request to the api
-        api_endpoint = f"{current_app.config['HOST']}/api/tags/{tag_id}"
-        response = requests.delete(
-            api_endpoint,
-            headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"}
-        )
-        if response.status_code == 200:
+        # Delete the tag
+        status_code, message = delete_existing_tag(tag_id=tag_id)
+        if status_code == 200:
             logger.info(f"Tag deleted successfully by {current_user.username}!")
             flash(f"Tag deleted successfully!", "success")
         else:
-            logger.error(f"An error occurred while deleting the Tag with ID {tag_id}.")
+            logger.error(f"An error occurred while deleting the Tag with ID {tag_id}.\nError: {message}")
             flash("An error occurred during Tag deletion. Please try again.", 'error')
     
     
@@ -527,22 +524,20 @@ def toggle_entry_lock():
     # Check if the password is correct
     if current_user.check_password(password):
         # Toggle the locked attribute of the journal_entry
-        payload = {"locked": not journal_entry.locked}
+        payload = {
+            "journal_entry_id": journal_entry.id,
+            "locked": not journal_entry.locked
+        }
 
-        # Make PUT request to the endpoint 
-        api_endpoint = f"{current_app.config['HOST']}/api/journal_entries/{journal_entry_id}"
-        response = requests.put(
-            api_endpoint,
-            headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"},
-            json=payload
-        )
+        # Update the JournalEntry!
+        status_code, message = update_existing_journal_entry(**payload)
         
-        if response.status_code == 200:
+        if status_code == 200:
             logger.info(f"`{current_user.username}` changed the `locked` status of one of their JournalEntry.")
             flash("The 'locked' status of the JournalEntry has been updated!", 'success')
         else:
-            logger.error(f"Failed to update journal entry locked status. Status code: {response.status_code}\n{response.text}")
-            flash(f"API_ERROR: Failed to update journal entry locked status. Status code: {response.status_code}", 'error')
+            logger.error(f"Failed to update journal entry locked status.\n{message}")
+            flash(f"ERROR: Failed to update journal entry locked status. Status code: {status_code}", 'error')
     else:
         flash('Incorrect password. Please try again.', 'error')
 
@@ -565,22 +560,20 @@ def toggle_entry_favourite():
         abort(403)
 
     # Toggle the favourite attribute of the journal_entry
-    payload = {"favourite": not journal_entry.favourite}
+    payload = {
+        "journal_entry_id": journal_entry.id,
+        "favourite": not journal_entry.favourite
+    }
 
-    # Make PUT request to the endpoint 
-    api_endpoint = f"{current_app.config['HOST']}/api/journal_entries/{journal_entry_id}"
-    response = requests.put(
-        api_endpoint,
-        headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"},
-        json=payload
-    )
+    # Update the JournalEntry!
+    status_code, message = update_existing_journal_entry(**payload)
         
-    if response.status_code == 200:
+    if status_code == 200:
         logger.info(f"`{current_user.username}` changed the `favourite` status of one of their JournalEntry.")
         flash("The 'favourite' status of the JournalEntry has been updated!", 'success')
     else:
-        logger.error(f"Failed to update journal entry favourite status. Status code: {response.status_code}\n{response.text}")
-        flash(f"API_ERROR: Failed to update journal entry favourite status. Status code: {response.status_code}", 'error')
+        logger.error(f"Failed to update journal entry favourite status. Status code: {status_code}\n{message}")
+        flash(f"API_ERROR: Failed to update journal entry favourite status. Status code: {status_code}", 'error')
 
     return redirect_to_destination(destination)
 
@@ -639,24 +632,23 @@ def edit_entry():
 
     # Make the journal_entry json
     entry_data = {
+        "journal_entry_id": journal_entry.id,
         "title": _title,
         "content": _content,
         "tags": entry_tags,
         "locked": entry_locked
     }
 
-    # Make a PUT request to the API endpoint
-    api_url = current_app.config['HOST'] + f'/api/journal_entries/{journal_entry_id}'
-    headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
-    response = requests.put(api_url, json=entry_data, headers=headers)
+    # Update the JournalEntry!
+    status_code, message = update_existing_journal_entry(**entry_data)
 
     # Check the response status code and flash messages accordingly
-    if response.status_code == 200:
+    if status_code == 200:
         logger.info(f"JournalEntry updated by `{current_user.username}`.")
         flash('Journal entry updated successfully!', 'success')
         
     else:
-        logger.error(f"`{current_user.username}` tried to update journal entry but error occurred\n{response.content}.")
+        logger.error(f"`{current_user.username}` tried to update journal entry but error occurred\n{message}.")
         flash('Failed to update journal entry. Please try again later.', 'error')
         
     
@@ -684,6 +676,7 @@ def update_tag():
     color_red, color_green, color_blue = Tag.hex_to_rgb(color_hex)
 
     tag_data = {
+        "tag_id": tag.id,
         "description": description,
         "color_red": color_red,
         "color_green": color_green,
@@ -693,18 +686,16 @@ def update_tag():
     # Check whether the user has changed the tag name
     tag_data["name"] = None if tag_name == tag.name else tag_name
   
-    # Make a PUT request to the API endpoint
-    api_url = current_app.config['HOST'] + f'/api/tags/{tag_id}'
-    headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
-    response = requests.put(api_url, json=tag_data, headers=headers)
+    # Update tag!
+    status_code, message = update_existing_tag(**tag_data)
 
     # Check the response status code and flash messages accordingly
-    if response.status_code == 200:
+    if status_code == 200:
         logger.info("Tag updated by `{current_user.username}`.")
         flash('Tag updated successfully!', 'success')
         
     else:
-        logger.error(f"`{current_user.username}` tried to update a Tag but error occurred. Response content: {response.content}")
+        logger.error(f"`{current_user.username}` tried to update a Tag but error occurred. Response content: {message}")
         flash('Failed to update the Tag. Please try again later.', 'error')
     
     # If the user is authorized, redirect to the route
@@ -722,17 +713,13 @@ def delete_entry(destination):
         # If the password is not correct, then don't delete the entry
         flash('Incorrect password. Please try again.', 'error')
     else:
-        # Make DELETE request to the api
-        api_endpoint = f"{current_app.config['HOST']}/api/journal_entries/{journal_entry_id}"
-        response = requests.delete(
-            api_endpoint,
-            headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"}
-        )
-        if response.status_code == 200:
+        # Delete the entry!
+        status_code, message = delete_journal_entry(journal_entry_id)
+        if status_code == 200:
             logger.info(f"JournalEntry deleted successfully by {current_user.username}!")
             flash(f"JournalEntry deleted successfully!", "success")
         else:
-            logger.error(f"An error occurred while deleting the JournalEntry with ID {journal_entry_id}.")
+            logger.error(f"An error occurred while deleting the JournalEntry with ID {journal_entry_id}.\nERROR: {message}")
             flash("An error occurred during JournalEntry deletion. Please try again.", 'error')
     
     return redirect_to_destination(destination)
@@ -818,17 +805,12 @@ def register_user(token):
             'email_verified': True
         }
 
-        # Send POST request to the API
-        api_user_post_url = current_app.config['HOST'] + '/api/create/user'
-        response = requests.post(
-            api_user_post_url, 
-            json=new_user_data,
-            headers={'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"}
-        )
+        # Create the user!
+        status_code, message = create_new_user(**new_user_data)
 
-        if response.status_code == 200:
+        if status_code == 200:
             # Capture the user_json sent by the POST request.
-            user_json = response.json()
+            user_json = message
             logger.info(f"A new user registered with the username `{user_json['username']}`.")
             flash("You have successfully registered! You may now log in using these credentials.", 'success')
 
@@ -865,6 +847,12 @@ def register_user(token):
                 logger.error(f"Error occurred while attempting to send welcome email along with password reset key through email.\nERROR: {e}")
 
             return redirect(url_for('auth.login'))
+        
+        elif status_code == 400:
+            if message['message'] == 'email_taken':
+                flash('Email id has been taken already!', 'error')
+            if message['message'] == 'username_taken':
+                flash('Username already taken! Try with a different one!', 'error')
         else:
             logger.error("Failed to register the user.")
             flash('Failed to register user. Please try again.', 'danger')
@@ -942,20 +930,8 @@ def export_data():
             "private_key": session.get('current_user_private_key')
         }
 
-        # Make a GET request to the API endpoint
-        api_url = current_app.config['HOST'] + '/api/mindcanvas/export'
-        response = requests.get(
-            api_url,
-            json=json_data
-        )
-
-        # Check if request was successful
-        if response.status_code != 200:
-            print(response.content)
-            return jsonify({'message': 'Failed to fetch data from API'}), 500
-
-        # Convert API response to JSON
-        data = response.json()
+        # Get the user data
+        data = export_user_data(**json_data)
 
         # Generate file name with current datetime
         current_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -1053,18 +1029,17 @@ def import_data():
                 json_data['private_key'] = session.get('current_user_private_key')
                 json_data['user_id'] = current_user.id
 
-                # Make a POST request to the API endpoint with the JSON data
-                api_user_post_url = current_app.config['HOST'] + '/api/mindcanvas/import'
-                
-                response = requests.post(
-                    api_user_post_url, 
-                    json=json_data
-                )
+                # Import the data!
+                status_code, message = import_user_data(data=json_data)
 
-                if response.status_code == 200:
+                if status_code == 200:
                     return render_template('import_data.html', message='Data imported successfully.')
+                elif status_code == 401:
+                    flash(f"{message['message']}")
+                elif status_code == 400:
+                    flash(f"{message['message']}")
                 else:
-                    return render_template('import_data.html', message=f'Failed to import data. Please try again later.\n{response.content}')
+                    return render_template('import_data.html', message=f'Failed to import data. Please try again later.\n{message}')
 
             else:
                 return render_template('import_data.html', message='Invalid file format. Please select a JSON file.')
@@ -1123,16 +1098,10 @@ def update_profile():
         # Add the fullname to the request body
         json_body['fullname'] = _fullname
 
-        # Make a PUT request to the API
-        api_endpoint = current_app.config['HOST'] + f'/api/users/{user.id}'
-        headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
-        response = requests.put(
-            api_endpoint,
-            json=json_body,
-            headers=headers
-        )
+        # Update the user
+        status_code, message = update_user(user_id=user.id, data=json_body)
 
-        if response.status_code == 200:
+        if status_code == 200:
             msg = (
                 f"Your profile has been updated successfully. Please verify your new email address by visiting your profile."
                 if _send_email_verification
@@ -1144,7 +1113,7 @@ def update_profile():
 
         else:
             flash(f"Error occurred while updating the profile. Try again later!", 'error')
-            logger.error(f"An error occurred while editing user profile: {user.username}.\nERROR: {response.content}")
+            logger.error(f"An error occurred while editing user profile: {user.username}.\nERROR: {message}")
     else:
         flash("Wrong password!", 'error')
 
@@ -1198,21 +1167,15 @@ def send_verification_email():
 def verify_email(token):
     user = User.verify_email_verification_token(token)
     if user:
-        # Make a PUT request to the API
-        api_endpoint = current_app.config['HOST'] + f'/api/users/{user.id}'
-        headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
-        response = requests.put(
-            api_endpoint,
-            json={"email_verified": True},
-            headers=headers
-        )
+        # Update user!
+        status_code, message = update_user(user_id=user.id, data={"email_verified": True})
 
-        if response.status_code == 200:
+        if status_code == 200:
             flash('Your email has been successfully verified!', 'success')
             logger.info(f"Email verified successfully: '{user.username}'")
         else:
             flash("Email cannot be verified due to some error. Try again later!", 'error')
-            logger.error(f"Error occurred while verifying email address.\nERROR: {response.content}")
+            logger.error(f"Error occurred while verifying email address.\nERROR: {message}")
 
     else:
         flash('Invalid or expired verification link. Please try again.', 'error')
@@ -1241,19 +1204,12 @@ def change_password():
         # Get user's private key from the session
         user_private_key = session['current_user_private_key']
 
-        # Make POST request to the API
-        api_endpoint = current_app.config['HOST'] + f'/api/users/{user.id}/change_password'
-        headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
-        response = requests.post(
-            api_endpoint,
-            json={
-                "new_password": new_passwd,
-                "private_key": user_private_key
-            },
-            headers=headers
+        # Change user password
+        status_code, message = change_user_password(
+            user_id=user.id, new_password=new_passwd, private_key=user_private_key
         )
 
-        if response.status_code == 200:
+        if status_code == 200:
             flash("Password changed successfully.", 'success')
             logger.info(f"PASSWORD_CHANGE: The user '{user.username}' changed their password.")
 
@@ -1266,7 +1222,7 @@ def change_password():
                 passwd_reset_key=passwd_reset_key.hex(), # To reverse this use bytes.fromhex(password_reset_key_hex)
                 username=user.fullname
             )
-
+            
             msg = EmailMessage(
                 sender_email_id=EmailConfig.INDRAJITS_BOT_EMAIL_ID,
                 to=current_user.email,
@@ -1290,7 +1246,7 @@ def change_password():
                 logger.error(f"Error occurred while attempting to send the password change notification along with password reset key through email.\nERROR: {e}")
         else:
             flash("Error occurred while changing the password.", 'error')
-            logger.error(f"API_ERROR: couldn't change the user password due to err during api call.\n{response.content}")
+            logger.error(f"API_ERROR: couldn't change the user password due to err during api call.\n{message}")
     else:
         flash("Wrong old password!", 'error')
 
@@ -1327,19 +1283,14 @@ def forgot_password():
                     user_derived_key
                 )
 
-                # Make POST request to the API
-                api_endpoint = current_app.config['HOST'] + f'/api/users/{user.id}/change_password'
-                headers = {'Authorization': 'Bearer ' + current_app.config['SECRET_API_TOKEN']}
-                response = requests.post(
-                    api_endpoint,
-                    json={
-                        "new_password": new_passwd,
-                        "private_key": user_private_key
-                    },
-                    headers=headers
+                # Change the password
+                status_code, message = change_user_password(
+                    user_id=user.id,
+                    new_password=new_passwd,
+                    private_key=user_private_key
                 )
 
-                if response.status_code == 200:
+                if status_code == 200:
                     flash("Your password has been successfully changed. You can now log in using your new password.", 'success')
                     logger.info(f"PASSWORD_CHANGE: The user '{user.username}' changed their password.")
 
@@ -1389,8 +1340,6 @@ def forgot_password():
 
     return render_template('forgot_password.html')
 
-
-from flask import flash
 
 @auth_bp.route('/user/<int:user_id>/journal_entries/tag/<int:tag_id>', methods=['GET'])
 @login_required

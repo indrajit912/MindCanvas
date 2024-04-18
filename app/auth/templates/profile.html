@@ -82,9 +82,9 @@
                   {% if not current_user.email_verified %}
                       <span class="text-danger">
                           (Please 
-                          <a href="{{ url_for('auth.send_verification_email') }}" onclick="showSpinner()">
+                          <a href="{{ url_for('auth.send_verification_email') }}" onclick="showVerificationSpinner()">
                               click here
-                              <i id="spinner" class="spinner-border spinner-border-sm d-none"></i>
+                              <i id="verification-spinner" class="spinner-border spinner-border-sm d-none"></i>
                           </a> 
                           to verify your email address)
                       </span>
@@ -241,7 +241,7 @@
                 <input type="password" class="form-control" id="old_passwd" name="old_passwd" required>
               </div>
               <input type="hidden" name="user_id" value="{{ current_user.id }}">
-              <button type="submit" class="btn btn-primary btn-sm" onclick="toggleSpinner()">
+              <button type="submit" class="btn btn-primary btn-sm" id="change-passwd-btn">
                 Change
                 <span id="changePasswdSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
               </button>
@@ -258,22 +258,25 @@
 
 
   <script>
-    function reloadAfterDownload() {
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000); // Adjust the timeout as needed
-    }
-
     // Function to toggle the spinner
-    function toggleSpinner() {
+    function toggleChangePasswdSpinner() {
       var spinner = document.getElementById('changePasswdSpinner');
       spinner.classList.toggle('d-none');
     }
+
+    document.getElementById('change-passwd-btn').addEventListener('click', function () {
+    // Show spinner before making the request
+    toggleChangePasswdSpinner();
+
+    setTimeout(function () {
+      toggleChangePasswdSpinner();
+    }, 5000); // Adjust the delay as needed
+  });
   </script>
 
 <script>
-  function showSpinner() {
-      document.getElementById('spinner').classList.remove('d-none');
+  function showVerificationSpinner() {
+      document.getElementById('verification-spinner').classList.remove('d-none');
   }
 </script>
 
