@@ -41,4 +41,5 @@ app = create_app()
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=app.config['PORT'])
+    if app.config['FLASK_ENV'] == 'development':
+        app.run(host='0.0.0.0', port=app.config['PORT'])
