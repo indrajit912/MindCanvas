@@ -11,7 +11,10 @@
             <label for="jsonFile" class="form-label">Choose JSON File:</label>
             <input type="file" class="form-control" id="jsonFile" name="jsonFile" accept=".json" required>
         </div>
-        <button type="submit" class="btn btn-primary">Import</button>
+        <button type="submit" class="btn btn-primary" id="import-btn">
+            Import
+            <span id="import-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
         <button class="btn btn-secondary ms-2" onclick="goBack()">
             <i class="bi bi-arrow-left"></i> Back
         </button>
@@ -22,4 +25,21 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+    function toggleImportSpinner() {
+      var spinner = document.getElementById('import-spinner');
+      spinner.classList.toggle('d-none');
+    }
+  
+    document.getElementById('import-btn').addEventListener('click', function () {
+      // Show spinner before making the request
+      toggleImportSpinner();
+  
+      setTimeout(function () {
+        toggleImportSpinner();
+      }, 5000); // Adjust the delay as needed
+    });
+  
+  </script>
 {% endblock %}

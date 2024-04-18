@@ -275,26 +275,27 @@
   </script>
 
 <script>
-  function showVerificationSpinner() {
-      document.getElementById('verification-spinner').classList.remove('d-none');
-  }
-</script>
-
-<script>
-  function toggleSpinner() {
+  function toggleExportSpinner() {
     var spinner = document.getElementById('export-spinner');
     spinner.classList.toggle('d-none');
   }
 
   document.getElementById('export-data-btn').addEventListener('click', function () {
     // Show spinner before making the request
-    toggleSpinner();
+    toggleExportSpinner();
 
     setTimeout(function () {
-      toggleSpinner();
+      toggleExportSpinner();
     }, 5000); // Adjust the delay as needed
   });
 
 </script>
+
+<script>
+  function showVerificationSpinner() {
+      document.getElementById('verification-spinner').classList.remove('d-none');
+  }
+</script>
+
 
   {% endblock %}
