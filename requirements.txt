@@ -5,6 +5,7 @@ gunicorn
 python-dotenv
 Flask-SQLAlchemy
 Flask-Migrate
+Flask-CKEditor
 Flask-Login
 Flask-RESTful
 Flask-WTF
