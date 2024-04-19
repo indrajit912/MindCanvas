@@ -23,8 +23,12 @@
         </div>
 
         <div class="col-sm-10">
-            {{ form.submit(class="btn btn-primary", id="sendEmailBtn") }}
-            <span id="sendEmailSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            <button type="submit" class="btn btn-primary", id="sendEmailBtn">
+              Next
+              <i class="bi bi-arrow-right" id="arrow-icon"></i>
+              <span id="sendEmailSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            </button>
+            
         </div>
 
         <div class="form-text">Already registered? <a href="{{ url_for('auth.login') }}">Login.</a></div>
@@ -32,7 +36,9 @@
 
     <script>
         function toggleSpinner() {
+          var arrowIcon = document.getElementById('arrow-icon');
           var spinner = document.getElementById('sendEmailSpinner');
+          arrowIcon.classList.toggle('d-none');
           spinner.classList.toggle('d-none');
         }
 

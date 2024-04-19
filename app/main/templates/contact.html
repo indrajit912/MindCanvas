@@ -1,0 +1,67 @@
+<!-- app/main/contact.html -->
+{% extends 'base.html' %}
+
+{% block title %}Contact Indrajit{% endblock %}
+
+{% block content %}
+    {% include 'flash_msgs.html' %}
+
+    <h1 class="heading">Contact Indrajit!</h1>
+
+    <form method="POST" class="form-container">
+        {{ form.hidden_tag() }}
+
+        <div class="form-floating mb-3">
+            {{ form.name(class="form-control", placeholder="Write your name here...") }}
+            {{ form.name.label(class="form-label") }}
+        </div>
+
+        <div class="form-floating mb-3">
+            {{ form.email(class="form-control", placeholder="Enter your email address...") }}
+            {{ form.email.label(class="form-label") }}
+            <div class="form-text">
+                We'll never share your email with anyone else.
+            </div>
+        </div>
+
+        
+
+        <div class="form-floating mb-3">
+            {{ form.subject(class="form-control", placeholder="Subject here...") }}
+            {{ form.subject.label(class="form-label") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.message.label(class="form-label") }}
+            {{ form.message(class="form-control", rows="8", placeholder="Write something here. For example, 'Hey Indrajit I found a bug!' or may be 'Hey Indrajit, I have a feature request...' etc etc.") }}
+        </div>
+
+        <button type="submit" class="btn btn-primary", id="sendEmailBtn">
+            Send 
+            <i class="bi bi-send-fill" id="send-icon"></i>
+            <span id="sendEmailSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+    </form>
+
+
+    <script>
+        function toggleSpinner() {
+          var spinner = document.getElementById('sendEmailSpinner');
+          var sendIcon = document.getElementById('send-icon');
+          sendIcon.classList.toggle('d-none');
+          spinner.classList.toggle('d-none');
+        }
+
+        document.getElementById('sendEmailBtn').addEventListener('click', function () {
+          // Show spinner before making the request
+          toggleSpinner();
+
+          setTimeout(function () {
+            toggleSpinner();
+          }, 5000); // Adjust the delay as needed
+        });
+
+    </script>
+
+
+{% endblock %}

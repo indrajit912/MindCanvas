@@ -75,6 +75,10 @@ Created On: Mar 24, 2024
               Login</a>
           </li>
           {% endif %}
+          <li class="nav-item">
+            <a class="nav-link active" href="{{ url_for('main.contact') }}"><i class="bi bi-envelope-at-fill"></i>
+              Contact</a>
+          </li>
         </ul>
       </div>
       {% if current_user.is_authenticated %}

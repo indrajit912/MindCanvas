@@ -10,40 +10,47 @@ Created On: Mar 24, 2024
 
 {% block content %}
 
-    {% include 'flash_msgs.html' %}
-    
-    <div class="container mt-3">
-        <div class="row">
-            <div class="col-md-6">
-                <h1 class="display-4">Welcome to MindCanvas!</h1>
-                <p>Your Personal Journaling Platform</p>
-                <p>Start documenting your thoughts, ideas, and experiences in your own private journal. Explore your thoughts and feelings, and keep your memories alive.</p>
-                {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('auth.dashboard') }}" class="btn btn-primary btn-lg">Get Started</a>
-                {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">Get Started</a>
-                {% endif %}
-            </div>
-        </div>
+{% include 'flash_msgs.html' %}
 
-        <hr>
-        
-        <div class="row">
-            <div class="col-md-6">
-                <h2>About the Author</h2>
-                <p>Hi, I'm <a href="https://indrajitghosh.onrender.com" target="_blank">Indrajit Ghosh</a>, the creator of MindCanvas. I believe in the power of journaling to foster self-reflection and personal growth. Mind Canvas is designed to be your digital canvas for recording your thoughts and experiences.</p>
-                <p>Feel free to start your journaling journey today and explore the wonderful world of self-discovery.</p>
-            </div>
-            <div class="col-md-6">
-                <h2>Why MindCanvas?</h2>
-                <p>With MindCanvas, you can:</p>
-                <ul>
-                    <li>Effortlessly organize your thoughts and ideas.</li>
-                    <li>Thoughtfully reflect on your experiences and emotions.</li>
-                    <li>Embrace personal growth with ease.</li>
-                    <li>Create and manage encrypted entries for added security.</li>
-                </ul>
-            </div>
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-md-6">
+            <h1 class="display-4">Welcome to MindCanvas!</h1>
+            <p>Your Personal Journaling Platform</p>
+            <p>Start documenting your thoughts, ideas, and experiences in your own private journal. Explore your
+                thoughts and feelings, and keep your memories alive.</p>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('auth.dashboard') }}" class="btn btn-primary btn-lg">Get Started <i class="bi bi-house-door-fill"></i></a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">Get Started <i class="bi bi-pencil-square"></i></a>
+            {% endif %}
         </div>
     </div>
+
+    <hr>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2>About the Author</h2>
+            <p>Hi, I'm <a href="https://indrajitghosh.onrender.com" target="_blank">Indrajit Ghosh</a>, the creator of
+                MindCanvas. I believe in the power of journaling to foster self-reflection and personal growth.
+                MindCanvas is designed to be your digital canvas for recording your thoughts and experiences.</p>
+            <p>Feel free to start your journaling journey today and explore the wonderful world of self-discovery.</p>
+        </div>
+        <div class="col-md-6">
+            <h2>Why MindCanvas?</h2>
+            <p>With MindCanvas, you can:</p>
+            <ul>
+                <li>Effortlessly organize your thoughts and ideas.</li>
+                <li>Thoughtfully reflect on your experiences and emotions.</li>
+                <li>Embrace personal growth with ease.</li>
+                <li>All your journal entries are end-to-end
+                    encrypted, this means even we cannot read your entries.</li>
+                <li>Experience simplicity! The app has a very simple interface and minimal distraction so that you can
+                    concentrate only on your thoughts.</li>
+            </ul>
+
+        </div>
+    </div>
+</div>
 {% endblock %}
