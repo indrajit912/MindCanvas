@@ -33,6 +33,9 @@ def create_journal_entry(title:str, content:str, author_id:int, tags:list=None, 
             favourite=favourite
         )
 
+        # Add the new_journal_entry to the session
+        db.session.add(new_journal_entry)
+
         # Add tags to the journal entry
         if tags:
             for tag_name in tags:
@@ -98,7 +101,7 @@ def update_existing_journal_entry(journal_entry_id, title=None, content=None, lo
         _tags_to_add = []
         if tags:
             for tag_name in tags:
-                tag = Tag.query.filter_by(name=tag_name).first()
+                tag = Tag.query.filter_by(name=tag_name, creator_id=journal_entry.author_id).first()
                 if not tag:
                     # If tag does not exist, create a new tag
                     tag = Tag(

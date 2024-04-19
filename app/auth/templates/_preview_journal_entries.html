@@ -28,7 +28,7 @@
         {% if entry.locked and not session.get('entries_unlocked') %}
         <p class="card-text">This entry is locked. Click on the lock icon to unlock it.</p>
         {% else %}
-        <p class="card-text">{{ decrypt(entry.content, private_key)[:100] | safe }}...</p>
+        {{ decrypt(entry.content, private_key)[:100] | safe  }}
         {% endif %}
 
         {% if not entry.locked or session.get('entries_unlocked') %}
