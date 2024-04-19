@@ -6,10 +6,11 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SubmitField, BooleanField, IntegerField
 from wtforms.validators import DataRequired, Length, NumberRange
+from flask_ckeditor import CKEditorField
 
 class AddEntryForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
-    content = TextAreaField('Content', validators=[DataRequired()])
+    content = CKEditorField('Content', validators=[DataRequired()])
     tags = TextAreaField('Tags (separate with commas or spaces)')
     locked = BooleanField('Locked')
     submit = SubmitField('Add Entry')

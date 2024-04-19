@@ -9,7 +9,7 @@
             <a href="#" class="icon-link icon-link-hover text-danger me-2" data-bs-toggle="modal"
                 data-bs-target="#unlockEntryModal{{ entry.id }}"><i class="bi bi-lock-fill"></i></a>
             {% if session.get('entries_unlocked') %}
-            {{ decrypt(entry.title, private_key) }}
+            {{ decrypt(entry.title, private_key)[:60] }}...
             {% else %}
             This entry is Locked!
             {% endif %}
@@ -28,7 +28,7 @@
         {% if entry.locked and not session.get('entries_unlocked') %}
         <p class="card-text">This entry is locked. Click on the lock icon to unlock it.</p>
         {% else %}
-        <p class="card-text">{{ decrypt(entry.content, private_key)[:100] }}...</p>
+        <p class="card-text">{{ decrypt(entry.content, private_key)[:100] | safe }}...</p>
         {% endif %}
 
         {% if not entry.locked or session.get('entries_unlocked') %}

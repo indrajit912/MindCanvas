@@ -612,7 +612,7 @@ def edit_entry():
         abort(403)
 
     entry_title:str = request.form['title']
-    entry_content:str = request.form['content']
+    entry_content:str = request.form.get('content')
     entry_tags:list =  [Tag.preprocess_tag_name(tag.strip()) for tag in request.form['tags'].split(',') if tag.strip()]
     # Check if the locked field is present in the form data
     entry_locked = request.form.get('locked')

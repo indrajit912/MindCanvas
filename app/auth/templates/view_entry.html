@@ -9,9 +9,7 @@
     <div class="card">
         <div class="card-body">
             <p class="text-muted">Created: {{ convert_utc_to_ist_str(entry.date_created) }}</p>
-            {% autoescape false %}
-            {{ decrypt(entry.content, private_key) | replace('\n', "<br />") }}
-            {% endautoescape %}
+            {{ decrypt(entry.content, private_key) | safe }}
 
             {% if not entry.locked or session.get('entries_unlocked') %}
             <div class="tags mt-4 mb-3">
@@ -92,8 +90,8 @@
                             value="{{ decrypt(entry.title, private_key) }}" required>
 
                         <label for="content" class="form-label"><code>Content</code></label>
-                        <textarea class="form-control" id="content" name="content" rows="8" required>{{ decrypt(entry.content, private_key) }}</textarea>
-
+                        <!-- <textarea class="form-control" id="content" name="content" rows="8" required>{{ decrypt(entry.content, private_key) }}</textarea> -->
+                        {{ ckeditor.create(value=decrypt(entry.content, private_key), name="content") }}
                         <!-- Checkbox for 'locked' field -->
                         <div class="form-check mt-3">
                             <input class="form-check-input" type="checkbox" id="locked" name="locked" {% if entry.locked
@@ -128,6 +126,7 @@
     </div>
 </div>
 
+{{ ckeditor.load() }}
 
 <style>
     .text-muted {
