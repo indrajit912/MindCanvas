@@ -9,9 +9,11 @@
     <div class="card">
         <div class="card-body">
             <p class="text-muted">Created: {{ convert_utc_to_ist_str(entry.date_created) }}</p>
-            {{ decrypt(entry.content, private_key) | safe }}
 
             {% if not entry.locked or session.get('entries_unlocked') %}
+
+            {{ decrypt(entry.content, private_key) | safe }}
+
             <div class="tags mt-4 mb-3">
                 <div class="tags mt-2">
                     {% for tag in entry.tags %}
@@ -127,6 +129,9 @@
 </div>
 
 {{ ckeditor.load() }}
+<script>
+    CKEDITOR.addCss(".cke_editable{font-size: 18px;}");
+</script>
 
 <style>
     .text-muted {

@@ -16,7 +16,7 @@
                     {{ form.title(class="form-control", required=true, placeholder="Give a title. E.g., My Awesome Journal Entry") }}
                 </div>
                 <div class="mb-3">
-                    {{ form.content(class="form-control", required=true, rows=9, placeholder="Write the content here. E.g., Today I did something amazing...") }}
+                    {{ form.content(class="form-control", required=true, rows=15, placeholder="Write the content here. E.g., Today I did something amazing...") }}
                 </div>
                 <div class="mb-3">
                     {{ form.tags(class="form-control", id="tags", placeholder="Tags (separate with commas)")}}
@@ -104,7 +104,10 @@
 </script>
 
 {{ ckeditor.load() }}
-{{ ckeditor.config(name='content') }}
+{{ ckeditor.config(name='content', custom_config="height: '400px'") }}
 
+<script>
+    CKEDITOR.addCss(".cke_editable{font-size: 18px;}");
+</script>
 
 {% endblock %}

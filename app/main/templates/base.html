@@ -52,14 +52,18 @@ Created On: Mar 24, 2024
             <a class="nav-link active" aria-current="page"
               href="{{ url_for('auth.search', user_id=current_user.id) }}"><i class="bi bi-search"></i> Search</a>
           </li>
+          <li class="nav-item d-lg-none">
+            <a class="nav-link active" href="{{ url_for('auth.profile') }}"><i class="bi bi-person"></i> Profile</a>
+          </li>
           {% if current_user.is_admin %}
           <li class="nav-item">
             <a class="nav-link active" href="{{ url_for('admin.home') }}"><i class="bi bi-person-plus"></i> Admin
               Page</a>
           </li>
           {% endif %}
-          <li class="nav-item d-lg-none">
-            <a class="nav-link active" href="{{ url_for('auth.profile') }}"><i class="bi bi-person"></i> Profile</a>
+          <li class="nav-item">
+            <a class="nav-link active" href="{{ url_for('main.contact') }}"><i class="bi bi-envelope-at-fill"></i>
+              Contact</a>
           </li>
           <li class="nav-item d-lg-none">
             <a class="nav-link active" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right"></i>
@@ -75,10 +79,6 @@ Created On: Mar 24, 2024
               Login</a>
           </li>
           {% endif %}
-          <li class="nav-item">
-            <a class="nav-link active" href="{{ url_for('main.contact') }}"><i class="bi bi-envelope-at-fill"></i>
-              Contact</a>
-          </li>
         </ul>
       </div>
       {% if current_user.is_authenticated %}
