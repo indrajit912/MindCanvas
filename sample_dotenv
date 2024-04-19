@@ -1,0 +1,11 @@
+FLASK_ENV=dev
+PORT=8080
+
+INDRAJITS_BOT_EMAIL_ID=adminsbot@gmail.com
+INDRAJITS_BOT_APP_PASSWORD=bots-gmail-app-password
+INDRAJIT912_GMAIL=admin@administration.com
+
+SECRET_API_TOKEN=this_is_api_token
+
+DATABASE_URI=
+SECRET_KEY=enter_a_secret_key

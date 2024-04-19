@@ -2,6 +2,8 @@
 
 MindCanvas is a Flask-based journaling app designed to securely document users' thoughts, daily events, and more. With end-to-end encryption and user-centric features, it prioritizes privacy and usability.
 
+The web application is up and running at [this link](https://indrajit912.pythonanywhere.com/)! To get started, you can register using your valid email address. Alternatively, you can explore the service right away by logging in with our demo account using the following credentials: username `demo` and password `password`.
+
 ## Features
 
 1. **Secure Password Handling**: User passwords are securely hashed and never stored in plaintext.
@@ -10,9 +12,14 @@ MindCanvas is a Flask-based journaling app designed to securely document users' 
 4. **Search Functionality**: Users can search their journal entries by keywords or tags.
 5. **Data Portability**: Users can export/import all their data for backup or migration.
 6. **LaTeX Support**: Write mathematical equations using LaTeX typesetting directly into your Journal Entries.
-7. **Demo Account**: A demo account (username: demo, password: password) allows users to explore the app before creating their own accounts.
 
-## Installation
+
+## Usage
+- Register for an account or use the demo account credentials provided.
+- Start journaling! Add entries, tag them, and search whenever needed.
+- Enjoy the peace of mind knowing your thoughts are securely encrypted.
+
+## Local Installation
 
 1. Clone the repository:
 
@@ -31,22 +38,20 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
-4. Set up the database:
+4. Create a `.env` file. You can find a sample `.env` file [here](./sample_dotenv).
+
+5. Set up the database:
 ```bash
 python managa.py setup-db
 ```
 
-5. Run the app:
+6. Run the app:
 ```bash
 python run.py
 ```
 
-The app will be up at `http://localhost:8080`
+The app will be up at `http://localhost:<PORT>`. The PORT is set in the `.env` file!
 
-## Usage
-- Register for an account or use the demo account credentials provided.
-- Start journaling! Add entries, tag them, and search whenever needed.
-- Enjoy the peace of mind knowing your thoughts are securely encrypted.
 
 ## License
 This project is licensed under the [MIT License](./LICENSE), which allows users to use, modify, and distribute the software with minimal restrictions.
