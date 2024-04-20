@@ -75,6 +75,10 @@ def create_app(config_class=get_config()):
     api.add_resource(ExportDataResource, '/mindcanvas/export')
     api.add_resource(ImportDataResource, '/mindcanvas/import')
 
+    from app.api.db_resources import ExportDBResource, ImportDBResource
+    api.add_resource(ExportDBResource, '/export_db')
+    api.add_resource(ImportDBResource, '/import_db')
+
     # Register blueprints
     from app.main import main_bp
     app.register_blueprint(main_bp)

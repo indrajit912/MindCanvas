@@ -24,7 +24,7 @@ class Tag(db.Model):
     # Define the foreign key relationship with User
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-    def __init__(self, name, creator_id, color_red=None, color_green=None, color_blue=None, description=None):
+    def __init__(self, name, creator_id, color_red=None, color_green=None, color_blue=None, description=None, date_created=None, last_updated=None):
         """
         Initializes a new Tag instance.
         """
@@ -34,6 +34,8 @@ class Tag(db.Model):
         self.color_green = color_green
         self.color_blue = color_blue
         self.description = description
+        self.date_created = date_created
+        self.last_updated = last_updated
 
     def __repr__(self):
         return f"Tag(name={self.name})"

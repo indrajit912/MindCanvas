@@ -15,7 +15,7 @@ def token_required(f):
         token = request.headers.get('Authorization')
 
         if not token or token != f"Bearer {Config.SECRET_API_TOKEN}":
-            response = make_response(jsonify({'message': 'Unauthorized!.'}))
+            response = make_response(jsonify({'message': 'Unauthorized! Bearer token required.'}))
             response.status_code = 401
             return response
 

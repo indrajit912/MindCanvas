@@ -7,6 +7,7 @@ from flask import current_app
 from flask.cli import FlaskGroup
 import pwinput
 import sys
+import requests
 import argparse
 import json
 import logging
@@ -23,11 +24,13 @@ from app.models.tag import Tag
 from app.models.journal_entry import JournalEntry
 from app.utils.encryption import encrypt
 from scripts.app_defaults import default_tags
+from config import Config
 
 cli = FlaskGroup(create_app=create_app)
 logger = logging.getLogger(__name__)
 bullet_unicode = '\u2022'
 
+DEFAULT_HOST = "http://localhost:8080"
 old_mindcanvas_file = Path(__file__).parent.resolve() / "app_data" / "mindcanvas_data.json"
 
 def create_demo_user():
@@ -278,6 +281,78 @@ def create_indrajit():
             print(f"\nERROR: {e}")
 
 
+def _get_host():
+    host = input("Specify the host (e.g- 'https://username.pythonanywhere.com'): ")
+    if not host:
+        host = 'http://localhost:' + str(current_app.config['PORT'])
+    return host
+
+
+@cli.command("export-db")
+def export_db():
+    """
+    Command-line utility to export database from the API and save it to a JSON file.
+    """
+    try:
+        host = _get_host()
+        export_api_endpoint = host + '/api/export_db'
+        
+        response = requests.get(
+            export_api_endpoint,
+            headers={"Authorization": f"Bearer {Config.SECRET_API_TOKEN}"}
+        )
+
+        if response.status_code == 200:
+            with open('mindcanvas_db.json', 'w') as f:
+                json.dump(response.json(), f, indent=4)
+            print(f"Data exported successfully from the host '{host}'!")
+            logger.info(f"{current_app.config['FLASK_APP_NAME']} db exported from '{host}'")
+        else:
+            print(f"{current_app.config['FLASK_APP_NAME']} db Export failed. Status code:", response.status_code)
+            print(response.content.decode())
+            logger.error(f"{current_app.config['FLASK_APP_NAME']} db exported failed!\nEXPORT_ERROR: {response.content.decode()}")
+    except requests.exceptions.RequestException as e:
+        print(f"Export failed. Error:", e)
+
+
+@cli.command("import-db")
+def import_db():
+    """
+    Command-line utility to import data from a JSON file and send it to the API.
+    """
+    try:
+        host = _get_host()
+
+        # Ask user for confirmation before importing data
+        confirmation = input("Are you sure you want to import data? This will overwrite existing data. (yes/no): ")
+        if confirmation.lower() != 'yes':
+            print("Import aborted.")
+            return
+
+        # Make the import api endpoint
+        import_db_api_endpoint = host + '/api/import_db'
+        # Load data from exported file
+        with open('mindcanvas_db.json', 'r') as f:
+            data = json.load(f)
+
+        # Send POST request to import data
+        response = requests.post(
+            import_db_api_endpoint, 
+            json=data,
+            headers={"Authorization": f"Bearer {Config.SECRET_API_TOKEN}"}
+        )
+
+        # Check if request was successful (status code 200)
+        if response.status_code == 200:
+            print(f"{current_app.config['FLASK_APP_NAME']} DB imported successfully! Host: `{host}`.")
+            logger.info(f"{current_app.config['FLASK_APP_NAME']} DB imported imported successfully! Host: `{host}`.")
+        else:
+            print(f"{current_app.config['FLASK_APP_NAME']} DB import failed to the host `{host}`. Status code:", response.status_code, '\n', response.content.decode())
+            logger.error(f"{current_app.config['FLASK_APP_NAME']} DB import failed to the host `{host}`.\nDB_IMPORT_ERR: {response.content.decode()}")
+    except requests.exceptions.RequestException as e:
+        print("Import failed. Error:", e)
+
+
 def help_command():
     """
     Command-line utility to display help information about available commands.
@@ -293,10 +368,12 @@ def help_command():
     print("2. all-users: Retrieve and print all users' details.")
     print("3. all-tags: Retrieve and print all tags' details.")
     print("4. create-indrajit: Create the admin Indrajit Ghosh and his associated details.")
+    print("5. export-db: Export the mindcanvas db in a `mindcanvas_db.json` file.")
+    print("6. import-db: Import mindcanvas db from a json file obtained from option 5.")
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Command-line utility for managing Flask application.')
-    parser.add_argument('command', type=str, nargs='?', help='Command to execute (e.g., setup-db, all-users, all-tags, create-indrajit, help)')
+    parser = argparse.ArgumentParser(description='Command-line utility for managing MindCanvas.')
+    parser.add_argument('command', type=str, nargs='?', help='Command to execute (e.g., setup-db, all-users, all-tags, create-indrajit, export-db, help)')
     args = parser.parse_args()
 
     if args.command == 'help':
