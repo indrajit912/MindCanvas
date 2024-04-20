@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 bullet_unicode = '\u2022'
 
 DEFAULT_HOST = "http://localhost:8080"
-old_mindcanvas_file = Path(__file__).parent.resolve() / "app_data" / "mindcanvas_data.json"
+old_mindcanvas_file = Config.APP_DATA_DIR / "mindcanvas_data.json"
 
 def create_demo_user():
     """
@@ -303,7 +303,7 @@ def export_db():
         )
 
         if response.status_code == 200:
-            with open('mindcanvas_db.json', 'w') as f:
+            with open(Config.APP_DATA_DIR / 'mindcanvas_db.json', 'w') as f:
                 json.dump(response.json(), f, indent=4)
             print(f"Data exported successfully from the host '{host}'!")
             logger.info(f"{current_app.config['FLASK_APP_NAME']} db exported from '{host}'")
@@ -332,7 +332,12 @@ def import_db():
         # Make the import api endpoint
         import_db_api_endpoint = host + '/api/import_db'
         # Load data from exported file
-        with open('mindcanvas_db.json', 'r') as f:
+        data_json_file = Config.APP_DATA_DIR / 'mindcanvas_db.json'
+        if not data_json_file.exists():
+            print(f"No '{data_json_file.name}' found at APP_DATA_DIR! First export the db.")
+            return
+        
+        with open(Config.APP_DATA_DIR / 'mindcanvas_db.json', 'r') as f:
             data = json.load(f)
 
         # Send POST request to import data
