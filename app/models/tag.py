@@ -7,13 +7,14 @@
 from app.extensions import db
 import uuid
 import random
-from scripts.utils import utcnow
+from scripts.utils import utcnow, sha256_hash
 
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(db.String(36), unique=True, nullable=False, default=lambda: uuid.uuid4().hex)
-    name = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    name_hash = db.Column(db.String(128), nullable=False)
     description = db.Column(db.Text, nullable=True)
     color_red = db.Column(db.Integer, default=lambda: random.randint(0, 255))
     color_green = db.Column(db.Integer, default=lambda: random.randint(0, 255))
@@ -28,7 +29,7 @@ class Tag(db.Model):
         """
         Initializes a new Tag instance.
         """
-        self.name = self.preprocess_tag_name(name)
+        self.name = name
         self.creator_id = creator_id
         self.color_red = color_red
         self.color_green = color_green
@@ -89,12 +90,19 @@ class Tag(db.Model):
         hex_color = '#{:02x}{:02x}{:02x}'.format(self.color_red, self.color_green, self.color_blue)
         return hex_color
     
+    def set_name_hash(self, tag_name:str):
+        """
+        It accepts the original name of the tag given by user and set the hash value of it
+        """
+        self.name_hash = sha256_hash(tag_name)
+    
     def json(self):
         """Return a dictionary representation of the tag."""
         return {
             'id': self.id,
             'uuid': self.uuid,
             'name': self.name,
+            'name_hash': self.name_hash,
             'description': self.description,
             'color_red': self.color_red,
             'color_green': self.color_green,

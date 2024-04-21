@@ -4,9 +4,10 @@
 
 from app.models.tag import Tag
 from app.extensions import db
-from scripts.utils import utcnow
+from scripts.utils import utcnow, sha256_hash
+from app.utils.encryption import encrypt
 
-def create_user_tag(name:str, creator_id:int, color_red:int=None, color_green:int=None, color_blue:int=None, description:str=None):
+def create_user_tag(name:str, creator_id:int, private_key, color_red:int=None, color_green:int=None, color_blue:int=None, description:str=None):
     """Create a new tag.
 
     Args:
@@ -27,7 +28,7 @@ def create_user_tag(name:str, creator_id:int, color_red:int=None, color_green:in
     
         # Check if a tag with the same name already exists for the given creator_id
         existing_tag_same_creator = Tag.query.filter(
-            (Tag.name == processed_name) &
+            (Tag.name_hash == sha256_hash(processed_name)) &
             (Tag.creator_id == creator_id)
         ).first()
         if existing_tag_same_creator:
@@ -35,13 +36,15 @@ def create_user_tag(name:str, creator_id:int, color_red:int=None, color_green:in
 
         # Create a new Tag
         new_tag = Tag(
-            name=name,
+            name=encrypt(processed_name, private_key),
             creator_id=creator_id,
             color_red=color_red,
             color_green=color_green,
             color_blue=color_blue,
             description=description
         )
+        # Set the name_hash
+        new_tag.set_name_hash(tag_name=processed_name)
 
         # Add the new_tag to the database
         db.session.add(new_tag)
@@ -54,7 +57,7 @@ def create_user_tag(name:str, creator_id:int, color_red:int=None, color_green:in
         return 500, {'error': error_message}
     
 
-def update_existing_tag(tag_id, name=None, color_red=None, color_green=None, color_blue=None, description=None):
+def update_existing_tag(tag_id, private_key, name=None, color_red=None, color_green=None, color_blue=None, description=None):
     """Update a tag.
 
     Args:
@@ -79,10 +82,11 @@ def update_existing_tag(tag_id, name=None, color_red=None, color_green=None, col
             processed_name = Tag.preprocess_tag_name(name)
 
             # Check if a tag with the same name already exists
-            existing_tag = Tag.query.filter_by(name=processed_name).first()
+            existing_tag = Tag.query.filter_by(name_hash=sha256_hash(processed_name)).first()
             if existing_tag:
                 return 400, {'message': 'Tag with the same name already exists'}
-            tag.name = name
+            tag.name = encrypt(processed_name, private_key)
+            tag.set_name_hash(processed_name)
 
         if color_red is not None:
             tag.color_red = color_red

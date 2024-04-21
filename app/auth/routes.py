@@ -20,8 +20,8 @@ from app.utils.tag_utils import create_user_tag, delete_existing_tag, update_exi
 from app.utils.decorators import logout_required
 from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
 from scripts.email_message import EmailMessage
-from app.utils.encryption import generate_derived_key_from_passwd, decrypt_user_private_key, encrypt, decrypt
-from scripts.utils import convert_utc_to_ist_str, format_years_ago
+from app.utils.encryption import generate_derived_key_from_passwd, decrypt_user_private_key, decrypt
+from scripts.utils import convert_utc_to_ist_str, format_years_ago, sha256_hash
 from config import EmailConfig
 
 import logging
@@ -349,13 +349,18 @@ def manage_tags(user_id):
     # Get the current user's tags
     user_tags = current_user.tags
 
+    # User's private key from session
+    user_private_key = session['current_user_private_key']
+
     # Count the total number of journal entries, tags, and words
     total_tags = len(user_tags)
 
     return render_template(
         'manage_tags.html',
         user_tags=user_tags,
-        convert_utc_to_ist_str=convert_utc_to_ist_str
+        convert_utc_to_ist_str=convert_utc_to_ist_str,
+        decrypt=decrypt,
+        private_key=user_private_key
     )
     
 @auth_bp.route('/users/<int:user_id>/add_entry', methods=['GET', 'POST'])
@@ -375,25 +380,20 @@ def add_entry(user_id):
         # Split the input string to get a list of tags
         tags_for_the_new_entry = [Tag.preprocess_tag_name(tag.strip()) for tag in form.tags.data.split(',') if tag.strip()]
 
-        # Encrypt the journal_entry title and content
         # Get the current_user's private key from session
         user_private_key = session['current_user_private_key']
 
-        # Encrypt the JournalEntry title and content
-        _title = encrypt(data=form.title.data, key=user_private_key)
-        _content = encrypt(data=form.content.data, key=user_private_key)
-
         # Create a json body for the new entry
         entry_json = {
-            "title": _title,
-            "content": _content,
+            "title": form.title.data,
+            "content": form.content.data,
             "author_id": current_user.id,
             "tags": tags_for_the_new_entry,
             "locked": form.locked.data
         }
 
         # Create the entry!
-        status_code, message = create_journal_entry(**entry_json)
+        status_code, message = create_journal_entry(**entry_json, private_key=user_private_key)
 
         # Check the response status code and flash messages accordingly
         if status_code == 201:
@@ -425,6 +425,9 @@ def create_tag(user_id):
     # Tags those are already created by the current_user
     user_tags = current_user.tags
 
+    # User's private key from session
+    user_private_key = session['current_user_private_key']
+
     if form.validate_on_submit():
         # Get the data
         tag_name = Tag.preprocess_tag_name(form.name.data)
@@ -442,7 +445,7 @@ def create_tag(user_id):
             "creator_id": current_user.id
         }
 
-        if tag_name in [t.name for t in user_tags]:
+        if sha256_hash(tag_name) in [t.name_hash for t in user_tags]:
             # Redirect
             form.name.data = tag_name
             form.description.data = description
@@ -451,11 +454,11 @@ def create_tag(user_id):
             form.color_blue.data = color_blue
 
             flash(f"The name '{tag_name}' is already in your tag list!", 'info')
-            return render_template('create_tag.html', form=form, user_tags=user_tags)
+            return render_template('create_tag.html', form=form, user_tags=user_tags, decrypt=decrypt, private_key=user_private_key)
 
 
         # Create the tag
-        status_code, message = create_user_tag(**tag_data)
+        status_code, message = create_user_tag(**tag_data, private_key=user_private_key)
 
         # Check the response status code and flash messages accordingly
         if status_code == 201:
@@ -477,7 +480,7 @@ def create_tag(user_id):
         form = CreateNewTagForm(formdata=None)
 
     # Render the add entry form template
-    return render_template('create_tag.html', form=form, user_tags=user_tags)
+    return render_template('create_tag.html', form=form, user_tags=user_tags, decrypt=decrypt, private_key=user_private_key)
 
 
 # Route to handle the POST request to delete a Tag
@@ -626,21 +629,17 @@ def edit_entry():
     # Get the current_user's private_key from session
     user_private_key = session['current_user_private_key']
 
-    # Encrypt the JournalEntry title and content
-    _title = encrypt(data=entry_title, key=user_private_key)
-    _content = encrypt(data=entry_content, key=user_private_key)
-
     # Make the journal_entry json
     entry_data = {
         "journal_entry_id": journal_entry.id,
-        "title": _title,
-        "content": _content,
+        "title": entry_title,
+        "content": entry_content,
         "tags": entry_tags,
         "locked": entry_locked
     }
 
     # Update the JournalEntry!
-    status_code, message = update_existing_journal_entry(**entry_data)
+    status_code, message = update_existing_journal_entry(**entry_data, private_key=user_private_key)
 
     # Check the response status code and flash messages accordingly
     if status_code == 200:
@@ -665,6 +664,9 @@ def update_tag():
     # Get the Tag by ID
     tag = Tag.query.get_or_404(tag_id)
 
+    # Get current user's private_key from session
+    user_private_key = session['current_user_private_key']
+
     # Make sure that the current_user is the creator of this journal entry
     if not tag.creator_id == current_user.id:
         abort(403)
@@ -684,10 +686,10 @@ def update_tag():
     }
 
     # Check whether the user has changed the tag name
-    tag_data["name"] = None if tag_name == tag.name else tag_name
+    tag_data["name"] = None if sha256_hash(tag_name) == tag.name_hash else tag_name
   
     # Update tag!
-    status_code, message = update_existing_tag(**tag_data)
+    status_code, message = update_existing_tag(**tag_data, private_key=user_private_key)
 
     # Check the response status code and flash messages accordingly
     if status_code == 200:

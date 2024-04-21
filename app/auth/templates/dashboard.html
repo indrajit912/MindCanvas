@@ -91,7 +91,7 @@
                         {% if user.tags %}
                         {% for tag in user.tags %}
                         <a href="{{ url_for('auth.get_journal_entries_by_tag', user_id=current_user.id, tag_id=tag.id) }}" style="text-decoration: none;">
-                            <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+                            <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ decrypt(tag.name, private_key) }}</span>
                         </a> 
                         {% endfor %}
                         {% else %}

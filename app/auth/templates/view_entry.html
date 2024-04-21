@@ -19,7 +19,7 @@
                     {% for tag in entry.tags %}
                     <a href="{{ url_for('auth.get_journal_entries_by_tag', user_id=current_user.id, tag_id=tag.id) }}"
                         style="text-decoration: none;">
-                        <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+                        <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ decrypt(tag.name, private_key) }}</span>
                     </a>
                     {% endfor %}
                 </div>
@@ -103,15 +103,15 @@
 
                         <label for="tags" class="form-label"><code>Tags</code></label>
                         <input type="tags" class="form-control" id="tags" name="tags"
-                            value="{% for tag in entry.tags %}{{ tag.name }}{% if not loop.last %}, {% endif %}{% endfor %}"
+                            value="{% for tag in entry.tags %}{{ decrypt(tag.name, private_key) }}{% if not loop.last %}, {% endif %}{% endfor %}"
                             required>
                         <!-- Dropdown menu for user_tags -->
                         <div class="col-auto">
                             <select id="entrytagsDropdown" class="form-control" multiple onchange="updateEntryTags()">
                                 <option value="" selected disabled>Select your tags</option>
                                 {% for tag in user_tags %}
-                                <option value="{{ tag.name }}" data-color="{{ tag.color_hex() }}">
-                                    {{ tag.name }}
+                                <option value="{{ decrypt(tag.name, private_key) }}" data-color="{{ tag.color_hex() }}">
+                                    {{ decrypt(tag.name, private_key) }}
                                 </option>
                                 {% endfor %}
                             </select>

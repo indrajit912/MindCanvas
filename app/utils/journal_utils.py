@@ -5,10 +5,11 @@
 from app.models.journal_entry import JournalEntry
 from app.models.tag import Tag
 from app.extensions import db
-from scripts.utils import utcnow
+from app.utils.encryption import encrypt
+from scripts.utils import utcnow, sha256_hash
 
 
-def create_journal_entry(title:str, content:str, author_id:int, tags:list=None, locked=False, favourite=False):
+def create_journal_entry(title:str, content:str, author_id:int, private_key:str, tags:list=None, locked=False, favourite=False):
     """Create a new journal entry.
 
     Args:
@@ -26,8 +27,8 @@ def create_journal_entry(title:str, content:str, author_id:int, tags:list=None, 
     try:
         # Create a new Journal Entry
         new_journal_entry = JournalEntry(
-            title=title,
-            content=content,
+            title=encrypt(title, private_key),
+            content=encrypt(content, private_key),
             author_id=author_id,
             locked=locked,
             favourite=favourite
@@ -38,19 +39,24 @@ def create_journal_entry(title:str, content:str, author_id:int, tags:list=None, 
 
         # Add tags to the journal entry
         if tags:
+            # Make sure there are not repeated tags in `tags`; may be use `set()`
+            tags = list(set(tags))
+
             for tag_name in tags:
-                # Getting the tags of the user with creator_id == author_id and name == tag_name
-                tag = Tag.query.filter_by(name=tag_name, creator_id=author_id).first()
+                # Getting the tag of the user with the tag_name
+                tag = Tag.query.filter_by(creator_id=author_id, name_hash=sha256_hash(tag_name)).first()
                 if not tag:
                     # If tag does not exist, create a new tag
                     tag = Tag(
-                        name=tag_name, 
+                        name=encrypt(data=tag_name, key=private_key), 
                         creator_id=author_id,
                         color_red=128,
                         color_green=128,
                         color_blue=128
                     )
+                    tag.set_name_hash(tag_name=tag_name)
                     db.session.add(tag)
+                    
                 new_journal_entry.tags.append(tag)
 
         # Add the new_journal_entry to the session
@@ -68,7 +74,7 @@ def create_journal_entry(title:str, content:str, author_id:int, tags:list=None, 
     
 
 
-def update_existing_journal_entry(journal_entry_id, title=None, content=None, locked=None, favourite=None, tags=None):
+def update_existing_journal_entry(journal_entry_id, private_key, title=None, content=None, locked=None, favourite=None, tags=None):
     """Update a journal entry.
 
     Args:
@@ -89,9 +95,9 @@ def update_existing_journal_entry(journal_entry_id, title=None, content=None, lo
 
         # Update attributes if provided
         if title is not None:
-            journal_entry.title = title
+            journal_entry.title = encrypt(data=title, key=private_key)
         if content is not None:
-            journal_entry.content = content
+            journal_entry.content = encrypt(data=content, key=private_key)
         if locked is not None:
             journal_entry.locked = locked
         if favourite is not None:
@@ -101,19 +107,20 @@ def update_existing_journal_entry(journal_entry_id, title=None, content=None, lo
         _tags_to_add = []
         if tags:
             for tag_name in tags:
-                tag = Tag.query.filter_by(name=tag_name, creator_id=journal_entry.author_id).first()
+                tag = Tag.query.filter_by(name_hash=sha256_hash(tag_name), creator_id=journal_entry.author_id).first()
+
                 if not tag:
                     # If tag does not exist, create a new tag
                     tag = Tag(
-                        name=tag_name,
+                        name=encrypt(tag_name, private_key),
                         creator_id=journal_entry.author_id,
                         color_red=128,
                         color_green=128,
                         color_blue=128
                     )
+                    tag.set_name_hash(tag_name=tag_name)
                     db.session.add(tag)
                 _tags_to_add.append(tag)
-
             journal_entry.tags = _tags_to_add
 
         journal_entry.last_updated = utcnow()
@@ -125,6 +132,7 @@ def update_existing_journal_entry(journal_entry_id, title=None, content=None, lo
         db.session.rollback()
         error_message = f"An error occurred while updating the journal entry: {e}"
         return 500, {'error': error_message}
+
 
 def delete_journal_entry(journal_entry_id:int):
     """Delete a journal entry.

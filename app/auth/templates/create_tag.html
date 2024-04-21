@@ -36,7 +36,7 @@
             <h2 class="mb-3">Your Tags</h2>
             <ul class="list-group">
                 {% for tag in user_tags %}
-                <li class="list-group-item"><span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span></li>
+                <li class="list-group-item"><span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ decrypt(tag.name, private_key) }}</span></li>
                 {% endfor %}
             </ul>
         </div>
