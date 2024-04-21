@@ -30,7 +30,6 @@ cli = FlaskGroup(create_app=create_app)
 logger = logging.getLogger(__name__)
 bullet_unicode = '\u2022'
 
-DEFAULT_HOST = "http://localhost:8080"
 old_mindcanvas_file = Config.APP_DATA_DIR / "mindcanvas_data.json"
 
 def create_demo_user():
@@ -157,7 +156,7 @@ def all_tags():
             print("No tags found!")
 
 
-def _create_indrajit_tags():
+def _create_indrajit_tags(private_key):
     """
     Creates a number of records for Tag. These are used by Indrajit.
     """
@@ -169,13 +168,14 @@ def _create_indrajit_tags():
     
     for tag_data in default_tags:
         tag = Tag(
-            name=tag_data['name'],
+            name=encrypt(tag_data['name'], private_key),
             description=tag_data['description'],
             color_red=tag_data['color_red'],
             color_green=tag_data['color_green'],
             color_blue=tag_data['color_blue'],
             creator_id=indrajit_user.id
         )
+        tag.set_name_hash(tag_data['name'])
         db.session.add(tag)
 
 
@@ -262,7 +262,7 @@ def create_indrajit():
                 logger.info("Admin Indrajit created successfully!")
 
                 # Create all default tags of Indrajit
-                _create_indrajit_tags()
+                _create_indrajit_tags(private_key=indrajit_key)
 
                 # Create old entries if the old data path exists
                 if old_mindcanvas_file.exists():

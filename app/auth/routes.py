@@ -372,6 +372,9 @@ def add_entry(user_id):
 
     form = AddEntryForm()
 
+    # Get the current_user's private key from session
+    user_private_key = session['current_user_private_key']
+
     # Tags those are already created by the current_user
     user_tags = current_user.tags
 
@@ -379,9 +382,6 @@ def add_entry(user_id):
 
         # Split the input string to get a list of tags
         tags_for_the_new_entry = [Tag.preprocess_tag_name(tag.strip()) for tag in form.tags.data.split(',') if tag.strip()]
-
-        # Get the current_user's private key from session
-        user_private_key = session['current_user_private_key']
 
         # Create a json body for the new entry
         entry_json = {
@@ -410,7 +410,7 @@ def add_entry(user_id):
         form = AddEntryForm(formdata=None)
 
     # Render the add entry form template
-    return render_template('add_entry.html', form=form, user_tags=user_tags)
+    return render_template('add_entry.html', form=form, user_tags=user_tags, decrypt=decrypt, private_key=user_private_key)
 
 
 @auth_bp.route('/users/<int:user_id>/create_tag', methods=['GET', 'POST'])
@@ -517,6 +517,9 @@ def toggle_entry_lock():
     journal_entry_id  = request.form.get('journal_entry_id')
     destination = request.form.get('destination')
 
+    # Get the current_user's private key from session
+    user_private_key = session['current_user_private_key']
+
     # Get the JournalEntry by ID
     journal_entry = JournalEntry.query.get_or_404(journal_entry_id)
 
@@ -533,7 +536,7 @@ def toggle_entry_lock():
         }
 
         # Update the JournalEntry!
-        status_code, message = update_existing_journal_entry(**payload)
+        status_code, message = update_existing_journal_entry(**payload, private_key=user_private_key)
         
         if status_code == 200:
             logger.info(f"`{current_user.username}` changed the `locked` status of one of their JournalEntry.")
@@ -558,6 +561,9 @@ def toggle_entry_favourite():
     # Get the JournalEntry by ID
     journal_entry = JournalEntry.query.get_or_404(journal_entry_id)
 
+    # Get the current_user's private key from session
+    user_private_key = session['current_user_private_key']
+
     # Make sure that the current_user is the author of this journal entry
     if not journal_entry.author_id == current_user.id:
         abort(403)
@@ -569,7 +575,7 @@ def toggle_entry_favourite():
     }
 
     # Update the JournalEntry!
-    status_code, message = update_existing_journal_entry(**payload)
+    status_code, message = update_existing_journal_entry(**payload, private_key=user_private_key)
         
     if status_code == 200:
         logger.info(f"`{current_user.username}` changed the `favourite` status of one of their JournalEntry.")
@@ -865,6 +871,7 @@ def register_user(token):
 @auth_bp.route('/search/<int:user_id>', methods=['GET'])
 @login_required
 def search(user_id):
+    # TODO: This is not working properly! It fails if you click the search icon twice in a row.
     # Check if the current user is authorized to access the search functionality
     if not current_user.id == user_id:
         abort(403)

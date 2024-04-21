@@ -54,13 +54,13 @@
                         {% if entry.locked and not session.get('entries_unlocked') %}
                         <p class="card-text">This entry is locked. Click on the lock icon to unlock it.</p>
                         {% else %}
-                        <p class="card-text">{{ decrypt(entry.content, private_key)[:100] }}...</p>
+                        <p class="card-text">{{ decrypt(entry.content, private_key)[:100] | safe }}</p>
                         {% endif %}
 
                         {% if not entry.locked or session.get('entries_unlocked') %}
                         <div class="tags mt-2">
                             {% for tag in entry.tags %}
-                            <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ tag.name }}</span>
+                            <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ decrypt(tag.name, private_key) }}</span>
                             {% endfor %}
                         </div>
 

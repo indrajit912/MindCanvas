@@ -53,8 +53,8 @@
                 <select id="usertagsDropdown" class="form-select" size="10" multiple onchange="updateUserTags()">
                     
                     {% for tag in user_tags %}
-                        <option value="{{ tag.name }}" data-color="{{ tag.color_hex() }}">
-                            {{ tag.name }}
+                        <option value="{{ decrypt(tag.name, private_key) }}" data-color="{{ tag.color_hex() }}">
+                            {{ decrypt(tag.name, private_key) }}
                         </option>
                     {% endfor %}
                 </select>
