@@ -261,18 +261,6 @@ def create_indrajit():
                 print("Admin Indrajit created successfully!")
                 logger.info("Admin Indrajit created successfully!")
 
-                # Create all default tags of Indrajit
-                _create_indrajit_tags(private_key=indrajit_key)
-
-                # Create old entries if the old data path exists
-                if old_mindcanvas_file.exists():
-                    _create_indrajit_mindcanvas_old_entries(file_path=old_mindcanvas_file, private_key=indrajit_key)
-                    print("Indrajit's old journal entries created successfully!")
-                    logger.info("Indrajit's old journal entries created successfully!")
-
-                print("Indrajit's default tags created successfully!")
-                logger.info("Indrajit's default tags created successfully!")
-
                 db.session.commit()
 
         except Exception as e:
