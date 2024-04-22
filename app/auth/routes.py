@@ -699,8 +699,11 @@ def update_tag():
 
     # Check the response status code and flash messages accordingly
     if status_code == 200:
-        logger.info("Tag updated by `{current_user.username}`.")
+        logger.info(f"Tag updated by `{current_user.username}`.")
         flash('Tag updated successfully!', 'success')
+    elif status_code == 400:
+        logger.error(f"Error occurred while updating tag. ERROR {message['message']}")
+        flash(message=message['message'], category='error')
         
     else:
         logger.error(f"`{current_user.username}` tried to update a Tag but error occurred. Response content: {message}")

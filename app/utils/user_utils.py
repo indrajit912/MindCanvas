@@ -244,20 +244,9 @@ def get_decrypted_entry(entry:JournalEntry, key:str):
         'last_updated': JournalEntry.format_datetime_to_str(entry.last_updated),
         'author_id': entry.author_id,
         'tags': [
-            {
-                "name": decrypt(tag.name, key),
-                'name_hash': tag.name_hash,
-                'description': tag.description,
-                'color_red': tag.color_red,
-                'color_green': tag.color_green,
-                'color_blue': tag.color_blue,
-                'color_hex': tag.color_hex(), 
-                'creator_id': tag.creator_id,
-                'date_created': Tag.format_datetime_to_str(tag.date_created),
-                'last_updated': Tag.format_datetime_to_str(tag.last_updated)
-            }
+            decrypt(tag.name, key)
             for tag in entry.tags
-        ] # TODO: decrypt the tag.name only!
+        ]
     }
 
 
@@ -360,10 +349,14 @@ def _create_journal_entry(entry_data, user, user_private_key):
 
     # Add tags to the journal entry
     if 'tags' in entry_data:
-        for tag_data in entry_data['tags']:
-            tag = Tag.query.filter_by(name_hash=sha256_hash(tag_data['name']), creator_id=user.id).first()
+        for tag_name in entry_data['tags']:
+            tag = Tag.query.filter_by(name_hash=sha256_hash(tag_name), creator_id=user.id).first()
             if not tag:
-                tag = _create_tag(tag_data, user, user_private_key)
+                tag = Tag(
+                    name=encrypt(tag_name, user_private_key),
+                    creator_id=user.id
+                )
+                tag.set_name_hash(tag_name)
                 db.session.add(tag)
             journal_entry.tags.append(tag)
 
