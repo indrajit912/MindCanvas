@@ -322,6 +322,7 @@ def _create_tag(tag_data, user, user_private_key):
         color_red=tag_data['color_red'],
         color_green=tag_data['color_green'],
         color_blue=tag_data['color_blue'],
+        description=tag_data['description'],
         date_created=convert_str_to_datetime_utc(tag_data['date_created']),
         last_updated=convert_str_to_datetime_utc(tag_data['last_updated']),
         creator_id=user.id
