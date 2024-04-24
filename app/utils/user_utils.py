@@ -67,7 +67,7 @@ def create_new_user(fullname:str, email:str, username:str, password:str, email_v
         db.session.rollback()
         error_message = f"An error occurred while creating the user: {e}"
         return 500, {'error': error_message}
-    
+
 
 def update_user(user_id, data: dict):
     try:
@@ -82,24 +82,24 @@ def update_user(user_id, data: dict):
             ).first()
             if existing_user:
                 if existing_user.email == data.get('email'):
-                    return 400, {'message': 'email_taken'}
+                    return 400, {'message': 'Email id is already taken by some other user!'}
                 else:
-                    return 400, {'message': 'username_taken'}
+                    return 400, {f'message': 'Username "{existing_user.username}" is taken by someone else!'}
 
         # Update the user attributes if provided in the request
-        if 'fullname' in data:
+        if data.get('fullname') is not None:
             user.fullname = data.get('fullname')
-        if 'email' in data:
+        if data.get('email') is not None:
             user.email = data.get('email')
             user.email_verified = False
-        if 'username' in data:
+        if data.get('username') is not None:
             user.username = data.get('username')
-        if 'is_admin' in data:
+        if data.get('is_admin') is not None:
             user.is_admin = data.get('is_admin')
-        if 'email_verified' in data:
+        if data.get('email_verified') is not None:
             user.email_verified = data.get('email_verified')
-        if 'password' in data:
-            return 400, {"message": "password-not-accepted"}
+        if data.get('password'):
+            return 400, {"message": "Password cannot be updated."}
 
         # Change last updated info
         user.last_updated = utcnow()
@@ -112,7 +112,7 @@ def update_user(user_id, data: dict):
     except SQLAlchemyError as e:
         # Rollback changes if an exception occurs
         db.session.rollback()
-        return 500, {'message': 'An error occurred while updating user data'}
+        return 500, {'message': f'An error occurred while updating user data. ERROR: {str(e)}'}
 
 
 def update_user_last_seen(user_id):
@@ -304,6 +304,7 @@ def import_user_data(data: dict):
         return 500, {'message': str(e)}
     except Exception as e:
         return 500, {'message': str(e)}
+
 
 def _create_tag(tag_data, user, user_private_key):
     """

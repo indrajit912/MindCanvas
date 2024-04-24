@@ -11,6 +11,7 @@ from app.models.user import User
 from app.models.tag import Tag
 from app.models.journal_entry import JournalEntry
 from app.extensions import db
+from app.utils.user_utils import update_user
 from app.utils.decorators import token_required
 from scripts.utils import utcnow
 
@@ -91,8 +92,38 @@ class UserResource(Resource):
         return new_user.json(), 200
 
     @token_required
-    def put(self, user_id): 
+    def put(self, user_id):
+        """
+        Update user information.
 
+        Updates the user information based on the provided data. The request body should contain 
+        optional fields to update the user's fullname, email, username, is_admin, and email_verified status.
+
+        Example Request:
+        PUT /users/<user_id>
+        {
+            "fullname": "John Doe",
+            "email": "john@example.com",
+            "username": "johndoe",
+            "is_admin": true,
+            "email_verified": false
+        }
+
+        - Requires a bearer token in the request header for authentication. For example,
+            headers = {
+              'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"
+            }
+
+        If the 'password' field is included in the request, it returns a 400 error response with 
+        the message "Password cannot be updated through this API.".
+
+        Returns:
+            - If the user is updated successfully, returns a 200 response with a message:
+              {'message': 'User updated successfully'}.
+            - If an error occurs during the update process, returns an error response with the appropriate status code 
+              and error message.
+
+        """
         parser = reqparse.RequestParser()
         parser.add_argument('fullname', type=str)
         parser.add_argument('email', type=str)
@@ -103,42 +134,17 @@ class UserResource(Resource):
 
         args = parser.parse_args()
 
-        # Retrieve the user to update
-        user = User.query.get_or_404(user_id)
+        if args['password']:
+            return {"message": "Password cannot be updated through this API."}, 400
 
-        # Check if the email or username is already in use by another user
-        if args.get('email') or args.get('username'):
-            existing_user = User.query.filter(
-                (User.id != user_id) &
-                ((User.username == args.get('username')) | (User.email == args.get('email')))
-            ).first()
-            if existing_user:
-                if existing_user.email == args.get('email'):
-                    return {'message': 'User with this email already exists'}, 400
-                else:
-                    return {'message': 'User with this username already exists'}, 400
+        status_code, message = update_user(user_id=user_id, data=args)
 
-        # Update the user attributes if provided in the request
-        if args.get('fullname'):
-            user.fullname = args.get('fullname')
-        if args.get('email'):
-            user.email = args.get('email')
-        if args.get('username'):
-            user.username = args.get('username')
-        if args.get('is_admin') is not None:
-            user.is_admin = args.get('is_admin')
-        if args.get('email_verified') is not None:
-            user.email_verified = args.get('email_verified')
-        if args.get('password'):
-            return {"message": "Password cannot be updated through this api."}, 400
+        if status_code == 200:
+            return {'message': 'User updated successfully'}, 200
+        else:
+            return message, status_code
 
-        # Change last updated info
-        user.last_updated = utcnow()
 
-        # Commit changes to the database
-        db.session.commit()
-
-        return {'message': 'User updated successfully'}, 200
 
     @token_required
     def delete(self, user_id):
@@ -184,6 +190,7 @@ class ChangeUserPassword(Resource):
         
         return {'message': 'Password changed successfully.'}, 200
     
+
     
 class UpdateLastSeen(Resource):
     """
