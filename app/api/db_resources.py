@@ -12,7 +12,7 @@ from flask_restful import Resource, reqparse
 
 # Local application imports
 from app.extensions import db
-from app.models.journal_entry import JournalEntry
+from app.models.journal_entry import JournalEntry, journal_entry_tag_association
 from app.models.tag import Tag
 from app.models.user import User
 from app.utils.decorators import token_required
@@ -83,6 +83,7 @@ class ExportDBResource(Resource):
 
 
 class ImportDBResource(Resource):
+    @token_required
     def post(self):
         try:
             # Drop all data from tables
@@ -93,6 +94,11 @@ class ImportDBResource(Resource):
             db.session.query(User).filter(User.id != demo_user.id).delete()
             db.session.query(Tag).delete()
             db.session.query(JournalEntry).delete()
+
+            # Delete content from the association table
+            db.session.execute(journal_entry_tag_association.delete())
+
+            # Commit the changes
             db.session.commit()
             
             parser = reqparse.RequestParser()

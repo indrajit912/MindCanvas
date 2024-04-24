@@ -5,7 +5,9 @@
 # Date: Mar 24, 2024
 #
 import hashlib
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
+from tabulate import tabulate
 
 def count_words(text):
     """
@@ -113,3 +115,43 @@ def format_years_ago(date):
         return f"{year_difference} years ago"
     else:
         return "This year"
+
+
+def select_json_file(directory):
+    """
+    Prompt the user to select a JSON file from the specified directory.
+
+    Parameters:
+        directory (str or Path): The directory containing JSON files.
+
+    Returns:
+        Path: The selected JSON file.
+    """
+    directory = Path(directory)
+    
+    # List all JSON files in the directory
+    json_files = [file for file in directory.iterdir() if file.suffix == '.json']
+
+    # Construct list of lists for tabulate
+    table_data = [[idx, file.name] for idx, file in enumerate(json_files, start=1)]
+
+    # Print the table using tabulate
+    print("\nAvailable JSON files:")
+    print(tabulate(table_data, headers=["Index", "File Name"], tablefmt="grid"))
+
+    # Prompt the user to choose a file
+    while True:
+        selected_file_index = input("\nEnter the `index` of the file (or 'q' to quit): ")
+        if selected_file_index.lower() == 'q':
+            return None
+
+        try:
+            selected_file_index = int(selected_file_index)
+            if 1 <= selected_file_index <= len(json_files):
+                selected_file = json_files[selected_file_index - 1]
+                print(f"Selected file: {selected_file.name}")
+                return selected_file
+            else:
+                print("Invalid input. Please enter a valid number or 'q' to quit.")
+        except ValueError:
+            print("Invalid input. Please enter a valid number or 'q' to quit.")

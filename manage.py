@@ -6,8 +6,10 @@
 # Standard library imports
 import argparse
 import json
+import os
 import logging
 import sys
+from datetime import datetime
 
 # Third-party imports
 import pwinput
@@ -25,6 +27,7 @@ from app.models.user import User
 from app.utils.encryption import encrypt
 from config import Config, EmailConfig
 from scripts.app_defaults import default_tags
+from scripts.utils import select_json_file
 
 
 cli = FlaskGroup(create_app=create_app)
@@ -242,6 +245,7 @@ def create_indrajit():
 
 
 def _get_host():
+    os.system('clear')
     host = input("Specify the host (e.g- 'https://username.pythonanywhere.com'): ")
     if not host:
         host = 'http://localhost:' + str(current_app.config['PORT'])
@@ -263,7 +267,10 @@ def export_db():
         )
 
         if response.status_code == 200:
-            with open(Config.APP_DATA_DIR / 'mindcanvas_db.json', 'w') as f:
+            # Get today's date
+            today_date = datetime.now().strftime('%b_%d_%Y').lower()
+
+            with open(Config.APP_DATA_DIR / f'mindcanvas_db_{today_date}.json', 'w') as f:
                 json.dump(response.json(), f, indent=4)
             print(f"Data exported successfully from the host '{host}'!")
             logger.info(f"{current_app.config['FLASK_APP_NAME']} db exported from '{host}'.")
@@ -292,12 +299,12 @@ def import_db():
         # Make the import api endpoint
         import_db_api_endpoint = host + '/api/import_db'
         # Load data from exported file
-        data_json_file = Config.APP_DATA_DIR / 'mindcanvas_db.json'
-        if not data_json_file.exists():
-            print(f"No '{data_json_file.name}' found at APP_DATA_DIR! First export the db.")
+        data_json_file = select_json_file(directory=Config.APP_DATA_DIR)
+        if not data_json_file:
+            print("No JSON file selected. Aborting...")
             return
         
-        with open(Config.APP_DATA_DIR / 'mindcanvas_db.json', 'r') as f:
+        with open(data_json_file, 'r') as f:
             data = json.load(f)
 
         # Send POST request to import data
