@@ -175,13 +175,14 @@ def all_tags():
         None
     """
     with current_app.app_context():
+        os.system('clear')
         tags = Tag.query.all()
         if tags:
             tag_data = [
-                (tag.name, tag.color_rgb(), tag.creator.username, Tag.format_datetime_to_str(tag.date_created)) 
+                (tag.name[10:20], tag.name_hash[:17], tag.color_rgb(), tag.creator.username, Tag.format_datetime_to_str(tag.date_created)) 
                 for tag in tags
             ]
-            headers = ["Name", "Color", "Creator Username", "Date Created"]
+            headers = ["Name", "Hash", "Color", "Creator Username", "Date Created"]
             print(tabulate(tag_data, headers=headers, tablefmt="grid"))
         else:
             print("No tags found!")

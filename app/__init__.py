@@ -18,7 +18,8 @@ from .extensions import db, migrate, login_manager, ckeditor
 def configure_logging(app:Flask):
     logging.basicConfig(
         format='[%(asctime)s] %(levelname)s %(name)s: %(message)s',
-        filename=str(LOG_FILE)
+        filename=str(LOG_FILE),
+        datefmt='%d-%b-%Y %I:%M:%S %p'
     )
 
     if app.debug:
