@@ -13,7 +13,7 @@
                 <h5 class="card-title">
                     <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ decrypt(tag.name, private_key) }}</span>
                 </h5>
-                <p class="card-text">{{ tag.description }}</p>
+                <p class="card-text">{{ decrypt(tag.description, private_key) }}</p>
                 <a href="{{ url_for('auth.manage_tags', user_id=current_user.id) }}"
                     class="icon-link icon-link-hover text-secondary me-2">
                     <i class="bi bi-tags"></i> Manage Tags

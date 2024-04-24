@@ -204,7 +204,7 @@ def export_user_data(user_id:int, private_key:str):
             {
                 "name": decrypt(tag.name, private_key),
                 'name_hash': tag.name_hash,
-                'description': tag.description,
+                'description': decrypt(tag.description, private_key),
                 'color_red': tag.color_red,
                 'color_green': tag.color_green,
                 'color_blue': tag.color_blue,
@@ -270,6 +270,13 @@ def import_user_data(data: dict):
             if not user_private_key:
                 return 400, {"message": "User's private key required!"}
             
+            # Update user data
+            if 'user' in data:
+                user_data = data['user']
+                user.fullname = user_data['fullname']
+                user.date_joined = convert_str_to_datetime_utc(user_data['date_joined'])
+                logger.debug(f"User's fullname and date_joined updated from the json.")
+            
             # Check if 'journal_entries' and 'tags' are present in the JSON
             if 'journal_entries' not in data or 'tags' not in data:
                 return 400, {'message': 'Invalid JSON format'}
@@ -280,11 +287,15 @@ def import_user_data(data: dict):
                 if not tag:
                     tag = _create_tag(tag_data, user, user_private_key)
                     db.session.add(tag)
+            
+            logger.info(f"All Tags added from the json.")
 
             # Import Journal Entries
             for entry_data in data['journal_entries']:
                 journal_entry = _create_journal_entry(entry_data, user, user_private_key)
                 db.session.add(journal_entry)
+            
+            logger.debug(f"All JournalEntries added from the json.")
 
         return 200, {'message': 'Data imported successfully'}
 
@@ -306,12 +317,13 @@ def _create_tag(tag_data, user, user_private_key):
     Returns:
         Tag: Created Tag object.
     """
+    logger.debug(f"Adding tag with description: {tag_data['description']}")
     tag = Tag(
         name=encrypt(tag_data['name'], user_private_key),
         color_red=tag_data['color_red'],
         color_green=tag_data['color_green'],
         color_blue=tag_data['color_blue'],
-        description=tag_data['description'],
+        description=encrypt(tag_data['description'], user_private_key),
         date_created=convert_str_to_datetime_utc(tag_data['date_created']),
         last_updated=convert_str_to_datetime_utc(tag_data['last_updated']),
         creator_id=user.id
@@ -336,6 +348,7 @@ def _create_journal_entry(entry_data, user, user_private_key):
     _date_created = convert_str_to_datetime_utc(entry_data['date_created'])
     _last_updated = convert_str_to_datetime_utc(entry_data['last_updated'])
 
+
     journal_entry = JournalEntry(
         title=_title,
         content=_content,
@@ -350,6 +363,7 @@ def _create_journal_entry(entry_data, user, user_private_key):
     # Add tags to the journal entry
     if 'tags' in entry_data:
         for tag_name in entry_data['tags']:
+            tag_name = tag_name['name'] if isinstance(tag_name, dict) else tag_name
             tag = Tag.query.filter_by(name_hash=sha256_hash(tag_name), creator_id=user.id).first()
             if not tag:
                 tag = Tag(
@@ -358,6 +372,7 @@ def _create_journal_entry(entry_data, user, user_private_key):
                 )
                 tag.set_name_hash(tag_name)
                 db.session.add(tag)
+
             journal_entry.tags.append(tag)
 
     return journal_entry

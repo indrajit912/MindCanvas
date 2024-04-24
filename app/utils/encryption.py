@@ -89,12 +89,10 @@ def decrypt_user_private_key(encrypted_private_key, derived_key):
 
 
 def encrypt(data:str, key):
-    fernet = Fernet(key)
-    return fernet.encrypt(data.encode()).decode()
+    return Fernet(key).encrypt(data.encode()).decode() if data else None
 
 def decrypt(encrypted_data:str, key):
-    fernet = Fernet(key)
-    return fernet.decrypt(encrypted_data).decode()
+    return Fernet(key).decrypt(encrypted_data).decode() if encrypted_data else None
 
 
 def main():

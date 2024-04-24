@@ -250,7 +250,8 @@ def create_indrajit():
                     username = indrajit_data['username'],
                     fullname=indrajit_data['fullname'],
                     email=indrajit_data['email'],
-                    is_admin=True
+                    is_admin=True,
+                    email_verified=True
                 )
                 indrajit.set_hashed_password(indrajit_passwd)
                 indrajit_key = Fernet.generate_key()

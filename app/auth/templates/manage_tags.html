@@ -56,7 +56,7 @@
                                 <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ decrypt(tag.name, private_key)
                                     }}</span>
                                 <br>
-                                {{ tag.description }}
+                                {{ decrypt(tag.description, private_key) }}
                                 <br><br>
                                 <strong>Created on:</strong> <span class="text-muted">{{
                                     convert_utc_to_ist_str(tag.date_created) }}</span>
@@ -127,7 +127,7 @@
 
                                         <label for="description" class="form-label"><strong>Description</strong></label>
                                         <textarea class="form-control" id="description" name="description" rows="3"
-                                            required>{{ tag.description }}</textarea>
+                                            required>{{ decrypt(tag.description, private_key) }}</textarea>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label"><strong>Color</strong></label>

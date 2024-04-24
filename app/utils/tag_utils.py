@@ -41,7 +41,7 @@ def create_user_tag(name:str, creator_id:int, private_key, color_red:int=None, c
             color_red=color_red,
             color_green=color_green,
             color_blue=color_blue,
-            description=description
+            description=encrypt(description, private_key) if description is not None else None
         )
         # Set the name_hash
         new_tag.set_name_hash(tag_name=processed_name)
@@ -98,7 +98,7 @@ def update_existing_tag(tag_id, private_key, name=None, color_red=None, color_gr
             tag.color_blue = color_blue
 
         if description is not None:
-            tag.description = description
+            tag.description = encrypt(description, private_key)
 
         tag.last_updated = utcnow()
 
