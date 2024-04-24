@@ -3,35 +3,38 @@
 # Created On: Mar 24, 2024
 # Modified On: Apr 18, 2024
 #
-
-from flask import render_template, url_for, flash, redirect, current_app, request, session, abort, jsonify, send_file
-from flask_login import login_user, login_required, current_user, logout_user
-from sqlalchemy import desc, extract
-
-from app.forms.auth_forms import UserLoginForm, EmailRegistrationForm, UserRegistrationForm
-from app.forms.user_forms import AddEntryForm, CreateNewTagForm
-from app.models.user import User
-from app.models.journal_entry import JournalEntry
-from app.models.tag import Tag
-from app.utils.user_utils import update_user_last_seen, create_new_user, export_user_data,\
-      import_user_data, update_user, change_user_password
-from app.utils.journal_utils import create_journal_entry, update_existing_journal_entry, delete_journal_entry
-from app.utils.tag_utils import create_user_tag, delete_existing_tag, update_existing_tag
-from app.utils.decorators import logout_required
-from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
-from scripts.email_message import EmailMessage
-from app.utils.encryption import generate_derived_key_from_passwd, decrypt_user_private_key, decrypt
-from scripts.utils import convert_utc_to_ist_str, format_years_ago, sha256_hash
-from config import EmailConfig
-
+# Standard library imports
+import json
 import logging
 import os
-from math import ceil
-import json
 from datetime import datetime
+from math import ceil
+
+# Third-party imports
+from flask import abort, current_app, flash, jsonify, redirect, render_template, request, send_file, session, url_for
+from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy import desc, extract
 from cryptography.fernet import InvalidToken
 
+# Local application imports
+from app.forms.auth_forms import EmailRegistrationForm, UserLoginForm, UserRegistrationForm
+from app.forms.user_forms import AddEntryForm, CreateNewTagForm
+from app.models.journal_entry import JournalEntry
+from app.models.tag import Tag
+from app.models.user import User
+from app.utils.decorators import logout_required
+from app.utils.encryption import decrypt, decrypt_user_private_key, generate_derived_key_from_passwd
+from app.utils.journal_utils import create_journal_entry, delete_journal_entry, update_existing_journal_entry
+from app.utils.tag_utils import create_user_tag, delete_existing_tag, update_existing_tag
+from app.utils.token import get_token_for_email_registration, confirm_email_registration_token
+from app.utils.user_utils import update_user_last_seen, create_new_user, export_user_data, import_user_data, update_user, change_user_password
+from config import EmailConfig
+from scripts.email_message import EmailMessage
+from scripts.utils import convert_utc_to_ist_str, format_years_ago, sha256_hash
+
+# Relative imports
 from . import auth_bp
+
 
 logger = logging.getLogger(__name__)
 
@@ -860,10 +863,7 @@ def register_user(token):
             return redirect(url_for('auth.login'))
         
         elif status_code == 400:
-            if message['message'] == 'email_taken':
-                flash('Email id has been taken already!', 'error')
-            if message['message'] == 'username_taken':
-                flash('Username already taken! Try with a different one!', 'error')
+            flash(message['message'], 'error')
         else:
             logger.error("Failed to register the user.")
             flash('Failed to register user. Please try again.', 'danger')

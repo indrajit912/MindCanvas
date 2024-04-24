@@ -4,10 +4,13 @@
 # Created On: Mar 24, 2024
 # 
 
-from app.extensions import db
-import uuid
+# Standard library imports
 import random
-from scripts.utils import utcnow, sha256_hash
+import uuid
+
+# Local application imports
+from app.extensions import db
+from scripts.utils import sha256_hash, utcnow
 
 
 class Tag(db.Model):

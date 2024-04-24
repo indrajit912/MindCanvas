@@ -2,11 +2,12 @@
 # Author: Indrajit Ghosh
 # Created On: Apr 18, 2024
 
+# Local application imports
+from app.extensions import db
 from app.models.journal_entry import JournalEntry
 from app.models.tag import Tag
-from app.extensions import db
 from app.utils.encryption import encrypt
-from scripts.utils import utcnow, sha256_hash
+from scripts.utils import sha256_hash, utcnow
 
 
 def create_journal_entry(title:str, content:str, author_id:int, private_key:str, tags:list=None, locked=False, favourite=False):

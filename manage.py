@@ -3,24 +3,27 @@
 # Created On: Mar 24, 2024
 #
 
-from flask import current_app
-from flask.cli import FlaskGroup
-import pwinput
-import sys
-import requests
+# Standard library imports
 import argparse
 import json
 import logging
-from cryptography.fernet import Fernet
-from tabulate import tabulate
-from config import EmailConfig
+import sys
 
-from app.extensions import db
+# Third-party imports
+import pwinput
+import requests
+from cryptography.fernet import Fernet
+from flask import current_app
+from flask.cli import FlaskGroup
+from tabulate import tabulate
+
+# Local application imports
 from app import create_app
-from app.models.user import User
+from app.extensions import db
 from app.models.tag import Tag
-from config import Config
+from app.models.user import User
 from app.utils.encryption import encrypt
+from config import Config, EmailConfig
 from scripts.app_defaults import default_tags
 
 

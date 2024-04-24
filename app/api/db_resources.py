@@ -3,14 +3,20 @@
 # Author: Indrajit Ghosh
 # Created On: Apr 19, 2024
 # 
+
+# Standard library imports
+import logging
+
+# Third-party imports
 from flask_restful import Resource, reqparse
-from app.models.user import User
+
+# Local application imports
+from app.extensions import db
 from app.models.journal_entry import JournalEntry
 from app.models.tag import Tag
+from app.models.user import User
 from app.utils.decorators import token_required
-from app.extensions import db
 from scripts.utils import convert_str_to_datetime_utc
-import logging
 
 logger = logging.getLogger(__name__)
 

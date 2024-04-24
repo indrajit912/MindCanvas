@@ -1,9 +1,17 @@
+# app/utils/encryption.py
+# Author: Indrajit Ghosh
+# Created On: Mar 25, 2024
+
+# Standard library imports
+import base64
+import hashlib
+
+# Third-party imports
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.fernet import Fernet
-import base64
-import hashlib
+
 
 def generate_derived_key_from_passwd(password):
     """

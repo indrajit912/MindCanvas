@@ -2,23 +2,26 @@
 # Author: Indrajit Ghosh
 # Created On: Apr 18, 2024
 
+# Standard library imports
+import logging
+
+# Third-party imports
+from cryptography.fernet import Fernet
+from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.exceptions import HTTPException
+
+# Local application imports
 from app.extensions import db
-from app.models.user import User
 from app.models.journal_entry import JournalEntry
 from app.models.tag import Tag
-from scripts.utils import utcnow
+from app.models.user import User
 from app.utils.encryption import decrypt, encrypt
-from scripts.utils import convert_str_to_datetime_utc, sha256_hash
+from scripts.utils import convert_str_to_datetime_utc, sha256_hash, utcnow
 
-from werkzeug.exceptions import HTTPException
-from sqlalchemy.exc import SQLAlchemyError
-from cryptography.fernet import Fernet
-
-import logging
 
 logger = logging.getLogger(__name__)
 
-def create_new_user(fullname:str, email:str, username:str, password:str, email_verified:bool=None):
+def create_new_user(fullname:str, email:str, username:str, password:str, email_verified:bool=None, is_admin=None):
     """Create a new user.
 
     Args:
@@ -27,6 +30,7 @@ def create_new_user(fullname:str, email:str, username:str, password:str, email_v
         username (str): The username of the user.
         password (str): The password of the user.
         email_verified (bool, optional): Indicates whether the user's email is verified.
+        is_admin (bool, optional): Indicates whether the user's is admin or not.
 
     Returns:
         tuple: A tuple containing a status code and a dictionary representation of the created user.
@@ -39,9 +43,9 @@ def create_new_user(fullname:str, email:str, username:str, password:str, email_v
         ).first()
         if existing_user:
             if existing_user.email == email:
-                return 400, {'message': 'email_taken'}
+                return 400, {'message': 'Email id is already taken by some other user!'}
             else:
-                return 400, {'message': 'username_taken'}
+                return 400, {'message': f"Username `{username}` is taken by someone else!"}
 
         # Create a new user
         new_user = User(
@@ -57,13 +61,17 @@ def create_new_user(fullname:str, email:str, username:str, password:str, email_v
 
         if email_verified is not None:
             new_user.email_verified = email_verified
+        
+        if is_admin is not None:
+            new_user.is_admin = is_admin
 
         # Add the user to the database
         db.session.add(new_user)
         db.session.commit()
 
         return 200, new_user.json()
-    except Exception as e:
+    
+    except SQLAlchemyError as e:
         db.session.rollback()
         error_message = f"An error occurred while creating the user: {e}"
         return 500, {'error': error_message}
@@ -84,7 +92,7 @@ def update_user(user_id, data: dict):
                 if existing_user.email == data.get('email'):
                     return 400, {'message': 'Email id is already taken by some other user!'}
                 else:
-                    return 400, {f'message': 'Username "{existing_user.username}" is taken by someone else!'}
+                    return 400, {'message': f"Username `{data['username']}` is taken by someone else!"}
 
         # Update the user attributes if provided in the request
         if data.get('fullname') is not None:

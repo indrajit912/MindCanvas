@@ -3,17 +3,26 @@
 # Author: Indrajit Ghosh
 # Created On: Mar 25, 2024
 # 
-from flask_restful import Resource, reqparse
+
+# Standard library imports
+import logging
+
+# Third-party imports
 from flask import request
+from flask_restful import Resource, reqparse
 from sqlalchemy import extract
-from cryptography.fernet import Fernet
+
+# Local application imports
+from app.extensions import db
 from app.models.user import User
 from app.models.tag import Tag
 from app.models.journal_entry import JournalEntry
-from app.extensions import db
-from app.utils.user_utils import update_user
 from app.utils.decorators import token_required
+from app.utils.user_utils import create_new_user, update_user
 from scripts.utils import utcnow
+
+
+logger = logging.getLogger(__name__)
 
 class UsersResource(Resource):
     """
@@ -50,46 +59,68 @@ class UserResource(Resource):
     
     @token_required
     def post(self):
+        """
+        Create a new user.
 
+        Creates a new user with the provided information. The request body should contain 
+        required fields for fullname, email, username, and password. Optional fields include
+        email_verified and is_admin.
+
+        Example Request:
+        POST /api/create/user
+        {
+            "fullname": "John Doe",
+            "email": "john@example.com",
+            "username": "johndoe",
+            "password": "securepassword",
+            "email_verified": true,
+            "is_admin": false
+        }
+
+        - Requires a bearer token `current_app.config['SECRET_API_TOKEN']` in the request header for authentication. 
+        For example,
+            headers = {
+              'Authorization': f"Bearer {current_app.config['SECRET_API_TOKEN']}"
+            }
+
+        Returns:
+            - If the user is created successfully, returns a 200 response with a message containing
+              the user's details, e.g.:
+              {
+                  "id": 3,
+                  "uuid": "eabfe71b3ea445da9a3d541152d2f2df",
+                  "username": "ani",
+                  "fullname": "Airban Banik",
+                  "email": "ani@gmail.com",
+                  "is_admin": true,
+                  "date_joined": "Wed, 24 Apr 2024 09:07:42 UTC",
+                  "last_updated": "Wed, 24 Apr 2024 09:08:36 UTC",
+                  "last_seen": "Wed, 24 Apr 2024 09:07:42 UTC",
+                  "email_verified": false
+              }
+            - If there are validation errors or the user creation fails, returns an error response 
+              with the appropriate status code and error message.
+        """
         parser = reqparse.RequestParser()
         parser.add_argument('fullname', type=str, required=True, help='Fullname is required')
         parser.add_argument('email', type=str, required=True, help='Email is required')
         parser.add_argument('username', type=str, required=True, help='Username is required')
         parser.add_argument('password', type=str, required=True, help='Password is required')
         parser.add_argument('email_verified', type=bool, required=False)
-        
+        parser.add_argument('is_admin', type=bool, required=False)
+
         args = parser.parse_args()
 
-        # Check if the user already exists
-        existing_user = User.query.filter(
-            (User.username == args['username']) | (User.email == args['email'])
-        ).first()
-        if existing_user:
-            if existing_user.email == args['email']:
-                return {'message': 'User with this email already exists'}, 400
-            else:
-                return {'message': 'User with this username already exists'}, 400
+        # Create the user
+        status_code, message = create_new_user(**args)
 
-        # Create a new user
-        new_user = User(
-            fullname=args['fullname'],
-            email=args['email'],
-            username=args['username'],
-        )
-        new_user.set_hashed_password(args['password'])
-
-        # Set private key
-        user_key = Fernet.generate_key()
-        new_user.set_encrypted_private_key(private_key=user_key, password=args['password'])
-
-        if args.get('email_verified') is not None:
-            new_user.email_verified = args.get('email_verified')
-
-        # Add the user to the database
-        db.session.add(new_user)
-        db.session.commit()
-
-        return new_user.json(), 200
+        if status_code == 200:
+            logger.info(f"New user added to the database. Username {message['username']}")
+            return message, 200
+        else:
+            logger.error(f"Failed to create the user! {message['message']}")
+            return message, status_code
+        
 
     @token_required
     def put(self, user_id):
@@ -140,11 +171,12 @@ class UserResource(Resource):
         status_code, message = update_user(user_id=user_id, data=args)
 
         if status_code == 200:
+            logger.info(f"User with id `{user_id}` updated successfully.")
             return {'message': 'User updated successfully'}, 200
         else:
+            logger.error(f"Failed to update the user! {message['message']}")
             return message, status_code
-
-
+        
 
     @token_required
     def delete(self, user_id):
@@ -154,6 +186,8 @@ class UserResource(Resource):
         # Delete the user from the database
         db.session.delete(user)
         db.session.commit()
+
+        logger.info(f"User with id '{user_id}' deleted successfully.")
 
         return {'message': 'User deleted successfully'}, 200
 

@@ -2,18 +2,24 @@
 # Author: Indrajit Ghosh
 # Created On: Feb 02, 2024
 #
-from flask import render_template, url_for, flash, redirect, request, current_app
+
+# Standard library imports
+import logging
+
+# Third-party imports
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy import desc
 
+# Local application imports
 from app.models.user import User
 from app.utils.decorators import admin_required
 from app.utils.user_utils import delete_user_from_db
 from scripts.utils import convert_utc_to_ist_str
 
-import logging
-
+# Relative imports
 from . import admin_bp
+
 
 logger = logging.getLogger(__name__)
 

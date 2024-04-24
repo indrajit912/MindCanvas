@@ -2,12 +2,16 @@
 # Author: Indrajit Ghosh
 # Created On: Mar 25, 2024
 
+# Standard library imports
 from functools import wraps
 
+# Third-party imports
 from flask import flash, redirect, url_for, request, jsonify, make_response
 from flask_login import current_user
 
+# Local application imports
 from config import EmailConfig, Config
+
 
 def token_required(f):
     @wraps(f)

@@ -4,15 +4,17 @@
 # Created On: Mar 24, 2024
 # 
 
-from app.extensions import db
-from itsdangerous import URLSafeTimedSerializer
+# Third-party imports
 from flask import current_app
 from flask_login import UserMixin
+from itsdangerous import URLSafeTimedSerializer
 import secrets
 import uuid
-from scripts.utils import sha256_hash, utcnow
-from app.utils.encryption import generate_derived_key_from_passwd, encrypt_user_private_key, hash_derived_key, decrypt
-from scripts.utils import count_words
+
+# Local application imports
+from app.extensions import db
+from app.utils.encryption import decrypt, encrypt_user_private_key, generate_derived_key_from_passwd, hash_derived_key
+from scripts.utils import count_words, sha256_hash, utcnow
 
 
 class User(db.Model, UserMixin):

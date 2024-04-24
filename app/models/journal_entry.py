@@ -4,9 +4,13 @@
 # Created On: Mar 24, 2024
 # 
 
-from app.extensions import db
+# Standard library imports
 import uuid
+
+# Local application imports
+from app.extensions import db
 from scripts.utils import utcnow
+
 
 # Association Table for many-to-many relationship between JournalEntry and Tag
 journal_entry_tag_association = db.Table(

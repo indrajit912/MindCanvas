@@ -2,10 +2,12 @@
 # Author: Indrajit Ghosh
 # Created On: Apr 18, 2024
 
-from app.models.tag import Tag
+# Local application imports
 from app.extensions import db
-from scripts.utils import utcnow, sha256_hash
+from app.models.tag import Tag
 from app.utils.encryption import encrypt
+from scripts.utils import sha256_hash, utcnow
+
 
 def create_user_tag(name:str, creator_id:int, private_key, color_red:int=None, color_green:int=None, color_blue:int=None, description:str=None):
     """Create a new tag.

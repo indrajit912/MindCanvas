@@ -3,11 +3,17 @@
 # Author: Indrajit Ghosh
 # Created On: Mar 24, 2024
 
+# Standard library imports
+import logging
+
+# Third-party imports
 from flask import Flask
 from flask_restful import Api
-import logging
+
+# Local application imports
 from config import get_config, LOG_FILE
 from .extensions import db, migrate, login_manager, ckeditor
+
 
 def configure_logging(app:Flask):
     logging.basicConfig(
