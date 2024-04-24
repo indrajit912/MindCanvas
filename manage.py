@@ -11,26 +11,22 @@ import requests
 import argparse
 import json
 import logging
-from pathlib import Path
 from cryptography.fernet import Fernet
 from tabulate import tabulate
-from datetime import datetime, timezone
 from config import EmailConfig
 
 from app.extensions import db
 from app import create_app
 from app.models.user import User
 from app.models.tag import Tag
-from app.models.journal_entry import JournalEntry
+from config import Config
 from app.utils.encryption import encrypt
 from scripts.app_defaults import default_tags
-from config import Config
+
 
 cli = FlaskGroup(create_app=create_app)
 logger = logging.getLogger(__name__)
 bullet_unicode = '\u2022'
-
-old_mindcanvas_file = Config.APP_DATA_DIR / "mindcanvas_data.json"
 
 def create_demo_user():
     """
@@ -49,14 +45,43 @@ def create_demo_user():
         demo_user.set_encrypted_private_key(private_key=user_key, password="password")
 
         db.session.add(demo_user)
-        db.session.commit()
         print("Demo user created successfully!")
         logger.info("Demo user created successfully!")
+
+        # Create default tags
+        _create_default_tags(private_key=user_key)
+        print(f"Default Tags has been created for `demo` user.")
+        logger.info("Default Tags has been created for `demo` user.")
+
+        db.session.commit()
+
     except Exception as e:
         print("Couldn't create demo user.")
         logger.error(f"Couldn't create demo user.\nERROR: {e}")
         print(f"\nERROR: {e}")
 
+
+def _create_default_tags(private_key):
+    """
+    Creates a number of records for Tag. These are used by Indrajit.
+    """
+    # Get the user with email=EmailConfig.INDRAJIT912
+    demo_user = User.query.filter_by(username='demo').first()
+    if not demo_user:
+        print("demo user account not found!")
+        return
+    
+    for tag_data in default_tags:
+        tag = Tag(
+            name=encrypt(tag_data['name'], private_key),
+            description=encrypt(tag_data['description'], private_key),
+            color_red=tag_data['color_red'],
+            color_green=tag_data['color_green'],
+            color_blue=tag_data['color_blue'],
+            creator_id=demo_user.id
+        )
+        tag.set_name_hash(tag_data['name'])
+        db.session.add(tag)
 
 @cli.command("setup-db")
 def setup_database():
@@ -156,63 +181,6 @@ def all_tags():
             print("No tags found!")
 
 
-def _create_indrajit_tags(private_key):
-    """
-    Creates a number of records for Tag. These are used by Indrajit.
-    """
-    # Get the user with email=EmailConfig.INDRAJIT912
-    indrajit_user = User.query.filter_by(email=EmailConfig.INDRAJIT912_GMAIL).first()
-    if not indrajit_user:
-        print("Indrajit's user account not found!")
-        return
-    
-    for tag_data in default_tags:
-        tag = Tag(
-            name=encrypt(tag_data['name'], private_key),
-            description=tag_data['description'],
-            color_red=tag_data['color_red'],
-            color_green=tag_data['color_green'],
-            color_blue=tag_data['color_blue'],
-            creator_id=indrajit_user.id
-        )
-        tag.set_name_hash(tag_data['name'])
-        db.session.add(tag)
-
-
-def _create_indrajit_mindcanvas_old_entries(file_path, private_key):
-    """
-    This creates JournalEntries for indrajit from MindCanvas-Old data
-
-    file_path: `json`
-    """
-    with open(file_path, 'r') as file:
-        data = json.load(file)
-        entries = data['entries']
-
-        # Get the user with email=EmailConfig.INDRAJIT912
-        indrajit_user = User.query.filter_by(email=EmailConfig.INDRAJIT912_GMAIL).first()
-        if not indrajit_user:
-            print("Indrajit's user account not found!")
-            return
-        
-        for entry_data in entries:
-            # Convert the datetime_utc string to a timezone-aware datetime object
-            datetime_utc = datetime.fromisoformat(entry_data['datetime_utc'])
-            datetime_utc = datetime_utc.replace(tzinfo=timezone.utc)
-            
-            # Create a JournalEntry object
-            entry = JournalEntry(
-                title=encrypt(entry_data['title'], private_key),
-                content=encrypt(entry_data['text'], private_key),
-                date_created=datetime_utc,
-                last_updated=datetime_utc,
-                author_id=indrajit_user.id
-            )
-            
-            # Add the entry to the session
-            db.session.add(entry)
-
-
 @cli.command("create-indrajit")
 def create_indrajit():
     """Creates the admin Indrajit Ghosh and his associated details."""
@@ -295,7 +263,7 @@ def export_db():
             with open(Config.APP_DATA_DIR / 'mindcanvas_db.json', 'w') as f:
                 json.dump(response.json(), f, indent=4)
             print(f"Data exported successfully from the host '{host}'!")
-            logger.info(f"{current_app.config['FLASK_APP_NAME']} db exported from '{host}'")
+            logger.info(f"{current_app.config['FLASK_APP_NAME']} db exported from '{host}'.")
         else:
             print(f"{current_app.config['FLASK_APP_NAME']} db Export failed. Status code:", response.status_code)
             print(response.content.decode())
