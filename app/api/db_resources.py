@@ -45,6 +45,7 @@ class ExportDBResource(Resource):
             user_data['tags'] = [
                 {
                     "name": tag.name,
+                    "name_hash": tag.name_hash,
                     "description": tag.description,
                     "color_red": tag.color_red,
                     "color_green": tag.color_green,
@@ -116,6 +117,7 @@ class ImportDBResource(Resource):
                 for tag_data in item['tags']:
                     tag = Tag(
                         name=tag_data['name'],
+                        name_hash=tag_data['name_hash'],
                         description=tag_data['description'],
                         color_red=tag_data['color_red'],
                         color_green=tag_data['color_green'],
