@@ -13,4 +13,4 @@ auth_bp = Blueprint(
     url_prefix='/auth'
 )
 
-from app.auth import routes
+from app.auth import routes, user_routes, journal_entry_routes, tag_routes

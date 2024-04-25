@@ -107,6 +107,7 @@ def update_existing_journal_entry(journal_entry_id, private_key, title=None, con
         # Add tags to the journal entry
         _tags_to_add = []
         if tags:
+            tags = list(set(tags))
             for tag_name in tags:
                 tag = Tag.query.filter_by(name_hash=sha256_hash(tag_name), creator_id=journal_entry.author_id).first()
 
