@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Guide{% endblock %}
+{% block content %}
+
+<div class="container">
+    <h1 class="mt-5">Adding Journal Entries Guide</h1>
+    <p class="lead">Welcome to the guide on how to add journal entries on MindCanvas journaling app! Start by clicking on the <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-database-fill-add"></i> Add Entry</button> button from your <a href="{{url_for('auth.dashboard')}}">dashboard</a>. This will direct you to a page featuring a rich text editor, where you can compose your journal entry (as demonstrated below).</p>
+
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <h2>Step 1: Entering Your Daily Reflections</h2>
+            <p>Begin by typing your thoughts, reflections, or any narrative you wish to include in your journal entry.</p>
+            <p>To include mathematical equations, utilize the MathJax integration within the text editor. Simply enclose your mathematical expressions within appropriate MathJax delimiters.</p>
+            <code class="code-preview">
+Today, I explored the fascinating world of prime numbers. One of the most intriguing properties of primes is their distribution, as exemplified by the Prime Number Theorem:
+
+\[ \pi(x) \sim \frac{x}{\log(x)} \]
+
+This theorem elegantly describes the density of prime numbers up to a given value of \(x\).
+
+Inline equations can be included within the text using single dollar signs, like this: \( E = mc^2 \).
+            </code>
+        </div>
+        <div class="col-md-6">
+            <h2>Preview after Rendering</h2>
+            <p>Here's how your text will look after rendering:</p>
+            <div id="preview" class="alert alert-info">
+                <p>Today, I explored the fascinating world of prime numbers. One of the most intriguing properties of primes is their distribution, as exemplified by the Prime Number Theorem:</p>
+                <p>\( \pi(x) \sim \frac{x}{\log(x)} \)</p>
+                <p>This theorem elegantly describes the density of prime numbers up to a given value of \(x\).</p>
+                <p>Inline equations can be included within the text using single dollar signs, like this: \( E = mc^2 \).</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <h2>Step 2: Review and Add</h2>
+            <p>Once you've composed your entry, take a moment to review it for any errors or modifications. Once satisfied, hit the <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-database-fill-add"></i> Add</button> button to add your journal entry.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .code-preview {
+        white-space: pre-wrap;
+    }
+</style>
+{% endblock %}

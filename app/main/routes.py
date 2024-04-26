@@ -28,6 +28,11 @@ def index():
     logger.info("Visited homepage.")
     return render_template("index.html")
 
+@main_bp.route('/guide')
+def guide():
+    logger.info("Visited guide page!")
+    return render_template('guide.html')
+
 
 @main_bp.route('/contact', methods=['GET', 'POST'])
 def contact():

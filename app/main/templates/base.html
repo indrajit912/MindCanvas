@@ -71,6 +71,10 @@ Created On: Mar 24, 2024
           </li>
           {% else %}
           <li class="nav-item">
+            <a class="nav-link active" href="{{ url_for('main.guide') }}"><i class="bi bi-question-square-fill"></i>
+              Guide</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link active" href="{{ url_for('auth.register_email') }}"><i class="bi bi-person-plus"></i>
               Register</a>
           </li>

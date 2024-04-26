@@ -80,7 +80,7 @@
     </div>
 
     <div class="card-footer text-muted">
-        Last updated: {{ convert_utc_to_ist_str(entry.last_updated) }}
+        <i class="bi bi-calendar-day-fill"></i> {{ convert_utc_to_ist_str(entry.date_created) }}
         {% if entry.locked %}
         {% if session.get('entries_unlocked') == True %}
         <a href="#" class="text-success ms-2" data-bs-toggle="modal" data-bs-target="#lockModal"><i

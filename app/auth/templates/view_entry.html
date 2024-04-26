@@ -4,45 +4,48 @@
 
 {% block content %}
 {% include 'flash_msgs.html' %}
-<div class="container">
-    <h1 class="my-4">{{ decrypt(entry.title, private_key) }}</h1>
-    <div class="card">
-        <div class="card-body">
-            <p class="text-muted">Created: {{ convert_utc_to_ist_str(entry.date_created) }}</p>
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">{{ decrypt(entry.title, private_key) }}</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted"><i class="bi bi-calendar-day-fill"></i> {{ convert_utc_to_ist_str(entry.date_created) }}</p>
 
-            {% if not entry.locked or session.get('entries_unlocked') %}
+                    {% if not entry.locked or session.get('entries_unlocked') %}
 
-            {{ decrypt(entry.content, private_key) | safe }}
+                    <div class="entry-content">
+                        {{ decrypt(entry.content, private_key) | safe }}
+                    </div>
 
-            <div class="tags mt-4 mb-3">
-                <div class="tags mt-2">
-                    {% for tag in entry.tags %}
-                    <a href="{{ url_for('auth.get_journal_entries_by_tag', user_id=current_user.id, tag_id=tag.id) }}"
-                        style="text-decoration: none;">
-                        <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ decrypt(tag.name, private_key) }}</span>
-                    </a>
-                    {% endfor %}
+                    <div class="tags mt-4">
+                        <div class="d-inline-block ms-2">
+                            {% for tag in entry.tags %}
+                            <span class="badge badge-sm mr-1" data-color="{{ tag.color_hex() }}">{{ decrypt(tag.name, private_key) }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <p class="text-muted">Last Updated: {{ convert_utc_to_ist_str(entry.last_updated) }}</p>
+
+                    <div class="mt-4">
+                        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editEntryModal{{ entry.id }}"><i class="bi bi-pencil-fill"></i> Edit</a>
+                        <a href="#" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#delEntryModal{{ entry.id }}"><i class="bi bi-trash3"></i> Delete</a>
+                        <button class="btn btn-secondary ms-2" onclick="goBack()"><i class="bi bi-arrow-left"></i> Back</button>
+                    </div>
+                    {% else %}
+                    <p class="card-text">This entry is locked. Unlock it from <a href="{{ url_for('auth.user_journal_entries', user_id=current_user.id) }}">here.</a></p>
+                    {% endif %}
+
                 </div>
             </div>
-
-            <hr>
-            <p class="text-muted">Last Updated: {{ convert_utc_to_ist_str(entry.last_updated) }}</p>
-
-            <div class="mt-4">
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal"
-                    data-bs-target="#editEntryModal{{ entry.id }}"><i class="bi bi-pencil-fill"></i> Edit</a>
-                <a href="#" class="btn btn-danger ms-2" data-bs-toggle="modal"
-                    data-bs-target="#delEntryModal{{ entry.id }}"><i class="bi bi-trash3"></i> Delete</a>
-                <button class="btn btn-secondary ms-2" onclick="goBack()"><i class="bi bi-arrow-left"></i> Back</button>
-            </div>
-            {% else %}
-            <p class="card-text">This entry is locked. Unlock it from <a
-                    href="{{ url_for('auth.user_journal_entries', user_id=current_user.id) }}">here.</a></p>
-            {% endif %}
-
         </div>
     </div>
 </div>
+
 
 <!-- Delete Entry Modal -->
 <div class="modal fade" id="delEntryModal{{ entry.id }}" tabindex="-1"

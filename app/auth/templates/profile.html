@@ -79,7 +79,7 @@
               <div class="p-4" style="background-color: #f8f9fa;">
                 <p class="fst-italic mb-1">
                   Email: {{ current_user.email }}
-                  {% if not current_user.email_verified %}
+                  {% if not current_user.email_verified and current_user.username != 'demo' %}
                       <span class="text-danger">
                           (Please 
                           <a href="{{ url_for('auth.send_verification_email') }}" onclick="showVerificationSpinner()">
