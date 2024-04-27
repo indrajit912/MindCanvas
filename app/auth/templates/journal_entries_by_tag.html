@@ -29,6 +29,10 @@
 
     <div class="row justify-content-center">
         {% if user_journal_entries %}
+        <div class="text-muted">
+            Total results: {{ user_journal_entries | length }}
+        </div>
+        <br>
         <div class="card-body">
             {% include '_preview_journal_entries.html' %}
         </div>
@@ -39,6 +43,7 @@
                     class="bi bi-eye-fill"></i> View all your entries here!</a>
         </div>
         {% endif %}
-        {% endblock %}
     </div>
 </div>
+
+{% endblock %}
