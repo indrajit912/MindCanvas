@@ -42,8 +42,10 @@
         <div class="card">
           <div class="rounded-top text-white d-flex flex-column" style="background-color: #000;">
             <div class="ms-4 mt-5 d-flex flex-column align-items-center">
-              <img src="{{ current_user.avatar(200) }}" alt="User Avatar" class="img-fluid img-thumbnail mt-4 mb-2"
+              <a href="https://gravatar.com/" target="_blank">
+                <img src="{{ current_user.avatar(200) }}" alt="User Avatar" class="img-fluid img-thumbnail mt-4 mb-2"
                 style="width: 150px;">
+              </a>
               <a data-bs-toggle="modal" data-bs-target="#editProfileModal" class="btn btn-outline-light mt-3"
                 data-mdb-ripple-color="dark">
                 <i class="bi bi-pencil"></i> Edit Profile
