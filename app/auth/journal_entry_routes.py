@@ -433,7 +433,6 @@ def get_journal_entries_by_tag(user_id, tag_id):
 @auth_bp.route('/search/<int:user_id>', methods=['GET'])
 @login_required
 def search(user_id):
-    # TODO: This is not working properly! It fails if you click the search icon twice in a row.
     # Check if the current user is authorized to access the search functionality
     if not current_user.id == user_id:
         abort(403)
@@ -444,6 +443,8 @@ def search(user_id):
 
     # Get the search query from the URL parameters
     query = request.args.get('q', query)
+    query = "Search ..." if query == '' else query
+    search_results = []
 
     # Filter entries for the search query
     if query:
