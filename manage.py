@@ -51,12 +51,12 @@ def create_demo_user():
         demo_user.set_encrypted_private_key(private_key=user_key, password="password")
 
         db.session.add(demo_user)
-        print("Demo user created successfully!")
+        print("[-] Demo user created successfully!")
         logger.info("Demo user created successfully!")
 
         # Create default tags
         _create_default_tags(private_key=user_key)
-        print(f"Default Tags has been created for `demo` user.")
+        print(f"[-] Default Tags has been created for `demo` user.")
         logger.info("Default Tags has been created for `demo` user.")
 
         db.session.commit()
@@ -104,13 +104,18 @@ def setup_database():
     """
     with current_app.app_context():
         db.create_all()
-        print("Database tables created successfully!")
+        print("[-] Database tables created successfully!")
+
+        # Create APP_DATA dir
+        if not Config.APP_DATA_DIR.exists():
+            Config.APP_DATA_DIR.mkdir()
+            print("[-] '/app_data' directory created successfully!")
 
         # Check if the demo user exists
         demo_user = User.query.filter_by(username='demo').first()
 
         if demo_user:
-            print("Demo user already exists.")
+            print("[-] Demo user already exists.")
         else:
             create_demo_user()
 
