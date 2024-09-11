@@ -1,11 +1,12 @@
 # Standard library imports
 import logging
 from math import ceil
+from datetime import datetime, timedelta
 
 # Third-party imports
 from flask import abort, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
-from sqlalchemy import desc
+from sqlalchemy import desc, extract
 
 # Local application imports
 from app.forms.user_forms import AddEntryForm
@@ -441,25 +442,39 @@ def search(user_id):
     query = "Search ..."
     private_key = session.get('current_user_private_key')
 
-    # Get the search query from the URL parameters
+    # Get search query and date filters from URL parameters
     query = request.args.get('q', query)
-    query = "Search ..." if query == '' else query
+    given_date_str = request.args.get('given_date', None)
+
     search_results = []
 
-    # Filter entries for the search query
-    if query:
+    # Parse date strings into datetime objects if provided
+    given_date = datetime.strptime(given_date_str, "%Y-%m-%d") if given_date_str else None
+
+    # Filter entries based on date and/or query
+    if given_date:
+        # Filter entries by date if given_date is provided
+        user_entries = JournalEntry.query.filter(
+            JournalEntry.author_id == user_id,
+            extract('year', JournalEntry.date_created) == given_date.year,
+            extract('month', JournalEntry.date_created) == given_date.month,
+            extract('day', JournalEntry.date_created) == given_date.day
+        ).order_by(desc(JournalEntry.date_created)).all()
+    else:
         # Query all JournalEntry objects associated with the specified user_id
         user_entries = JournalEntry.query.filter_by(author_id=user_id).order_by(
-        desc(JournalEntry.date_created)
-    )
+            desc(JournalEntry.date_created)
+        ).all()
 
-        # Filter entries for the search query
+    # If a query is provided, filter the entries based on the query
+    if query:
         search_results = [
-            entry
-            for entry in user_entries
+            entry for entry in user_entries
             if query.lower() in decrypt(entry.title, private_key).lower()
             or query.lower() in decrypt(entry.content, private_key).lower()
         ]
+    else:
+        search_results = user_entries
 
     # Paginate the search results
     page = request.args.get('page', 1, type=int)
@@ -488,6 +503,7 @@ def search(user_id):
         convert_utc_to_ist_str=convert_utc_to_ist_str,
         redirect_destination='search',
         route_url='auth.search',
-        total_entries=total_entries
+        total_entries=total_entries,
+        given_date=given_date_str
     )
 

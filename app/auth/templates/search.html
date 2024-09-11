@@ -12,10 +12,12 @@
                     <span class="input-group-text mindcanvas-text">MindCanvas</span>
                 </div>
                 <input type="text" name="q" class="form-control" placeholder="{{ query }}" aria-label="Search">
+                <!-- Adjusted date input width -->
+                <input type="date" name="given_date" class="form-control custom-date-input" value="{{ given_date }}" aria-label="Given Date">
                 <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
-            </form>
-
+            </form>            
         </div>
+        
     </div>
 
     <br>
@@ -198,9 +200,7 @@
         font-size: 20px;
         font-weight: bold;
         color: #007bff;
-        /* Blue color, you can adjust as needed */
         letter-spacing: 1px;
-        /* Add letter spacing for better readability */
     }
 
     /* Style for the total results */
@@ -228,6 +228,18 @@
     .card-footer {
         background-color: #f8f9fa;
         border-top: 1px solid rgba(0, 0, 0, 0.125);
+    }
+
+    /* Custom styles for the date input */
+    .custom-date-input {
+        max-width: 170px; /* Set width to properly accommodate the date */
+        text-align: center;
+    }
+
+    /* Optional: Adjust the placeholder styling */
+    .custom-date-input::placeholder {
+        color: #6c757d;
+        text-align: center;
     }
 </style>
 
