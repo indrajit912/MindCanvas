@@ -116,14 +116,28 @@
                     {% if onthis_day_journal %}
                     <div class="list-group">
                         {% for entry in onthis_day_journal %}
-                        <a href="#" class="list-group-item list-group-item-action inactive" aria-current="false">
+                        
+                        {% if entry.locked and not session.get('entries_unlocked') %}
+                        <!-- TODO: Create a route that can verify the user's identity and then link that route below -->
+                            <a href="#" class="list-group-item list-group-item-action inactive" aria-current="false">
+                        {% else %}
+                            <a href="{{ url_for('auth.view_entry', entry_id=entry.id) }}" class="list-group-item list-group-item-action inactive" aria-current="false">
+                        {% endif %}
                             <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">{{ decrypt(entry.title, private_key) }}</h5>
+                                {% if entry.locked and not session.get('entries_unlocked') %}
+                                    <h5 class="mb-1">This entry is locked!</h5>
+                                {% else %}
+                                    <h5 class="mb-1">{{ decrypt(entry.title, private_key)[:20] }}...</h5>
+                                {% endif %}
                                 <small>{{ format_years_ago(entry.date_created) }}</small>
                             </div>
-                            <p class="mb-1">{{ decrypt(entry.content, private_key)[:50] }}...</p>
-                            <small>Last updated: {{ convert_utc_to_ist_str(entry.last_updated, show_time=False)
-                                }}</small>
+                            {% if entry.locked and not session.get('entries_unlocked') %}
+                                <p class="mb-1">Entry locked.</p>
+                            {% else %}
+                                <p class="mb-1">{{ decrypt(entry.content, private_key)[:50] |safe }}...</p>
+                            {% endif %}
+                            <i class="bi bi-calendar-day-fill"></i>
+                            <small>{{ convert_utc_to_ist_str(entry.date_created, show_time=False) }}</small>
                         </a>
                         {% endfor %}
                     </div>
