@@ -38,6 +38,34 @@ def redirect_to_destination(destination):
         return redirect(url_for('auth.search', user_id=current_user.id))
     elif destination == 'favourites':
         return redirect(url_for('auth.favourites', user_id=current_user.id))
+    
+    # Check if the destination contains a dot, meaning it could be a dynamic route
+    elif '.' in destination:
+        parts = destination.split('.')
+        
+        # Ensure there are at least blueprint and route names
+        if len(parts) < 2:
+            # Invalid format, redirect to dashboard or handle as needed
+            return redirect(url_for('auth.dashboard'))
+
+        # Extract blueprint and route name
+        bp_name = parts[0]
+        route_name = parts[1]
+
+        # Collect parameters if present
+        if len(parts) > 2:
+            # Build parameter dictionary
+            params = {parts[i]: parts[i + 1] for i in range(2, len(parts), 2)}
+        else:
+            params = {}
+
+        # Redirect using the dynamically constructed route
+        try:
+            return redirect(url_for(f'{bp_name}.{route_name}', **params))
+        except Exception as e:
+            # Log the error and fallback to dashboard if something goes wrong
+            print(f"Error during redirect: {e}")
+            return redirect(url_for('auth.dashboard'))
     else:
         # Handle invalid destination
         return redirect(url_for('auth.dashboard')) 

@@ -345,6 +345,19 @@ def lock_entries(destination):
     return redirect_to_destination(destination)
 
 
+@auth_bp.route('/toggle-entries-lock', methods=['GET'])
+@login_required
+def toggle_entries_lock():
+    # Check whether the session indicates that entries are unlocked or locked
+    unlock = not session.get('entries_unlocked', False)
+
+    # Define the destination for redirection after locking/unlocking
+    redirect_destination = request.args.get('destination', 'dashboard')  # Replace 'home' with your default destination
+
+    # Render the toggle form, passing the necessary context
+    return render_template('toggle_session_entries_locked.html', unlock=unlock, user_id=current_user.id, redirect_destination=redirect_destination)
+
+
 # Route to toggle the is_admin value
 @auth_bp.route('/toggle_entry_favourite', methods=['POST'])
 @login_required

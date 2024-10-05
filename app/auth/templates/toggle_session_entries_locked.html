@@ -1,0 +1,40 @@
+<!-- This form is to unlock all locked entries
+This is used to change the value of session['unlocked_entries']
+-->
+{% extends "base.html" %}
+
+{% block title %}Dashboard ({{ current_user.username }}){% endblock %}
+
+{% block content %}
+{% include 'flash_msgs.html' %}
+
+{% if unlock %}
+<div class="modal-body">
+    <p>This action will unlock all locked entries. Please enter your password to confirm.</p>
+    <form method="post" action="{{ url_for('auth.unlock_entries', destination=redirect_destination) }}">
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <input type="hidden" name="unlock_all" value="true">
+        <button type="submit" class="btn btn-primary btn-sm">Unlock Entries</button>
+        <a href="{{ url_for('auth.dashboard', user_id=user_id) }}" class="btn btn-primary btn-sm me-2"><i
+            class="bi bi-house-door-fill"></i> Dashboard</a>
+    </form>
+</div>
+{% else %}
+<div class="modal-body">
+    <p>This action will lock all unlocked entries. Please enter your password to confirm.</p>
+    <form method="post" action="{{ url_for('auth.lock_entries', destination=redirect_destination) }}">
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <input type="hidden" name="lock_all" value="true">
+        <button type="submit" class="btn btn-primary btn-sm">Lock Entries</button>
+        <a href="{{ url_for('auth.dashboard', user_id=user_id) }}" class="btn btn-primary btn-sm me-2"><i
+            class="bi bi-house-door-fill"></i> Dashboard</a>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

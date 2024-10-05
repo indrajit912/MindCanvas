@@ -118,8 +118,10 @@
                         {% for entry in onthis_day_journal %}
                         
                         {% if entry.locked and not session.get('entries_unlocked') %}
-                        <!-- TODO: Create a route that can verify the user's identity and then link that route below -->
-                            <a href="#" class="list-group-item list-group-item-action inactive" aria-current="false">
+                        <!-- Create a route that can verify the user's identity and then link that route below
+                        You can use jinja2's str concatenation like this: 'auth.' ~ pos1 ~ '.view.' ~ pos2
+                        -->
+                            <a href="{{ url_for('auth.toggle_entries_lock', destination='auth.view_entry.entry_id.' ~ entry.id) }}" class="list-group-item list-group-item-action inactive" aria-current="false">
                         {% else %}
                             <a href="{{ url_for('auth.view_entry', entry_id=entry.id) }}" class="list-group-item list-group-item-action inactive" aria-current="false">
                         {% endif %}
