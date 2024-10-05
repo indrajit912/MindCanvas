@@ -9,7 +9,11 @@
         <div class="col-md-8 offset-md-2">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0">{{ decrypt(entry.title, private_key) }}</h2>
+                    {% if not entry.locked or session.get('entries_unlocked') %}
+                        <h2 class="mb-0">{{ decrypt(entry.title, private_key) }}</h2>
+                    {% else %}
+                        <h2 class="mb-0">This is a locked entry!</h2>
+                    {% endif %}
                 </div>
                 <div class="card-body">
                     <p class="text-muted"><i class="bi bi-calendar-day-fill"></i> {{ convert_utc_to_ist_str(entry.date_created) }}</p>
@@ -40,7 +44,7 @@
                         <button class="btn btn-secondary ms-2" onclick="goBack()"><i class="bi bi-arrow-left"></i> Back</button>
                     </div>
                     {% else %}
-                    <p class="card-text">This entry is locked. Unlock it from <a href="{{ url_for('auth.user_journal_entries', user_id=current_user.id) }}">here.</a></p>
+                    <p class="card-text">This entry is locked. Unlock it from <a href="{{ url_for('auth.toggle_entries_lock', destination='auth.view_entry.entry_id.' ~ entry.id) }}">here.</a></p>
                     {% endif %}
 
                 </div>
